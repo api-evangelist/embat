@@ -1,0 +1,218 @@
+openapi: 3.1.0
+info:
+  title: Embat AccountingAccounts Categories API
+  description: Embat API enables connections between any third party application and Embat. Is organized around REST principles, using HTTP responses code and returning data in JSON format. While testing the API, you have to request **sandbox credentials**.
+  contact:
+    name: API Support
+    url: https://embat.io/
+    email: tech@embat.io
+  version: 2.120.3
+  x-logo:
+    url: https://storage.googleapis.com/embat-production.appspot.com/assets/embat_dark.svg
+tags:
+- name: Categories
+  description: "`Category` represents a treasury or cashflow classification in Embat, used to group transactions, forecasts and operations for reporting (e.g. \"Providers\", \"Payroll\", \"Subscriptions\"). Categories are created and managed in the Embat application; this API only lists and retrieves them. `parentId` is the Embat ID of the parent category, letting you build a category tree such as:\n\n- Payments\n    - Providers\n        - Europe\n        - Latam\n    - Payroll\n\n- Collections\n    - Subscriptions\n\nA category has no `parentId` when it is a top-level category.\n\nCategories are referenced by `categoryId` on `Transactions`, `Forecasts` and `Operations` to classify each movement. In the Embat application you can also map an ERP ledger account to a category, so operations posted against that account are categorized automatically.\n\n**Typical flow:** look up the categories configured for a company with `GET /categories/{companyId}` (or a single one with `GET /categories/{companyId}/{id}`) and use their `id` as the `categoryId` when creating or reading transactions, forecasts or operations through the corresponding endpoints.\n"
+paths:
+  /categories/{companyId}:
+    get:
+      tags:
+      - Categories
+      summary: List categories
+      description: Returns every category configured for the company, both top-level and child categories. The list is not paginated. Categories are created and managed in the Embat application; this API only reads them.
+      operationId: list_categories_categories__companyId__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: companyId
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Companyid
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListCategoriesResponseSchema'
+        '401':
+          description: Unauthorized. The bearer token is missing, invalid or expired.
+          content:
+            application/json:
+              example:
+                detail: user not authorized
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Not found. The requested resource or `companyId` does not exist.
+          content:
+            application/json:
+              example:
+                detail: 0021 companyId not found
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /categories/{companyId}/{id}:
+    get:
+      tags:
+      - Categories
+      summary: Retrieve category
+      description: Returns a single category by its Embat `id`.
+      operationId: get_category_categories__companyId___id__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Id
+      - name: companyId
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Companyid
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetCategoriesResponseSchema'
+        '401':
+          description: Unauthorized. The bearer token is missing, invalid or expired.
+          content:
+            application/json:
+              example:
+                detail: user not authorized
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Company not found, or no category matches the given `id`.
+          content:
+            application/json:
+              example:
+                detail: 0021 companyId not found
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+components:
+  schemas:
+    ListCategoriesResponseSchema:
+      properties:
+        data:
+          items:
+            $ref: '#/components/schemas/GetCategoriesResponseSchema'
+          type: array
+          title: Data
+          description: Categories matching the query.
+      type: object
+      required:
+      - data
+      title: ListCategoriesResponseSchema
+    ErrorResponse:
+      properties:
+        detail:
+          type: string
+          title: Detail
+          description: Human-readable explanation of the error.
+          examples:
+          - user not authorized
+      type: object
+      required:
+      - detail
+      title: ErrorResponse
+      description: Error payload returned by the API (FastAPI `detail` convention).
+    HTTPValidationError:
+      properties:
+        detail:
+          items:
+            $ref: '#/components/schemas/ValidationError'
+          type: array
+          title: Detail
+      type: object
+      title: HTTPValidationError
+    ValidationError:
+      properties:
+        loc:
+          items:
+            anyOf:
+            - type: string
+            - type: integer
+          type: array
+          title: Location
+        msg:
+          type: string
+          title: Message
+        type:
+          type: string
+          title: Error Type
+        input:
+          title: Input
+        ctx:
+          type: object
+          title: Context
+      type: object
+      required:
+      - loc
+      - msg
+      - type
+      title: ValidationError
+    GetCategoriesResponseSchema:
+      properties:
+        id:
+          type: string
+          title: Id
+          description: Embat category ID. Referenced as `categoryId` on transactions, forecasts and operations.
+        companyId:
+          type: string
+          title: Companyid
+          description: Embat company ID. You can get them from "companies" endpoints
+        updatedAt:
+          type: string
+          format: date-time
+          title: Updatedat
+          description: Last updated date of the entity in the database
+        createdAt:
+          type: string
+          format: date-time
+          title: Createdat
+          description: Created date of the entity in the database
+        name:
+          type: string
+          title: Name
+          description: Category name.
+          examples:
+          - Providers
+        parentId:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Parentid
+          description: Embat ID of the parent category. `null` for a top-level category.
+      type: object
+      required:
+      - id
+      - companyId
+      - updatedAt
+      - createdAt
+      - name
+      title: GetCategoriesResponseSchema
+      description: Category response data schema
+  securitySchemes:
+    HTTPBearer:
+      type: http
+      scheme: bearer

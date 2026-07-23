@@ -1,0 +1,279 @@
+openapi: 3.1.0
+info:
+  title: Embat AccountingAccounts Logs API
+  description: Embat API enables connections between any third party application and Embat. Is organized around REST principles, using HTTP responses code and returning data in JSON format. While testing the API, you have to request **sandbox credentials**.
+  contact:
+    name: API Support
+    url: https://embat.io/
+    email: tech@embat.io
+  version: 2.120.3
+  x-logo:
+    url: https://storage.googleapis.com/embat-production.appspot.com/assets/embat_dark.svg
+tags:
+- name: Logs
+  description: "`Logs` let your integration report execution events, warnings or errors observed while interacting with the Embat API, so Embat's support team can diagnose integration issues.\n\nLogs are write-only: there is no endpoint to list or retrieve the logs you send. Use `code` to classify the event by severity and, where available, by the entity it relates to (for example `PAYMENTS_ERROR` for an issue involving `Payments`, or `AUTHORIZATION_WARNING` for an authentication issue). Use the generic `INFO`, `WARNING` or `ERROR` codes for events not tied to one of those entities.\n\n**Typical flow:** report a log whenever your integration completes, skips or fails a step of its synchronization with Embat, for example after `POST /payments/{companyId}` returns an error:\n\n```json\nPOST /logs/{companyId}\n{\n  \"erp\": \"netsuite\",\n  \"erpVersion\": \"2024.1\",\n  \"connectorVersion\": \"1.4.2\",\n  \"level\": \"ERROR\",\n  \"code\": \"PAYMENTS_ERROR\",\n  \"message\": \"Failed to post payment: missing accounting account\"\n}\n```\n\nLog delivery is best-effort: both endpoints return `204` as soon as the request is accepted, and any failure while recording a log afterwards is not reported back to the caller. To send several logs at once, use `POST /logs/{companyId}/bulk`.\n"
+paths:
+  /logs/{companyId}:
+    post:
+      tags:
+      - Logs
+      summary: Create log
+      description: 'Reports a single execution event, warning or error observed by your integration while interacting with the Embat API, so Embat''s support team can diagnose integration issues. Log delivery is best-effort: the endpoint returns `204` as soon as the request is accepted, and any failure while recording the log afterwards is not reported back to the caller.'
+      operationId: create_log_logs__companyId__post
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: companyId
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Companyid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PostLogRequestSchema'
+      responses:
+        '204':
+          description: Successful Response
+        '401':
+          description: Unauthorized. The bearer token is missing, invalid or expired.
+          content:
+            application/json:
+              example:
+                detail: user not authorized
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Not found. The requested resource or `companyId` does not exist.
+          content:
+            application/json:
+              example:
+                detail: 0021 companyId not found
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /logs/{companyId}/bulk:
+    post:
+      tags:
+      - Logs
+      summary: Create logs in bulk
+      description: 'Reports several log entries in a single call, following the same rules as the single log creation endpoint. Each entry is processed independently, so a failure recording one log does not affect the others. Log delivery is best-effort: the endpoint returns `204` as soon as the request is accepted, regardless of the outcome of recording any individual entry.'
+      operationId: create_logs_bulk_logs__companyId__bulk_post
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: companyId
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Companyid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BulkPostLogsRequestSchema'
+      responses:
+        '204':
+          description: Successful Response
+        '401':
+          description: Unauthorized. The bearer token is missing, invalid or expired.
+          content:
+            application/json:
+              example:
+                detail: user not authorized
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Not found. The requested resource or `companyId` does not exist.
+          content:
+            application/json:
+              example:
+                detail: 0021 companyId not found
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+components:
+  schemas:
+    ErrorResponse:
+      properties:
+        detail:
+          type: string
+          title: Detail
+          description: Human-readable explanation of the error.
+          examples:
+          - user not authorized
+      type: object
+      required:
+      - detail
+      title: ErrorResponse
+      description: Error payload returned by the API (FastAPI `detail` convention).
+    HTTPValidationError:
+      properties:
+        detail:
+          items:
+            $ref: '#/components/schemas/ValidationError'
+          type: array
+          title: Detail
+      type: object
+      title: HTTPValidationError
+    ValidationError:
+      properties:
+        loc:
+          items:
+            anyOf:
+            - type: string
+            - type: integer
+          type: array
+          title: Location
+        msg:
+          type: string
+          title: Message
+        type:
+          type: string
+          title: Error Type
+        input:
+          title: Input
+        ctx:
+          type: object
+          title: Context
+      type: object
+      required:
+      - loc
+      - msg
+      - type
+      title: ValidationError
+    ErspEnum:
+      type: string
+      enum:
+      - netsuite
+      - sageX3
+      - odoo
+      - businessCentral
+      - navision
+      - libra
+      - distritoK
+      - fo
+      - zoho
+      - holded
+      - dynamicsAx
+      - a3
+      - businessOne
+      - openbravo
+      - sage200
+      - sage50
+      - r3
+      - ekon
+      - m3Rosetta
+      - sageIntacct
+      - datev
+      title: ErspEnum
+    LogsCodesEnum:
+      type: string
+      enum:
+      - INFO
+      - WARNING
+      - ERROR
+      - AUTHORIZATION_INFO
+      - AUTHORIZATION_WARNING
+      - AUTHORIZATION_ERROR
+      - ACCOUNTINGS_ACCOUNTS_INFO
+      - ACCOUNTINGS_ACCOUNTS_WARNING
+      - ACCOUNTINGS_ACCOUNTS_ERROR
+      - ACCOUNTINGS_ENTRIES_INFO
+      - ACCOUNTINGS_ENTRIES_WARNING
+      - ACCOUNTINGS_ENTRIES_ERROR
+      - ATTRIBUTES_INFO
+      - ATTRIBUTES_WARNING
+      - ATTRIBUTES_ERROR
+      - CONTACTS_INFO
+      - CONTACTS_WARNING
+      - CONTACTS_ERROR
+      - OPERATIONS_INFO
+      - OPERATIONS_WARNING
+      - OPERATIONS_ERROR
+      - PAYMENTS_INFO
+      - PAYMENTS_WARNING
+      - PAYMENTS_ERROR
+      title: LogsCodesEnum
+    BulkPostLogsRequestSchema:
+      properties:
+        data:
+          items:
+            $ref: '#/components/schemas/PostLogRequestSchema'
+          type: array
+          title: Data
+          description: Logs to create.
+      type: object
+      required:
+      - data
+      title: BulkPostLogsRequestSchema
+    LogsLevelsEnum:
+      type: string
+      enum:
+      - INFO
+      - ERROR
+      - WARNING
+      title: LogsLevelsEnum
+    PostLogRequestSchema:
+      properties:
+        erp:
+          $ref: '#/components/schemas/ErspEnum'
+          description: ERP system that originated the log.
+          examples:
+          - netsuite
+        erpVersion:
+          type: string
+          title: Erpversion
+          description: Version of the ERP system that originated the log.
+          examples:
+          - '2024.1'
+        connectorVersion:
+          type: string
+          title: Connectorversion
+          description: Version of the integration that reported the log.
+          examples:
+          - 1.4.2
+        level:
+          $ref: '#/components/schemas/LogsLevelsEnum'
+          description: Severity of the log entry.
+          examples:
+          - ERROR
+        code:
+          $ref: '#/components/schemas/LogsCodesEnum'
+          description: Code classifying the log by severity and, where available, by the entity it relates to (e.g. `PAYMENTS_ERROR`, `AUTHORIZATION_WARNING`). Use the generic `INFO`, `WARNING` or `ERROR` codes for events not tied to one of those entities.
+          examples:
+          - PAYMENTS_ERROR
+        message:
+          type: string
+          title: Message
+          description: Free-text description of the event, warning or error being reported.
+          examples:
+          - 'Failed to post payment: missing accounting account'
+      type: object
+      required:
+      - erp
+      - erpVersion
+      - connectorVersion
+      - level
+      - code
+      - message
+      title: PostLogRequestSchema
+  securitySchemes:
+    HTTPBearer:
+      type: http
+      scheme: bearer

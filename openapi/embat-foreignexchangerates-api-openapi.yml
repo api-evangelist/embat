@@ -1,0 +1,485 @@
+openapi: 3.1.0
+info:
+  title: Embat AccountingAccounts ForeignExchangeRates API
+  description: Embat API enables connections between any third party application and Embat. Is organized around REST principles, using HTTP responses code and returning data in JSON format. While testing the API, you have to request **sandbox credentials**.
+  contact:
+    name: API Support
+    url: https://embat.io/
+    email: tech@embat.io
+  version: 2.120.3
+  x-logo:
+    url: https://storage.googleapis.com/embat-production.appspot.com/assets/embat_dark.svg
+tags:
+- name: ForeignExchangeRates
+  description: '`ForeignExchangeRate` records the daily exchange rates Embat uses to convert amounts between currencies for accounting purposes. Each record captures the rates observed on a given `date` for a set of currencies against a `baseCurrency` (EUR as stored).
+
+
+    These are the same rates Embat applies internally when it computes exchange rates and accounting amounts on entities such as `Payment`, `Balance` and `Transaction`. Foreign exchange rates are read-only reference data: this API does not support creating, updating or deleting them.
+
+
+    **Typical flow:** look up the rate for a given day to reproduce or audit a currency conversion made elsewhere in Embat.
+
+
+    1. List the rates for a date range, optionally expressed against a currency other than EUR:
+
+
+    ```
+
+    GET /foreignexchangerates?baseCurrency=USD&startDate=2024-01-01&endDate=2024-01-31
+
+    ```
+
+
+    2. Or retrieve a single record you already know the `id` of, always expressed against EUR:
+
+
+    ```
+
+    GET /foreignexchangerates/{id}
+
+    ```
+
+    '
+paths:
+  /foreignexchangerates:
+    get:
+      tags:
+      - ForeignExchangeRates
+      summary: List foreign exchange rates
+      description: 'Returns the daily foreign exchange rates recorded in Embat, most recent first, recalculated to be expressed against `baseCurrency`. Results are paginated: use `limit` to control page size and pass the returned `nextPageToken` to fetch the next page. `startDate`/`endDate` filter by rate date: `startDate` is inclusive and `endDate` is exclusive. If only one of the two is given, the range is open-ended on the other side.'
+      operationId: list_foreign_exchange_rates_foreignexchangerates_get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: baseCurrency
+        in: query
+        required: true
+        schema:
+          $ref: '#/components/schemas/CurrencyEnum'
+          description: Currency all returned `rates` are expressed against.
+          examples:
+          - EUR
+        description: Currency all returned `rates` are expressed against.
+      - name: startDate
+        in: query
+        required: false
+        schema:
+          type: string
+          format: date
+          description: Only return exchange rates dated on or after this date (inclusive).
+          title: Startdate
+        description: Only return exchange rates dated on or after this date (inclusive).
+      - name: endDate
+        in: query
+        required: false
+        schema:
+          type: string
+          format: date
+          description: Only return exchange rates dated before this date (exclusive).
+          title: Enddate
+        description: Only return exchange rates dated before this date (exclusive).
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          maximum: 2000
+          title: Response length of objects limit
+          description: Maximum number of objects to return in the response. Default 500, maximum 2000.
+          default: 500
+        description: Maximum number of objects to return in the response. Default 500, maximum 2000.
+      - name: nextPageToken
+        in: query
+        required: false
+        schema:
+          type: string
+          title: Pagination token
+          description: Token to fetch the next page of results, taken from the `nextPageToken` returned by the previous request with the same filters. Omit it to fetch the first page. An invalid or malformed token is rejected with `404`.
+        description: Token to fetch the next page of results, taken from the `nextPageToken` returned by the previous request with the same filters. Omit it to fetch the first page. An invalid or malformed token is rejected with `404`.
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListForeignExchangeRatesResponseSchema'
+        '401':
+          description: Unauthorized. The bearer token is missing, invalid or expired.
+          content:
+            application/json:
+              example:
+                detail: user not authorized
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Invalid `nextPageToken`.
+          content:
+            application/json:
+              example:
+                detail: 0021 companyId not found
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /foreignexchangerates/{id}:
+    get:
+      tags:
+      - ForeignExchangeRates
+      summary: Retrieve foreign exchange rate
+      description: Returns a single foreign exchange rate record by `id`, always expressed against EUR — the `baseCurrency` conversion available on the list endpoint does not apply here.
+      operationId: retrieve_foreign_exchange_rate_foreignexchangerates__id__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetForeignExchangeRatesResponseSchema'
+        '401':
+          description: Unauthorized. The bearer token is missing, invalid or expired.
+          content:
+            application/json:
+              example:
+                detail: user not authorized
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: No foreign exchange rate record matches the given `id`.
+          content:
+            application/json:
+              example:
+                detail: 0021 companyId not found
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+components:
+  schemas:
+    ListForeignExchangeRatesResponseSchema:
+      properties:
+        data:
+          items:
+            $ref: '#/components/schemas/GetForeignExchangeRatesResponseSchema'
+          type: array
+          title: Data
+          description: Exchange rate records matching the query, one per date, most recent first.
+        nextPageToken:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Nextpagetoken
+          description: Token to fetch the next page of results. `null` when there are no more pages.
+      type: object
+      required:
+      - data
+      title: ListForeignExchangeRatesResponseSchema
+    ErrorResponse:
+      properties:
+        detail:
+          type: string
+          title: Detail
+          description: Human-readable explanation of the error.
+          examples:
+          - user not authorized
+      type: object
+      required:
+      - detail
+      title: ErrorResponse
+      description: Error payload returned by the API (FastAPI `detail` convention).
+    CurrencyEnum:
+      type: string
+      enum:
+      - AED
+      - AFN
+      - ALL
+      - AMD
+      - ANG
+      - AOA
+      - ARS
+      - AUD
+      - AWG
+      - AZN
+      - BAM
+      - BBD
+      - BDT
+      - BGN
+      - BHD
+      - BIF
+      - BMD
+      - BND
+      - BOB
+      - BOV
+      - BRL
+      - BSD
+      - BTC
+      - BTN
+      - BWP
+      - BYN
+      - BZD
+      - CAD
+      - CDF
+      - CHE
+      - CHF
+      - CHW
+      - CLF
+      - CLP
+      - CNH
+      - CNY
+      - COP
+      - COU
+      - CRC
+      - CUP
+      - CVE
+      - CZK
+      - DJF
+      - DKK
+      - DOP
+      - DZD
+      - EEK
+      - EGP
+      - ERN
+      - ETB
+      - ETH
+      - EUR
+      - FJD
+      - FKP
+      - GBP
+      - GEL
+      - GHS
+      - GIP
+      - GMD
+      - GNF
+      - GTQ
+      - GYD
+      - HKD
+      - HNL
+      - HRK
+      - HTG
+      - HUF
+      - IDR
+      - ILS
+      - INR
+      - IQD
+      - IRR
+      - ISK
+      - JMD
+      - JOD
+      - JPY
+      - KES
+      - KGS
+      - KHR
+      - KMF
+      - KPW
+      - KRW
+      - KWD
+      - KYD
+      - KZT
+      - LAK
+      - LBP
+      - LKR
+      - LRD
+      - LSL
+      - LTC
+      - LTL
+      - LVL
+      - LYD
+      - MAD
+      - MDL
+      - MGA
+      - MKD
+      - MMK
+      - MNT
+      - MOP
+      - MRU
+      - MUR
+      - MVR
+      - MWK
+      - MXN
+      - MXV
+      - MYR
+      - MZN
+      - NAD
+      - NGN
+      - NIO
+      - NOK
+      - NPR
+      - NZD
+      - OMR
+      - PAB
+      - PEN
+      - PGK
+      - PHP
+      - PKR
+      - PLN
+      - PYG
+      - QAR
+      - RON
+      - RSD
+      - RUB
+      - RWF
+      - SAR
+      - SBD
+      - SCR
+      - SDG
+      - SEK
+      - SGD
+      - SHP
+      - SLE
+      - SOS
+      - SRD
+      - SSP
+      - STN
+      - SVC
+      - SYP
+      - SZL
+      - THB
+      - TJS
+      - TMT
+      - TND
+      - TOP
+      - TRY
+      - TTD
+      - TWD
+      - TZS
+      - UAH
+      - UGX
+      - USD
+      - USN
+      - UYI
+      - UYU
+      - UYW
+      - UZS
+      - VED
+      - VEF
+      - VES
+      - VND
+      - VUV
+      - WST
+      - XAF
+      - XAG
+      - XAU
+      - XBA
+      - XBB
+      - XBC
+      - XBD
+      - XCD
+      - XDR
+      - XOF
+      - XPD
+      - XPF
+      - XPT
+      - XSU
+      - XTS
+      - XUA
+      - XXX
+      - YER
+      - ZAR
+      - ZMK
+      - ZMW
+      - ZWG
+      - ZWL
+      title: CurrencyEnum
+    HTTPValidationError:
+      properties:
+        detail:
+          items:
+            $ref: '#/components/schemas/ValidationError'
+          type: array
+          title: Detail
+      type: object
+      title: HTTPValidationError
+    ValidationError:
+      properties:
+        loc:
+          items:
+            anyOf:
+            - type: string
+            - type: integer
+          type: array
+          title: Location
+        msg:
+          type: string
+          title: Message
+        type:
+          type: string
+          title: Error Type
+        input:
+          title: Input
+        ctx:
+          type: object
+          title: Context
+      type: object
+      required:
+      - loc
+      - msg
+      - type
+      title: ValidationError
+    GetForeignExchangeRatesResponseSchema:
+      properties:
+        id:
+          type: string
+          title: Id
+          description: Embat ID of the exchange rate record.
+          examples:
+          - fx-2024-01-15
+        baseCurrency:
+          $ref: '#/components/schemas/CurrencyEnum'
+          description: Currency all values in `rates` are expressed against. On `GET /foreignexchangerates` this reflects the `baseCurrency` query parameter of the request; on `GET /foreignexchangerates/{id}` it is always `EUR`.
+          examples:
+          - EUR
+        date:
+          type: string
+          format: date-time
+          title: Date
+          description: Date the exchange rates apply to.
+          examples:
+          - '2024-01-15T00:00:00Z'
+        createdAt:
+          type: string
+          format: date-time
+          title: Createdat
+          description: Created date of the entity in the database
+        updatedAt:
+          type: string
+          format: date-time
+          title: Updatedat
+          description: Last updated date of the entity in the database
+        rates:
+          additionalProperties: true
+          type: object
+          title: Rates
+          description: Exchange rate of each currency against `baseCurrency` on `date`, keyed by ISO currency code. `baseCurrency` itself is included with a rate of 1.0. Multiply an amount expressed in `baseCurrency` by a currency's rate to convert it into that currency.
+          examples:
+          - EUR: 1.0
+            USD: 1.086
+      type: object
+      required:
+      - id
+      - baseCurrency
+      - date
+      - createdAt
+      - updatedAt
+      - rates
+      title: GetForeignExchangeRatesResponseSchema
+      description: Foreign exchange rates response data schema
+  securitySchemes:
+    HTTPBearer:
+      type: http
+      scheme: bearer

@@ -1,0 +1,1160 @@
+openapi: 3.1.0
+info:
+  title: Embat AccountingAccounts Transactions API
+  description: Embat API enables connections between any third party application and Embat. Is organized around REST principles, using HTTP responses code and returning data in JSON format. While testing the API, you have to request **sandbox credentials**.
+  contact:
+    name: API Support
+    url: https://embat.io/
+    email: tech@embat.io
+  version: 2.120.3
+  x-logo:
+    url: https://storage.googleapis.com/embat-production.appspot.com/assets/embat_dark.svg
+tags:
+- name: Transactions
+  description: '`Transaction` represents a movement recorded on one of your bank accounts (`Product`). Each transaction reports the balance of its product immediately after the movement, and can carry a classification (`type`), a breakdown across `Categories` for reporting, custom `Attributes`, and the IDs of any reconciliations it is part of.
+
+
+    Transactions are the bank side of the money movements Embat tracks: `Payments` link a transaction to the `Operations` (invoices/bills) it settles, and accounting entries reconcile it against your ledger. Transactions are generated automatically as your bank accounts (`Products`) are connected to Embat; the only way to create transactions through this API is for products classified as "Manual" (accounts with no bank connection), via the bulk creation endpoint below.
+
+
+    **Typical flow:** transactions synchronize in one direction, from Embat to your ERP.
+
+
+    1. **Read transactions generated in Embat.** Periodically pull the transactions pending on your side with `GET /transactions/{companyId}`, using the `sync` filter (transactions not yet synchronized) and `startUpdatedAt`/`endUpdatedAt` for incremental reads since your last poll.
+
+    2. **Confirm them back.** Once a transaction has been recorded in your ERP, mark it as synchronized with `PATCH /transactions/{companyId}/{id}` (or the bulk variant `PATCH /transactions/{companyId}`).
+
+    3. **Manual accounts only.** For products classified as Manual, record their transactions yourself with `POST /transactions/{companyId}/{productId}/bulk`. See that endpoint''s description for how it replaces same-day transactions.
+
+    '
+paths:
+  /transactions/{companyId}:
+    get:
+      tags:
+      - Transactions
+      summary: List transactions
+      description: 'Returns the bank transactions of a company. Results are paginated: use `limit` to control page size and pass the returned `nextPageToken` to fetch the next page. `startValueDate`/`endValueDate` filter by value date, `startOperationDate`/`endOperationDate` filter by the date the transaction was booked, and `startUpdatedAt`/`endUpdatedAt` filter by last modification time, which is useful for incremental synchronization. Each start bound is inclusive and each end bound is exclusive. Transactions marked as hidden, or whose product no longer exists, are excluded from the results.'
+      operationId: list_transactions_transactions__companyId__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: companyId
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Companyid
+      - name: productId
+        in: query
+        required: false
+        schema:
+          type: string
+          description: Filter transactions belonging to a given product (`productId`).
+          title: Productid
+        description: Filter transactions belonging to a given product (`productId`).
+      - name: sync
+        in: query
+        required: false
+        schema:
+          type: boolean
+          description: Filter by synchronization status with your ERP. `false` also matches transactions where the value is not set.
+          title: Sync
+        description: Filter by synchronization status with your ERP. `false` also matches transactions where the value is not set.
+      - name: startValueDate
+        in: query
+        required: false
+        schema:
+          type: string
+          format: date
+          description: Only return transactions whose value date is on or after this date (inclusive). Cannot be later than `endValueDate`, and cannot be in the future when used without `endValueDate`.
+          title: Startvaluedate
+        description: Only return transactions whose value date is on or after this date (inclusive). Cannot be later than `endValueDate`, and cannot be in the future when used without `endValueDate`.
+      - name: endValueDate
+        in: query
+        required: false
+        schema:
+          type: string
+          format: date
+          description: Only return transactions whose value date is before this date (exclusive).
+          title: Endvaluedate
+        description: Only return transactions whose value date is before this date (exclusive).
+      - name: startOperationDate
+        in: query
+        required: false
+        schema:
+          type: string
+          format: date
+          description: Only return transactions booked on or after this date (inclusive). Cannot be later than `endOperationDate`, and cannot be in the future when used without `endOperationDate`.
+          title: Startoperationdate
+        description: Only return transactions booked on or after this date (inclusive). Cannot be later than `endOperationDate`, and cannot be in the future when used without `endOperationDate`.
+      - name: endOperationDate
+        in: query
+        required: false
+        schema:
+          type: string
+          format: date
+          description: Only return transactions booked before this date (exclusive).
+          title: Endoperationdate
+        description: Only return transactions booked before this date (exclusive).
+      - name: startUpdatedAt
+        in: query
+        required: false
+        schema:
+          type: string
+          format: date-time
+          description: Only return transactions last modified on or after this timestamp (inclusive). Cannot be later than `endUpdatedAt`, and cannot be in the future when used without `endUpdatedAt`.
+          title: Startupdatedat
+        description: Only return transactions last modified on or after this timestamp (inclusive). Cannot be later than `endUpdatedAt`, and cannot be in the future when used without `endUpdatedAt`.
+      - name: endUpdatedAt
+        in: query
+        required: false
+        schema:
+          type: string
+          format: date-time
+          description: Only return transactions last modified before this timestamp (exclusive).
+          title: Endupdatedat
+        description: Only return transactions last modified before this timestamp (exclusive).
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          maximum: 2000
+          title: Response length of objects limit
+          description: Maximum number of objects to return in the response. Default 500, maximum 2000.
+          default: 500
+        description: Maximum number of objects to return in the response. Default 500, maximum 2000.
+      - name: nextPageToken
+        in: query
+        required: false
+        schema:
+          type: string
+          title: Pagination token
+          description: Token to fetch the next page of results, taken from the `nextPageToken` returned by the previous request with the same filters. Omit it to fetch the first page. An invalid or malformed token is rejected with `404`.
+        description: Token to fetch the next page of results, taken from the `nextPageToken` returned by the previous request with the same filters. Omit it to fetch the first page. An invalid or malformed token is rejected with `404`.
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListTransactionsResponseSchema'
+        '401':
+          description: Unauthorized. The bearer token is missing, invalid or expired.
+          content:
+            application/json:
+              example:
+                detail: user not authorized
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Company not found, `nextPageToken` is not valid, or a start bound (`startValueDate`, `startOperationDate` or `startUpdatedAt`) is later than its paired end bound or, when used alone, later than today.
+          content:
+            application/json:
+              example:
+                detail: 0021 companyId not found
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    patch:
+      tags:
+      - Transactions
+      summary: Update transactions in bulk
+      description: Updates the synchronization status, additional info or custom attribute values of several transactions in a single call, identified by `id`. Only the fields you send are changed. Entries whose `id` does not match any transaction are silently skipped — the call still returns `200` for the whole batch.
+      operationId: update_transactions_bulk_transactions__companyId__patch
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: companyId
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Companyid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BulkPatchTransactionsRequestSchema'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BulkModifyTransactionsResponseSchema'
+        '401':
+          description: Unauthorized. The bearer token is missing, invalid or expired.
+          content:
+            application/json:
+              example:
+                detail: user not authorized
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Not found. The requested resource or `companyId` does not exist.
+          content:
+            application/json:
+              example:
+                detail: 0021 companyId not found
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Unexpected error. Contact support if it persists.
+          content:
+            application/json:
+              example:
+                detail: Internal server error
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /transactions/{companyId}/{id}:
+    get:
+      tags:
+      - Transactions
+      summary: Retrieve transaction
+      description: Returns a single transaction by its Embat `id`. If the transaction's product no longer exists, this endpoint returns `404` even though the transaction record exists.
+      operationId: retrieve_transaction_transactions__companyId___id__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Id
+      - name: companyId
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Companyid
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetTransactionsResponseSchema'
+        '401':
+          description: Unauthorized. The bearer token is missing, invalid or expired.
+          content:
+            application/json:
+              example:
+                detail: user not authorized
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Company not found, no transaction matches the given `id`, or the transaction's product no longer exists.
+          content:
+            application/json:
+              example:
+                detail: 0021 companyId not found
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    patch:
+      tags:
+      - Transactions
+      summary: Update transaction
+      description: Updates the synchronization status, additional info or custom attribute values of a transaction identified by `id`. Only the fields you send are changed. Note that updating an `id` that does not match any transaction also returns `200` without applying any change — no `404` is raised.
+      operationId: update_transaction_transactions__companyId___id__patch
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Id
+      - name: companyId
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Companyid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchTransactionsRequestSchema'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ModifyTransactionsResponseSchema'
+        '401':
+          description: Unauthorized. The bearer token is missing, invalid or expired.
+          content:
+            application/json:
+              example:
+                detail: user not authorized
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Not found. The requested resource or `companyId` does not exist.
+          content:
+            application/json:
+              example:
+                detail: 0021 companyId not found
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Unexpected error. Contact support if it persists.
+          content:
+            application/json:
+              example:
+                detail: Internal server error
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /transactions/{companyId}/{productId}/bulk:
+    post:
+      tags:
+      - Transactions
+      summary: Create manual transactions in bulk
+      description: 'Creates transactions for a company''s product in a single call, grouped by day. Returns an empty response with status `201` on success.
+
+
+        > **Manual products only.** This endpoint only works with products classified as "Manual". Using it with a `productId` that exists but is not classified as Manual returns a `400 Bad Request` error. If `productId` does not exist, or its associated bank record does not exist, a `404` is returned instead.
+
+
+        > **Mirrors the Embat website.** This endpoint behaves like adding manual transactions from the Embat website: submitting transactions for a given day **permanently replaces** any transactions previously recorded for that same day on that product. Replaced transactions cannot be recovered.'
+      operationId: create_manual_transactions_bulk_transactions__companyId___productId__bulk_post
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: companyId
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Companyid
+      - name: productId
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Productid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BulkPostTransactionsRequestSchema'
+      responses:
+        '201':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '400':
+          description: The product exists but is not classified as Manual.
+          content:
+            application/json:
+              example:
+                detail: startDate is a date after endDate
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized. The bearer token is missing, invalid or expired.
+          content:
+            application/json:
+              example:
+                detail: user not authorized
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Company not found, the given `productId` does not exist, or its associated bank record does not exist.
+          content:
+            application/json:
+              example:
+                detail: 0021 companyId not found
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Unexpected error. Contact support if it persists.
+          content:
+            application/json:
+              example:
+                detail: Internal server error
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+components:
+  schemas:
+    CurrencyEnum:
+      type: string
+      enum:
+      - AED
+      - AFN
+      - ALL
+      - AMD
+      - ANG
+      - AOA
+      - ARS
+      - AUD
+      - AWG
+      - AZN
+      - BAM
+      - BBD
+      - BDT
+      - BGN
+      - BHD
+      - BIF
+      - BMD
+      - BND
+      - BOB
+      - BOV
+      - BRL
+      - BSD
+      - BTC
+      - BTN
+      - BWP
+      - BYN
+      - BZD
+      - CAD
+      - CDF
+      - CHE
+      - CHF
+      - CHW
+      - CLF
+      - CLP
+      - CNH
+      - CNY
+      - COP
+      - COU
+      - CRC
+      - CUP
+      - CVE
+      - CZK
+      - DJF
+      - DKK
+      - DOP
+      - DZD
+      - EEK
+      - EGP
+      - ERN
+      - ETB
+      - ETH
+      - EUR
+      - FJD
+      - FKP
+      - GBP
+      - GEL
+      - GHS
+      - GIP
+      - GMD
+      - GNF
+      - GTQ
+      - GYD
+      - HKD
+      - HNL
+      - HRK
+      - HTG
+      - HUF
+      - IDR
+      - ILS
+      - INR
+      - IQD
+      - IRR
+      - ISK
+      - JMD
+      - JOD
+      - JPY
+      - KES
+      - KGS
+      - KHR
+      - KMF
+      - KPW
+      - KRW
+      - KWD
+      - KYD
+      - KZT
+      - LAK
+      - LBP
+      - LKR
+      - LRD
+      - LSL
+      - LTC
+      - LTL
+      - LVL
+      - LYD
+      - MAD
+      - MDL
+      - MGA
+      - MKD
+      - MMK
+      - MNT
+      - MOP
+      - MRU
+      - MUR
+      - MVR
+      - MWK
+      - MXN
+      - MXV
+      - MYR
+      - MZN
+      - NAD
+      - NGN
+      - NIO
+      - NOK
+      - NPR
+      - NZD
+      - OMR
+      - PAB
+      - PEN
+      - PGK
+      - PHP
+      - PKR
+      - PLN
+      - PYG
+      - QAR
+      - RON
+      - RSD
+      - RUB
+      - RWF
+      - SAR
+      - SBD
+      - SCR
+      - SDG
+      - SEK
+      - SGD
+      - SHP
+      - SLE
+      - SOS
+      - SRD
+      - SSP
+      - STN
+      - SVC
+      - SYP
+      - SZL
+      - THB
+      - TJS
+      - TMT
+      - TND
+      - TOP
+      - TRY
+      - TTD
+      - TWD
+      - TZS
+      - UAH
+      - UGX
+      - USD
+      - USN
+      - UYI
+      - UYU
+      - UYW
+      - UZS
+      - VED
+      - VEF
+      - VES
+      - VND
+      - VUV
+      - WST
+      - XAF
+      - XAG
+      - XAU
+      - XBA
+      - XBB
+      - XBC
+      - XBD
+      - XCD
+      - XDR
+      - XOF
+      - XPD
+      - XPF
+      - XPT
+      - XSU
+      - XTS
+      - XUA
+      - XXX
+      - YER
+      - ZAR
+      - ZMK
+      - ZMW
+      - ZWG
+      - ZWL
+      title: CurrencyEnum
+    ModifyTransactionsResponseSchema:
+      properties:
+        id:
+          type: string
+          title: Id
+          description: Embat transaction ID
+      type: object
+      required:
+      - id
+      title: ModifyTransactionsResponseSchema
+    ValidationError:
+      properties:
+        loc:
+          items:
+            anyOf:
+            - type: string
+            - type: integer
+          type: array
+          title: Location
+        msg:
+          type: string
+          title: Message
+        type:
+          type: string
+          title: Error Type
+        input:
+          title: Input
+        ctx:
+          type: object
+          title: Context
+      type: object
+      required:
+      - loc
+      - msg
+      - type
+      title: ValidationError
+    BulkPostTransactionsRequestSchema:
+      properties:
+        data:
+          items:
+            $ref: '#/components/schemas/PostTransactionsRequestSchema'
+          type: array
+          title: Data
+          description: Transactions to create for a Manual product. For each day covered by this list, any transactions previously recorded for that same day on the product are permanently replaced — this cannot be undone.
+      type: object
+      required:
+      - data
+      title: BulkPostTransactionsRequestSchema
+    TransactionCurrencyExchangeDataSchema:
+      properties:
+        originalAmount:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Originalamount
+          description: Transaction amount before currency conversion.
+          examples:
+          - 500.0
+        originalCurrency:
+          anyOf:
+          - $ref: '#/components/schemas/CurrencyEnum'
+          - type: 'null'
+          description: Currency of `originalAmount`, before conversion.
+          examples:
+          - USD
+        grossAmount:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Grossamount
+          description: Transaction amount after currency conversion, before conversion fees.
+          examples:
+          - 460.25
+        fees:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Fees
+          description: Fees applied during the currency conversion.
+          examples:
+          - 3.5
+      type: object
+      title: TransactionCurrencyExchangeDataSchema
+    AuxBulkPatchTransactionsRequestSchema:
+      properties:
+        additionalInfo:
+          additionalProperties: true
+          type: object
+          title: Additionalinfo
+          description: Free-form key/value metadata to attach to the transaction.
+          default: {}
+        attributes:
+          anyOf:
+          - items:
+              $ref: '#/components/schemas/AttributeValueRequestSchema'
+            type: array
+          - type: 'null'
+          title: Attributes
+          description: Custom attribute values to attach to the transaction.
+        sync:
+          anyOf:
+          - type: boolean
+          - type: 'null'
+          title: Sync
+          description: Marks the transaction as synchronized with your ERP.
+        id:
+          type: string
+          title: Id
+          description: Embat transaction ID
+      type: object
+      required:
+      - id
+      title: AuxBulkPatchTransactionsRequestSchema
+    PostTransactionsRequestSchema:
+      properties:
+        operationDate:
+          type: string
+          format: date
+          title: Operationdate
+          description: Date the transaction was recorded (booked).
+        valueDate:
+          type: string
+          format: date
+          title: Valuedate
+          description: Value date of the transaction, used for the product's balance.
+        concept:
+          type: string
+          title: Concept
+          description: Free-text description of the transaction.
+          examples:
+          - Office supplies
+        amount:
+          type: number
+          title: Amount
+          description: Amount of the transaction, in the product's currency.
+          examples:
+          - -350.0
+      type: object
+      required:
+      - operationDate
+      - valueDate
+      - concept
+      - amount
+      title: PostTransactionsRequestSchema
+      description: Transactions request data schema
+    PatchTransactionsRequestSchema:
+      properties:
+        additionalInfo:
+          additionalProperties: true
+          type: object
+          title: Additionalinfo
+          description: Free-form key/value metadata to attach to the transaction.
+          default: {}
+        attributes:
+          anyOf:
+          - items:
+              $ref: '#/components/schemas/AttributeValueRequestSchema'
+            type: array
+          - type: 'null'
+          title: Attributes
+          description: Custom attribute values to attach to the transaction.
+        sync:
+          anyOf:
+          - type: boolean
+          - type: 'null'
+          title: Sync
+          description: Marks the transaction as synchronized with your ERP.
+      type: object
+      title: PatchTransactionsRequestSchema
+    AttributeValueRequestSchema:
+      properties:
+        customId:
+          type: string
+          title: Customid
+          description: Custom ID of the attribute (see the Attributes endpoints) being set.
+          examples:
+          - cost-center
+        value:
+          type: string
+          title: Value
+          description: Display text of the value being set on this entity.
+          examples:
+          - Marketing
+        valueCustomId:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Valuecustomid
+          description: Custom ID of one of the attribute's predefined `values`, when the attribute is of type `list`. Leave unset for free-form `string`/`number` attributes.
+          examples:
+          - marketing
+        parentCustomId:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Parentcustomid
+          description: Not used when attaching an attribute value to an entity.
+      type: object
+      required:
+      - customId
+      - value
+      title: AttributeValueRequestSchema
+      description: 'Attaches an attribute value to another entity (payment, contact, operation,
+
+        transaction, accounting entry...).'
+    ProductBaseSchema:
+      properties:
+        id:
+          type: string
+          title: Id
+          description: Embat product ID.
+          examples:
+          - prod_8f3a1c
+        currency:
+          $ref: '#/components/schemas/CurrencyEnum'
+          description: ISO currency code of the product.
+          examples:
+          - EUR
+        product:
+          type: string
+          title: Product
+          description: Product name as reported by the bank.
+          examples:
+          - Cuenta Corriente
+        bankFullName:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Bankfullname
+          description: Full legal name of the bank this product belongs to, if known.
+          examples:
+          - Banco Bilbao Vizcaya Argentaria
+        alias:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Alias
+          description: Custom alias given to the product in Embat, if any.
+          examples:
+          - Main checking account
+      type: object
+      required:
+      - id
+      - currency
+      - product
+      title: ProductBaseSchema
+    GetTransactionsResponseSchema:
+      properties:
+        id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Id
+          description: Embat transaction ID.
+        balance:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Balance
+          description: Balance of the product (bank account) immediately after this transaction.
+          examples:
+          - 15234.67
+        operationDate:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Operationdate
+          description: Date the transaction was recorded (booked) by the bank.
+        valueDate:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Valuedate
+          description: Value date of the transaction, used for balance calculations.
+        updatedAt:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Updatedat
+          description: Last time this transaction was updated in Embat.
+        createdAt:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Createdat
+          description: Date this transaction was created in Embat.
+        companyId:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Companyid
+          description: Embat company ID. You can get them from "companies" endpoints.
+        additionalInfo:
+          additionalProperties: true
+          type: object
+          title: Additionalinfo
+          description: Free-form key/value metadata attached to the transaction. For some bank transactions, Embat automatically populates it with the bank-provided concept details (`ownConcept`, `commonConcept`), overriding any value previously set on this field.
+          default: {}
+        bank:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Bank
+          description: Name of the bank holding the product this transaction belongs to.
+        concept:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Concept
+          description: Free-text description of the transaction, as reported by the bank. On `GET /transactions/{companyId}` (list), it is returned as an empty string when the value stored for the transaction is invalid.
+          examples:
+          - 'Invoice #2024-001 payment'
+        amount:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Amount
+          description: Amount of the transaction, in the product's `currency`.
+          examples:
+          - 1250.5
+        accountingAmount:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Accountingamount
+          description: Transaction amount expressed in the company accounting currency.
+          examples:
+          - 1250.5
+        exchangeRate:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Exchangerate
+          description: Exchange rate applied between the transaction currency and `accountingCurrency`.
+          examples:
+          - 1.0
+        accountingCurrency:
+          anyOf:
+          - $ref: '#/components/schemas/CurrencyEnum'
+          - type: 'null'
+          description: ISO currency code of `accountingAmount`.
+          examples:
+          - EUR
+        reconciled:
+          type: boolean
+          title: Reconciled
+          description: Whether the transaction has been fully reconciled against accounting entries.
+          default: false
+        status:
+          anyOf:
+          - $ref: '#/components/schemas/StatusEnum'
+          - type: 'null'
+          description: 'Booking status reported by the bank: `PENDING` while the transaction has not yet settled, `BOOKED` once confirmed. `null` when the bank reported no status or any other value.'
+        product:
+          anyOf:
+          - $ref: '#/components/schemas/ProductBaseSchema'
+          - type: 'null'
+          description: Product (bank account) this transaction belongs to.
+        sync:
+          type: boolean
+          title: Sync
+          description: Whether the transaction has been synchronized with your ERP. Use the `sync` filter on `GET /transactions/{companyId}` to fetch transactions still pending synchronization, then confirm them back with `PATCH`.
+          default: false
+        attributes:
+          anyOf:
+          - items:
+              $ref: '#/components/schemas/AttributeValueRequestSchema'
+            type: array
+          - type: 'null'
+          title: Attributes
+          description: Custom attribute values attached to the transaction.
+        categories:
+          anyOf:
+          - items:
+              $ref: '#/components/schemas/TransactionsAnalyticsSchema'
+            type: array
+          - type: 'null'
+          title: Categories
+          description: Breakdown of the transaction amount across categories, for reporting.
+        tags:
+          anyOf:
+          - items:
+              type: string
+            type: array
+          - type: 'null'
+          title: Tags
+          description: Free-form labels attached to the transaction. Omitted from the response when the stored value is not a list of labels.
+        groupAmount:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Groupamount
+          description: Transaction amount converted to the company group's shared currency. Only calculated when the company belongs to a group with a shared currency configured, and an exchange rate is available for the transaction date.
+          examples:
+          - 1180.25
+        groupExchangeRate:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Groupexchangerate
+          description: Exchange rate applied to compute `groupAmount`.
+          examples:
+          - 1.06
+        groupCurrency:
+          anyOf:
+          - $ref: '#/components/schemas/CurrencyEnum'
+          - type: 'null'
+          description: Company group's shared currency, when configured.
+          examples:
+          - EUR
+        currencyExchangeData:
+          anyOf:
+          - $ref: '#/components/schemas/TransactionCurrencyExchangeDataSchema'
+          - type: 'null'
+          description: Currency conversion details, when the transaction involved one.
+        comment:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Comment
+          description: Free-text comment added to the transaction in Embat.
+        reconciliationsIds:
+          anyOf:
+          - items:
+              type: string
+            type: array
+          - type: 'null'
+          title: Reconciliationsids
+          description: Embat reconciliation IDs associated with this transaction, when reconciled.
+        type:
+          anyOf:
+          - $ref: '#/components/schemas/TransactionTypeEnum'
+          - type: 'null'
+          description: Embat's automatic classification of the transaction (e.g. `payment`, `fee`, `tax`, `collection`). `null` when the transaction could not be classified.
+      type: object
+      title: GetTransactionsResponseSchema
+      description: Transactions response data schema
+    ListTransactionsResponseSchema:
+      properties:
+        data:
+          items:
+            $ref: '#/components/schemas/GetTransactionsResponseSchema'
+          type: array
+          title: Data
+          description: Transactions matching the query.
+        nextPageToken:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Nextpagetoken
+          description: Token to fetch the next page of results. `null` when there are no more pages.
+      type: object
+      required:
+      - data
+      title: ListTransactionsResponseSchema
+    BulkPatchTransactionsRequestSchema:
+      properties:
+        data:
+          items:
+            $ref: '#/components/schemas/AuxBulkPatchTransactionsRequestSchema'
+          type: array
+          title: Data
+          description: Transactions to update, identified by `id`.
+      type: object
+      required:
+      - data
+      title: BulkPatchTransactionsRequestSchema
+    BulkModifyTransactionsResponseSchema:
+      properties:
+        data:
+          items:
+            $ref: '#/components/schemas/ModifyTransactionsResponseSchema'
+          type: array
+          title: Data
+          description: Result of the bulk operation, one entry per transaction.
+      type: object
+      required:
+      - data
+      title: BulkModifyTransactionsResponseSchema
+    ErrorResponse:
+      properties:
+        detail:
+          type: string
+          title: Detail
+          description: Human-readable explanation of the error.
+          examples:
+          - user not authorized
+      type: object
+      required:
+      - detail
+      title: ErrorResponse
+      description: Error payload returned by the API (FastAPI `detail` convention).
+    HTTPValidationError:
+      properties:
+        detail:
+          items:
+            $ref: '#/components/schemas/ValidationError'
+          type: array
+          title: Detail
+      type: object
+      title: HTTPValidationError
+    TransactionTypeEnum:
+      type: string
+      enum:
+      - payment
+      - debt_repayment
+      - fee
+      - tax
+      - utility
+      - social_security
+      - bulk_payment
+      - cash_withdrawal
+      - pos_withdrawal
+      - collection
+      - pos_settlement
+      - cash_settlement
+      - collection_refund
+      - bulk_collection
+      title: TransactionTypeEnum
+    StatusEnum:
+      type: string
+      enum:
+      - PENDING
+      - BOOKED
+      title: StatusEnum
+    TransactionsAnalyticsSchema:
+      properties:
+        categoryId:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Categoryid
+          description: Embat ID of the category this portion of the amount is allocated to.
+        value:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Value
+          description: Amount of the transaction allocated to this category.
+          examples:
+          - 150.0
+      type: object
+      title: TransactionsAnalyticsSchema
+  securitySchemes:
+    HTTPBearer:
+      type: http
+      scheme: bearer

@@ -1,0 +1,150 @@
+openapi: 3.1.0
+info:
+  title: Embat AccountingAccounts Authentication API
+  description: Embat API enables connections between any third party application and Embat. Is organized around REST principles, using HTTP responses code and returning data in JSON format. While testing the API, you have to request **sandbox credentials**.
+  contact:
+    name: API Support
+    url: https://embat.io/
+    email: tech@embat.io
+  version: 2.120.3
+  x-logo:
+    url: https://storage.googleapis.com/embat-production.appspot.com/assets/embat_dark.svg
+tags:
+- name: Authentication
+  description: "`Authentication` provides the credentials Embat issues to access the rest of the public API. Every other endpoint requires a JWT `idToken` in the `Authorization: Bearer <idToken>` header; requests with no token, or with an invalid or expired one, are rejected with `401`.\n\nAn `email`/`password` pair identifies a service user with access to a group of companies in Embat. Keep these credentials secret: never commit them to a repository, embed them in client-side code, or expose them in publicly accessible logs.\n\n**Typical flow:**\n\n1. Exchange your `email`/`password` for a bearer token:\n\n```json\nPOST /authentication/token\n{\n  \"email\": \"erp-integration@acme-corp.com\",\n  \"password\": \"your-service-password\"\n}\n```\n\nwhich returns:\n\n```json\n{ \"idToken\": \"eyJhbGciOiJSUzI1NiIsImtpZCI6IjE5YzY4In0...\" }\n```\n\n2. Send that token as `Authorization: Bearer <idToken>` on every subsequent request.\n3. The token expires **60 minutes** after issuance. Call `/authentication/token` again with the same credentials to get a new one; there is no separate refresh endpoint.\n4. Accounts with multi-factor authentication enabled cannot authenticate through this endpoint.\n5. If `email` or `password` is missing or malformed, the validation error response never echoes back the submitted values, so credentials are never reflected in error output.\n\nAll requests must be made over **HTTPS**.\n"
+paths:
+  /authentication/token:
+    post:
+      tags:
+      - Authentication
+      summary: Generate access token
+      description: Authenticates with `email`/`password` and returns a JWT `idToken` to use as a Bearer token in the `Authorization` header for every other request. The token expires 60 minutes after issuance; call this endpoint again with the same credentials to obtain a new one — there is no separate refresh endpoint. If `email` or `password` is missing or malformed, the validation error response never echoes back the submitted values.
+      operationId: auth_token_authentication_token_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PostAuthenticationRequestSchema'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PostAuthenticationResponseSchema'
+        '400':
+          description: 'The credentials could not be validated: unknown email, wrong password, disabled account, or too many failed attempts.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                detail: startDate is a date after endDate
+        '401':
+          description: The account has multi-factor authentication enabled, which this endpoint does not support.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                detail: user not authorized
+        '500':
+          description: Unexpected error. Contact support if it persists.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                detail: Internal server error
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+components:
+  schemas:
+    PostAuthenticationResponseSchema:
+      properties:
+        idToken:
+          type: string
+          title: Idtoken
+          description: 'JWT bearer token. Send it as `Authorization: Bearer <idToken>` on every other request. It expires 60 minutes after issuance; call this endpoint again with the same credentials to obtain a new one.'
+          examples:
+          - eyJhbGciOiJSUzI1NiIsImtpZCI6IjE5YzY4In0...
+      type: object
+      required:
+      - idToken
+      title: PostAuthenticationResponseSchema
+    ErrorResponse:
+      properties:
+        detail:
+          type: string
+          title: Detail
+          description: Human-readable explanation of the error.
+          examples:
+          - user not authorized
+      type: object
+      required:
+      - detail
+      title: ErrorResponse
+      description: Error payload returned by the API (FastAPI `detail` convention).
+    HTTPValidationError:
+      properties:
+        detail:
+          items:
+            $ref: '#/components/schemas/ValidationError'
+          type: array
+          title: Detail
+      type: object
+      title: HTTPValidationError
+    ValidationError:
+      properties:
+        loc:
+          items:
+            anyOf:
+            - type: string
+            - type: integer
+          type: array
+          title: Location
+        msg:
+          type: string
+          title: Message
+        type:
+          type: string
+          title: Error Type
+        input:
+          title: Input
+        ctx:
+          type: object
+          title: Context
+      type: object
+      required:
+      - loc
+      - msg
+      - type
+      title: ValidationError
+    PostAuthenticationRequestSchema:
+      properties:
+        email:
+          type: string
+          title: Email
+          description: Email address of the Embat service user used to authenticate.
+          examples:
+          - erp-integration@acme-corp.com
+        password:
+          type: string
+          title: Password
+          description: Password of the Embat service user. Keep it secret.
+          examples:
+          - your-service-password
+      type: object
+      required:
+      - email
+      - password
+      title: PostAuthenticationRequestSchema
+  securitySchemes:
+    HTTPBearer:
+      type: http
+      scheme: bearer

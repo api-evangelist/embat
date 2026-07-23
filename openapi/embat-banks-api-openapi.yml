@@ -1,0 +1,520 @@
+openapi: 3.1.0
+info:
+  title: Embat AccountingAccounts Banks API
+  description: Embat API enables connections between any third party application and Embat. Is organized around REST principles, using HTTP responses code and returning data in JSON format. While testing the API, you have to request **sandbox credentials**.
+  contact:
+    name: API Support
+    url: https://embat.io/
+    email: tech@embat.io
+  version: 2.120.3
+  x-logo:
+    url: https://storage.googleapis.com/embat-production.appspot.com/assets/embat_dark.svg
+tags:
+- name: Banks
+  description: '`Bank` represents a banking relationship connected to your company in Embat — for example, an aggregated connection to a specific banking entity. Each bank relationship groups the `bankProducts` (checking accounts, credit lines, cards...) held at that entity, together with the oldest successful aggregation timestamp among them.
+
+
+    `GET /banks/{companyId}` only returns relationships that have at least one product, and each relationship''s `bankProducts` only lists its currently active products. Use `GET /banks/{companyId}/{id}` to retrieve a single relationship by its Embat `id` regardless of whether it currently has active products.
+
+
+    To read balances and transactions for a specific account, use the `id` of an entry in `bankProducts` with the `Products` and `Transactions` endpoints.
+
+    '
+paths:
+  /banks/{companyId}:
+    get:
+      tags:
+      - Banks
+      summary: List banks
+      description: Returns the company's bank relationships. A bank relationship with no products at all is silently excluded from the results. For each relationship, `bankProducts` only lists its active products — products marked inactive, or that Embat can no longer match to an account, are silently excluded from that array.
+      operationId: list_banks_banks__companyId__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: companyId
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Companyid
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListBanksResponseSchema'
+        '401':
+          description: Unauthorized. The bearer token is missing, invalid or expired.
+          content:
+            application/json:
+              example:
+                detail: user not authorized
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Not found. The requested resource or `companyId` does not exist.
+          content:
+            application/json:
+              example:
+                detail: 0021 companyId not found
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /banks/{companyId}/{id}:
+    get:
+      tags:
+      - Banks
+      summary: Retrieve bank
+      description: Returns a single bank relationship by its Embat `id`. Unlike the list endpoint, this always returns the relationship even when it currently has no active products, in which case `bankProducts` is an empty list.
+      operationId: retrieve_bank_banks__companyId___id__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Id
+      - name: companyId
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Companyid
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetBanksResponseSchema'
+        '401':
+          description: Unauthorized. The bearer token is missing, invalid or expired.
+          content:
+            application/json:
+              example:
+                detail: user not authorized
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Company not found, or no bank relationship matches the given `id`.
+          content:
+            application/json:
+              example:
+                detail: 0021 companyId not found
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+components:
+  schemas:
+    ErrorResponse:
+      properties:
+        detail:
+          type: string
+          title: Detail
+          description: Human-readable explanation of the error.
+          examples:
+          - user not authorized
+      type: object
+      required:
+      - detail
+      title: ErrorResponse
+      description: Error payload returned by the API (FastAPI `detail` convention).
+    CurrencyEnum:
+      type: string
+      enum:
+      - AED
+      - AFN
+      - ALL
+      - AMD
+      - ANG
+      - AOA
+      - ARS
+      - AUD
+      - AWG
+      - AZN
+      - BAM
+      - BBD
+      - BDT
+      - BGN
+      - BHD
+      - BIF
+      - BMD
+      - BND
+      - BOB
+      - BOV
+      - BRL
+      - BSD
+      - BTC
+      - BTN
+      - BWP
+      - BYN
+      - BZD
+      - CAD
+      - CDF
+      - CHE
+      - CHF
+      - CHW
+      - CLF
+      - CLP
+      - CNH
+      - CNY
+      - COP
+      - COU
+      - CRC
+      - CUP
+      - CVE
+      - CZK
+      - DJF
+      - DKK
+      - DOP
+      - DZD
+      - EEK
+      - EGP
+      - ERN
+      - ETB
+      - ETH
+      - EUR
+      - FJD
+      - FKP
+      - GBP
+      - GEL
+      - GHS
+      - GIP
+      - GMD
+      - GNF
+      - GTQ
+      - GYD
+      - HKD
+      - HNL
+      - HRK
+      - HTG
+      - HUF
+      - IDR
+      - ILS
+      - INR
+      - IQD
+      - IRR
+      - ISK
+      - JMD
+      - JOD
+      - JPY
+      - KES
+      - KGS
+      - KHR
+      - KMF
+      - KPW
+      - KRW
+      - KWD
+      - KYD
+      - KZT
+      - LAK
+      - LBP
+      - LKR
+      - LRD
+      - LSL
+      - LTC
+      - LTL
+      - LVL
+      - LYD
+      - MAD
+      - MDL
+      - MGA
+      - MKD
+      - MMK
+      - MNT
+      - MOP
+      - MRU
+      - MUR
+      - MVR
+      - MWK
+      - MXN
+      - MXV
+      - MYR
+      - MZN
+      - NAD
+      - NGN
+      - NIO
+      - NOK
+      - NPR
+      - NZD
+      - OMR
+      - PAB
+      - PEN
+      - PGK
+      - PHP
+      - PKR
+      - PLN
+      - PYG
+      - QAR
+      - RON
+      - RSD
+      - RUB
+      - RWF
+      - SAR
+      - SBD
+      - SCR
+      - SDG
+      - SEK
+      - SGD
+      - SHP
+      - SLE
+      - SOS
+      - SRD
+      - SSP
+      - STN
+      - SVC
+      - SYP
+      - SZL
+      - THB
+      - TJS
+      - TMT
+      - TND
+      - TOP
+      - TRY
+      - TTD
+      - TWD
+      - TZS
+      - UAH
+      - UGX
+      - USD
+      - USN
+      - UYI
+      - UYU
+      - UYW
+      - UZS
+      - VED
+      - VEF
+      - VES
+      - VND
+      - VUV
+      - WST
+      - XAF
+      - XAG
+      - XAU
+      - XBA
+      - XBB
+      - XBC
+      - XBD
+      - XCD
+      - XDR
+      - XOF
+      - XPD
+      - XPF
+      - XPT
+      - XSU
+      - XTS
+      - XUA
+      - XXX
+      - YER
+      - ZAR
+      - ZMK
+      - ZMW
+      - ZWG
+      - ZWL
+      title: CurrencyEnum
+    HTTPValidationError:
+      properties:
+        detail:
+          items:
+            $ref: '#/components/schemas/ValidationError'
+          type: array
+          title: Detail
+      type: object
+      title: HTTPValidationError
+    ListBanksResponseSchema:
+      properties:
+        data:
+          items:
+            $ref: '#/components/schemas/GetBanksResponseSchema'
+          type: array
+          title: Data
+          description: Bank relationships of the company.
+      type: object
+      required:
+      - data
+      title: ListBanksResponseSchema
+    ValidationError:
+      properties:
+        loc:
+          items:
+            anyOf:
+            - type: string
+            - type: integer
+          type: array
+          title: Location
+        msg:
+          type: string
+          title: Message
+        type:
+          type: string
+          title: Error Type
+        input:
+          title: Input
+        ctx:
+          type: object
+          title: Context
+      type: object
+      required:
+      - loc
+      - msg
+      - type
+      title: ValidationError
+    app__schemas__banks__ProductSchema:
+      properties:
+        id:
+          type: string
+          title: Id
+          description: Embat product ID.
+          examples:
+          - prod_8f3a1c
+        currency:
+          $ref: '#/components/schemas/CurrencyEnum'
+          description: ISO currency code of the product.
+          examples:
+          - EUR
+        product:
+          type: string
+          title: Product
+          description: Product name as reported by the bank.
+          examples:
+          - Cuenta Corriente
+        alias:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Alias
+          description: Custom alias given to the product in Embat, if any.
+          examples:
+          - Main checking account
+        type:
+          type: string
+          title: Type
+          description: Product type reported by the bank, e.g. `checking`, `savings`, `card`, `loan`, `lineofcredit` or `wallet`.
+          examples:
+          - checking
+        balance:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Balance
+          description: Current balance of the product. Defaults to `0` when no balance has been recorded.
+          examples:
+          - 15234.67
+        hasTransactions:
+          anyOf:
+          - type: boolean
+          - type: 'null'
+          title: Hastransactions
+          description: 'Whether the product supports bank transactions. Always recomputed by Embat: `true` for `checking`, `lineofcredit`, `card` and `wallet` products, `false` otherwise.'
+        lastAggregationOK:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Lastaggregationok
+          description: Timestamp of the last successful data aggregation for this product. Falls back to the bank relationship's own last successful aggregation when the product has none.
+          examples:
+          - '2024-01-15T08:30:00Z'
+        accountNumber:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Accountnumber
+          description: IBAN or account number identifying the product.
+          examples:
+          - ES9121000418450200051332
+      type: object
+      required:
+      - id
+      - currency
+      - product
+      - type
+      title: ProductSchema
+    GetBanksResponseSchema:
+      properties:
+        id:
+          type: string
+          title: Id
+          description: Embat bank relationship ID.
+          examples:
+          - bank_5f2c1a
+        bankService:
+          type: string
+          title: Bankservice
+          description: Identifier of the banking connection or aggregation service backing this bank relationship.
+          examples:
+          - bbva
+        bankFullName:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Bankfullname
+          description: Full legal name of the bank.
+          examples:
+          - Banco Bilbao Vizcaya Argentaria
+        lastAggregationOK:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Lastaggregationok
+          description: Timestamp of the oldest successful data aggregation among this bank's active products (see `bankProducts`). `null` if none of its active products has ever aggregated successfully.
+          examples:
+          - '2024-01-15T08:30:00Z'
+        updatedAt:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Updatedat
+          description: Last time this bank relationship was updated in Embat.
+        createdAt:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Createdat
+          description: Date this bank relationship was created in Embat.
+        companyId:
+          type: string
+          title: Companyid
+          description: Embat company ID. You can get them from "companies" endpoints.
+        bankProducts:
+          items:
+            $ref: '#/components/schemas/app__schemas__banks__ProductSchema'
+          type: array
+          title: Bankproducts
+          description: Active products linked to this bank relationship. Products marked inactive, or that Embat can no longer match to an account, are silently excluded from this list.
+        additionalInfo:
+          additionalProperties: true
+          type: object
+          title: Additionalinfo
+          description: Free-form key/value metadata attached to the bank relationship.
+          default: {}
+      type: object
+      required:
+      - id
+      - bankService
+      - companyId
+      - bankProducts
+      title: GetBanksResponseSchema
+      description: 'A bank relationship connected to the company, with the products (accounts, cards,
+
+        credit lines...) available under it.'
+  securitySchemes:
+    HTTPBearer:
+      type: http
+      scheme: bearer

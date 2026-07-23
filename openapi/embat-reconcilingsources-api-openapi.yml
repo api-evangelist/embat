@@ -1,0 +1,460 @@
+openapi: 3.1.0
+info:
+  title: Embat AccountingAccounts ReconcilingSources API
+  description: Embat API enables connections between any third party application and Embat. Is organized around REST principles, using HTTP responses code and returning data in JSON format. While testing the API, you have to request **sandbox credentials**.
+  contact:
+    name: API Support
+    url: https://embat.io/
+    email: tech@embat.io
+  version: 2.120.3
+  x-logo:
+    url: https://storage.googleapis.com/embat-production.appspot.com/assets/embat_dark.svg
+tags:
+- name: ReconcilingSources
+  description: "<div style=\"background-color:#fff3cd; color:#856404; padding: 10px; border-left: 6px solid #ffeeba;\">\n<strong>⚠️ Warning:</strong> This API section is in BETA. It might undergo significant changes and may not be stable.\n</div>\n\n<code>ReconcilingSource</code> represents the origin of financial records that need to be matched against product transactions — for example a point-of-sale system, an internal financial system, or a CRM. <code>customId</code> is the unique identifier of a reconciling source: set your own value to use as your internal source ID.\n\nA reconciling source is the parent of one or more <code>ReconcilingItems</code>: each item references its source through <code>reconcilingSourceCustomId</code>. The source's <code>matchingMetadataKey</code> names the field within its items' <code>metadata</code> that Embat uses to associate each item with a product transaction. A reconciling source does not carry financial data itself — amounts, currencies and dates live on its <code>ReconcilingItems</code>.\n\n**Typical flow:**\n\n1. **Register a reconciling source.** Create one for each origin system you want to reconcile from, defining the metadata key used to match its items to transactions:\n\n```json\nPOST /reconcilingsources/{companyId}\n{\n  \"customId\": \"stripe-orders\",\n  \"name\": \"Stripe orders feed\",\n  \"matchingMetadataKey\": \"orderId\"\n}\n```\n\nCalling this again with the same `customId` updates the existing source instead of creating a duplicate.\n\n2. **Create the reconciling items** for that source (see <code>ReconcilingItems</code>), each carrying the metadata value that will later be matched against product transactions.\n3. **Retrieve or list sources** with `GET /reconcilingsources/{companyId}/{customId}` or `GET /reconcilingsources/{companyId}`.\n4. **Update or delete a source** as your origin systems change: use `PATCH`/`DELETE /reconcilingsources/{companyId}/{customId}`, or resend the source with `POST` — creation is an upsert, so an existing `customId` is updated instead of duplicated.\n"
+paths:
+  /reconcilingsources/{companyId}:
+    get:
+      tags:
+      - ReconcilingSources
+      summary: List reconciling sources
+      description: Returns all reconciling sources configured for the company. This endpoint is not paginated.
+      operationId: list_reconciling_sources_reconcilingsources__companyId__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: companyId
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Companyid
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListReconcilingSourcesResponseSchema'
+        '401':
+          description: Unauthorized. The bearer token is missing, invalid or expired.
+          content:
+            application/json:
+              example:
+                detail: user not authorized
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Not found. The requested resource or `companyId` does not exist.
+          content:
+            application/json:
+              example:
+                detail: 0021 companyId not found
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    post:
+      tags:
+      - ReconcilingSources
+      summary: Create reconciling source
+      description: Creates a reconciling source identified by `customId`. Calling this endpoint again with a `customId` that already exists **updates** the existing reconciling source instead of creating a duplicate or raising a conflict error; only the fields sent are applied, and any field previously stored is kept unless a new value is sent.
+      operationId: create_reconciling_source_reconcilingsources__companyId__post
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: companyId
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Companyid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PostReconcilingSourceSchema'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ModifyReconcilingSourceResponseSchema'
+        '401':
+          description: Unauthorized. The bearer token is missing, invalid or expired.
+          content:
+            application/json:
+              example:
+                detail: user not authorized
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Not found. The requested resource or `companyId` does not exist.
+          content:
+            application/json:
+              example:
+                detail: 0021 companyId not found
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /reconcilingsources/{companyId}/{customId}:
+    get:
+      tags:
+      - ReconcilingSources
+      summary: Retrieve reconciling source
+      description: Returns a single reconciling source by `customId`.
+      operationId: retrieve_reconciling_source_reconcilingsources__companyId___customId__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: customId
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Customid
+      - name: companyId
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Companyid
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetReconcilingSourceResponseSchema'
+        '401':
+          description: Unauthorized. The bearer token is missing, invalid or expired.
+          content:
+            application/json:
+              example:
+                detail: user not authorized
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Company not found, or no reconciling source matches the given `customId`.
+          content:
+            application/json:
+              example:
+                detail: 0021 companyId not found
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    patch:
+      tags:
+      - ReconcilingSources
+      summary: Update reconciling source
+      description: Updates a reconciling source identified by `customId`. Only the fields sent are changed. Note that updating a `customId` that does not match any reconciling source also returns `200` without applying any change — no `404` is raised.
+      operationId: update_reconciling_source_reconcilingsources__companyId___customId__patch
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: customId
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Customid
+      - name: companyId
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Companyid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchReconcilingSourceSchema'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ModifyReconcilingSourceResponseSchema'
+        '401':
+          description: Unauthorized. The bearer token is missing, invalid or expired.
+          content:
+            application/json:
+              example:
+                detail: user not authorized
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Not found. The requested resource or `companyId` does not exist.
+          content:
+            application/json:
+              example:
+                detail: 0021 companyId not found
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    delete:
+      tags:
+      - ReconcilingSources
+      summary: Delete reconciling source
+      description: Deletes a reconciling source by `customId`. If `customId` does not match any reconciling source, no error is raised — the call still returns `200`.
+      operationId: delete_reconciling_source_reconcilingsources__companyId___customId__delete
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: customId
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Customid
+      - name: companyId
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Companyid
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ModifyReconcilingSourceResponseSchema'
+        '401':
+          description: Unauthorized. The bearer token is missing, invalid or expired.
+          content:
+            application/json:
+              example:
+                detail: user not authorized
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Not found. The requested resource or `companyId` does not exist.
+          content:
+            application/json:
+              example:
+                detail: 0021 companyId not found
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+components:
+  schemas:
+    PostReconcilingSourceSchema:
+      properties:
+        name:
+          type: string
+          title: Name
+          description: Name of the reconciling source.
+          examples:
+          - Stripe orders feed
+        additionalInfo:
+          anyOf:
+          - additionalProperties: true
+            type: object
+          - type: 'null'
+          title: Additionalinfo
+          description: Free-form key/value metadata to attach to the reconciling source. Replaces the previously stored value entirely (not merged). Omitted or `null` values leave the current metadata unchanged.
+        matchingMetadataKey:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Matchingmetadatakey
+          description: Key within a reconciling item's `metadata` used to associate it with a product transaction. Omitted or `null` values leave the current key unchanged.
+          examples:
+          - orderId
+        customId:
+          type: string
+          title: Customid
+          description: Your own unique ID for the reconciling source. You can use it as your internal reconciling source ID.
+          examples:
+          - stripe-orders
+      type: object
+      required:
+      - name
+      - customId
+      title: PostReconcilingSourceSchema
+    ModifyReconcilingSourceResponseSchema:
+      properties:
+        id:
+          type: string
+          title: Id
+          description: Embat resource ID
+      type: object
+      required:
+      - id
+      title: ModifyReconcilingSourceResponseSchema
+    ErrorResponse:
+      properties:
+        detail:
+          type: string
+          title: Detail
+          description: Human-readable explanation of the error.
+          examples:
+          - user not authorized
+      type: object
+      required:
+      - detail
+      title: ErrorResponse
+      description: Error payload returned by the API (FastAPI `detail` convention).
+    HTTPValidationError:
+      properties:
+        detail:
+          items:
+            $ref: '#/components/schemas/ValidationError'
+          type: array
+          title: Detail
+      type: object
+      title: HTTPValidationError
+    ValidationError:
+      properties:
+        loc:
+          items:
+            anyOf:
+            - type: string
+            - type: integer
+          type: array
+          title: Location
+        msg:
+          type: string
+          title: Message
+        type:
+          type: string
+          title: Error Type
+        input:
+          title: Input
+        ctx:
+          type: object
+          title: Context
+      type: object
+      required:
+      - loc
+      - msg
+      - type
+      title: ValidationError
+    GetReconcilingSourceResponseSchema:
+      properties:
+        name:
+          type: string
+          title: Name
+          description: Name of the reconciling source.
+          examples:
+          - Stripe orders feed
+        additionalInfo:
+          anyOf:
+          - additionalProperties: true
+            type: object
+          - type: 'null'
+          title: Additionalinfo
+          description: Free-form key/value metadata to attach to the reconciling source. Replaces the previously stored value entirely (not merged). Omitted or `null` values leave the current metadata unchanged.
+        matchingMetadataKey:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Matchingmetadatakey
+          description: Key within a reconciling item's `metadata` used to associate it with a product transaction. Omitted or `null` values leave the current key unchanged.
+          examples:
+          - orderId
+        customId:
+          type: string
+          title: Customid
+          description: Your own unique ID for the reconciling source. You can use it as your internal reconciling source ID.
+          examples:
+          - stripe-orders
+        id:
+          type: string
+          title: Id
+          description: Embat ID of the reconciling source.
+        companyId:
+          type: string
+          title: Companyid
+          description: Embat company ID. You can get them from "companies" endpoints
+        updatedAt:
+          type: string
+          format: date-time
+          title: Updatedat
+          description: Last updated date of the entity in the database
+        createdAt:
+          type: string
+          format: date-time
+          title: Createdat
+          description: Created date of the entity in the database
+      type: object
+      required:
+      - name
+      - customId
+      - id
+      - companyId
+      - updatedAt
+      - createdAt
+      title: GetReconcilingSourceResponseSchema
+    ListReconcilingSourcesResponseSchema:
+      properties:
+        data:
+          items:
+            $ref: '#/components/schemas/GetReconcilingSourceResponseSchema'
+          type: array
+          title: Data
+          description: Reconciling sources configured for the company.
+      type: object
+      required:
+      - data
+      title: ListReconcilingSourcesResponseSchema
+    PatchReconcilingSourceSchema:
+      properties:
+        name:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Name
+          description: Name of the reconciling source. Omitted or `null` values leave the current name unchanged.
+          examples:
+          - Stripe orders feed
+        additionalInfo:
+          anyOf:
+          - additionalProperties: true
+            type: object
+          - type: 'null'
+          title: Additionalinfo
+          description: Free-form key/value metadata to attach to the reconciling source. Replaces the previously stored value entirely (not merged). Omitted or `null` values leave the current metadata unchanged.
+        matchingMetadataKey:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Matchingmetadatakey
+          description: Key within a reconciling item's `metadata` used to associate it with a product transaction. Omitted or `null` values leave the current key unchanged.
+          examples:
+          - orderId
+      type: object
+      title: PatchReconcilingSourceSchema
+  securitySchemes:
+    HTTPBearer:
+      type: http
+      scheme: bearer

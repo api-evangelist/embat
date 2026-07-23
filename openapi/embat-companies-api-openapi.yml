@@ -1,0 +1,594 @@
+openapi: 3.1.0
+info:
+  title: Embat AccountingAccounts Companies API
+  description: Embat API enables connections between any third party application and Embat. Is organized around REST principles, using HTTP responses code and returning data in JSON format. While testing the API, you have to request **sandbox credentials**.
+  contact:
+    name: API Support
+    url: https://embat.io/
+    email: tech@embat.io
+  version: 2.120.3
+  x-logo:
+    url: https://storage.googleapis.com/embat-production.appspot.com/assets/embat_dark.svg
+tags:
+- name: Companies
+  description: 'A `Company` represents a legal entity configured in your Embat workspace. Its `id` is the `companyId` used throughout this API: almost every other endpoint is scoped by `companyId` and requires it as a path parameter.
+
+
+    `Company` is the parent entity of the API: it has no dependency on any other entity, while every other entity (Payments, Operations, Transactions, Contacts, Accounting Accounts, etc.) belongs to one. A company also has `Users` with access to it, retrievable with `GET /companies/{companyId}/users`.
+
+
+    **Typical flow:**
+
+
+    1. **Resolve the `companyId`.** Call `GET /companies` to list the companies your credentials have access to and pick the `id` of the one you want to work with.
+
+    2. **Use it everywhere.** Pass that `id` as `companyId` in the path of any other endpoint in this API.
+
+    3. **Optionally inspect the company.** `GET /companies/{companyId}` returns its legal name, administrative contact, tags and configuration (e.g. accounting currency).
+
+    '
+paths:
+  /companies:
+    get:
+      tags:
+      - Companies
+      summary: List user companies
+      description: Returns the companies your credentials have access to. Use the returned `id` as the `companyId` path parameter required by every other endpoint in this API.
+      operationId: list_companies_companies_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListCompaniesResponseSchema'
+        '401':
+          description: Unauthorized. The bearer token is missing, invalid or expired.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                detail: user not authorized
+      security:
+      - HTTPBearer: []
+  /companies/{companyId}:
+    get:
+      tags:
+      - Companies
+      summary: Retrieve company
+      description: 'Returns the detail of a company: legal name, administrative contact, tags and configuration (e.g. accounting currency).'
+      operationId: retrieve_company_companies__companyId__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: companyId
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Companyid
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CompanyResponseSchema'
+        '401':
+          description: Unauthorized. The bearer token is missing, invalid or expired.
+          content:
+            application/json:
+              example:
+                detail: user not authorized
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Not found. The requested resource or `companyId` does not exist.
+          content:
+            application/json:
+              example:
+                detail: 0021 companyId not found
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /companies/{companyId}/users:
+    get:
+      tags:
+      - Companies
+      summary: List company users
+      description: Returns the users with access to the company identified by `companyId`. The returned `id` matches the `userId` recorded on entities created manually in Embat (e.g. payments).
+      operationId: list_company_users_companies__companyId__users_get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: companyId
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Companyid
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListCompanyUsersResponseSchema'
+        '401':
+          description: Unauthorized. The bearer token is missing, invalid or expired.
+          content:
+            application/json:
+              example:
+                detail: user not authorized
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Not found. The requested resource or `companyId` does not exist.
+          content:
+            application/json:
+              example:
+                detail: 0021 companyId not found
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+components:
+  schemas:
+    ErrorResponse:
+      properties:
+        detail:
+          type: string
+          title: Detail
+          description: Human-readable explanation of the error.
+          examples:
+          - user not authorized
+      type: object
+      required:
+      - detail
+      title: ErrorResponse
+      description: Error payload returned by the API (FastAPI `detail` convention).
+    CurrencyEnum:
+      type: string
+      enum:
+      - AED
+      - AFN
+      - ALL
+      - AMD
+      - ANG
+      - AOA
+      - ARS
+      - AUD
+      - AWG
+      - AZN
+      - BAM
+      - BBD
+      - BDT
+      - BGN
+      - BHD
+      - BIF
+      - BMD
+      - BND
+      - BOB
+      - BOV
+      - BRL
+      - BSD
+      - BTC
+      - BTN
+      - BWP
+      - BYN
+      - BZD
+      - CAD
+      - CDF
+      - CHE
+      - CHF
+      - CHW
+      - CLF
+      - CLP
+      - CNH
+      - CNY
+      - COP
+      - COU
+      - CRC
+      - CUP
+      - CVE
+      - CZK
+      - DJF
+      - DKK
+      - DOP
+      - DZD
+      - EEK
+      - EGP
+      - ERN
+      - ETB
+      - ETH
+      - EUR
+      - FJD
+      - FKP
+      - GBP
+      - GEL
+      - GHS
+      - GIP
+      - GMD
+      - GNF
+      - GTQ
+      - GYD
+      - HKD
+      - HNL
+      - HRK
+      - HTG
+      - HUF
+      - IDR
+      - ILS
+      - INR
+      - IQD
+      - IRR
+      - ISK
+      - JMD
+      - JOD
+      - JPY
+      - KES
+      - KGS
+      - KHR
+      - KMF
+      - KPW
+      - KRW
+      - KWD
+      - KYD
+      - KZT
+      - LAK
+      - LBP
+      - LKR
+      - LRD
+      - LSL
+      - LTC
+      - LTL
+      - LVL
+      - LYD
+      - MAD
+      - MDL
+      - MGA
+      - MKD
+      - MMK
+      - MNT
+      - MOP
+      - MRU
+      - MUR
+      - MVR
+      - MWK
+      - MXN
+      - MXV
+      - MYR
+      - MZN
+      - NAD
+      - NGN
+      - NIO
+      - NOK
+      - NPR
+      - NZD
+      - OMR
+      - PAB
+      - PEN
+      - PGK
+      - PHP
+      - PKR
+      - PLN
+      - PYG
+      - QAR
+      - RON
+      - RSD
+      - RUB
+      - RWF
+      - SAR
+      - SBD
+      - SCR
+      - SDG
+      - SEK
+      - SGD
+      - SHP
+      - SLE
+      - SOS
+      - SRD
+      - SSP
+      - STN
+      - SVC
+      - SYP
+      - SZL
+      - THB
+      - TJS
+      - TMT
+      - TND
+      - TOP
+      - TRY
+      - TTD
+      - TWD
+      - TZS
+      - UAH
+      - UGX
+      - USD
+      - USN
+      - UYI
+      - UYU
+      - UYW
+      - UZS
+      - VED
+      - VEF
+      - VES
+      - VND
+      - VUV
+      - WST
+      - XAF
+      - XAG
+      - XAU
+      - XBA
+      - XBB
+      - XBC
+      - XBD
+      - XCD
+      - XDR
+      - XOF
+      - XPD
+      - XPF
+      - XPT
+      - XSU
+      - XTS
+      - XUA
+      - XXX
+      - YER
+      - ZAR
+      - ZMK
+      - ZMW
+      - ZWG
+      - ZWL
+      title: CurrencyEnum
+    HTTPValidationError:
+      properties:
+        detail:
+          items:
+            $ref: '#/components/schemas/ValidationError'
+          type: array
+          title: Detail
+      type: object
+      title: HTTPValidationError
+    ValidationError:
+      properties:
+        loc:
+          items:
+            anyOf:
+            - type: string
+            - type: integer
+          type: array
+          title: Location
+        msg:
+          type: string
+          title: Message
+        type:
+          type: string
+          title: Error Type
+        input:
+          title: Input
+        ctx:
+          type: object
+          title: Context
+      type: object
+      required:
+      - loc
+      - msg
+      - type
+      title: ValidationError
+    CompanyResponseSchema:
+      properties:
+        id:
+          type: string
+          title: Id
+          description: Embat company ID. Use it as `companyId` in the rest of the API.
+          examples:
+          - company_5f2c1a
+        legalName:
+          type: string
+          title: Legalname
+          description: Company legal name.
+          examples:
+          - Acme Corporation S.L.
+        updatedAt:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Updatedat
+          description: Last updated date of the entity in the database
+        createdAt:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Createdat
+          description: Created date of the entity in the database
+        contact:
+          anyOf:
+          - $ref: '#/components/schemas/app__schemas__companies__ContactSchema'
+          - type: 'null'
+          description: Company's administrative contact.
+        tags:
+          anyOf:
+          - items:
+              $ref: '#/components/schemas/TagsSchema'
+            type: array
+          - type: 'null'
+          title: Tags
+          description: Tags assigned to the company, used for classification in Embat.
+        config:
+          anyOf:
+          - $ref: '#/components/schemas/CompanyConfigSchema'
+          - type: 'null'
+          description: Company-level configuration, such as the accounting currency.
+      type: object
+      required:
+      - id
+      - legalName
+      title: CompanyResponseSchema
+    CompanyUserSchema:
+      properties:
+        id:
+          type: string
+          title: Id
+          description: Embat user ID.
+          examples:
+          - user_8f3a1c
+        email:
+          type: string
+          title: Email
+          description: User's email address.
+          examples:
+          - laura.fernandez@acme.com
+        updatedAt:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Updatedat
+          description: Last updated date of the entity in the database
+        createdAt:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Createdat
+          description: Created date of the entity in the database
+        name:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Name
+          description: User's first name.
+          examples:
+          - Laura
+        surname:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Surname
+          description: User's last name.
+          examples:
+          - Fernández
+      type: object
+      required:
+      - id
+      - email
+      title: CompanyUserSchema
+    ListCompanyUsersResponseSchema:
+      properties:
+        data:
+          items:
+            $ref: '#/components/schemas/CompanyUserSchema'
+          type: array
+          title: Data
+          description: Users with access to the company.
+      type: object
+      required:
+      - data
+      title: ListCompanyUsersResponseSchema
+    CompanyConfigSchema:
+      properties:
+        currency:
+          $ref: '#/components/schemas/CurrencyEnum'
+          description: Company's accounting currency. Defaults to `EUR` when not configured.
+          default: EUR
+          examples:
+          - EUR
+      type: object
+      title: CompanyConfigSchema
+    TagsSchema:
+      properties:
+        id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Id
+          description: Embat tag ID.
+          examples:
+          - tag_4d2f1a
+        updatedAt:
+          type: string
+          format: date-time
+          title: Updatedat
+          description: Last updated date of the entity in the database
+        createdAt:
+          type: string
+          format: date-time
+          title: Createdat
+          description: Created date of the entity in the database
+        name:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Name
+          description: Tag name.
+          examples:
+          - VIP
+      type: object
+      required:
+      - updatedAt
+      - createdAt
+      title: TagsSchema
+    app__schemas__companies__ContactSchema:
+      properties:
+        phone:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Phone
+          description: Phone number of the company's administrative contact.
+          examples:
+          - '+34600123456'
+        name:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Name
+          description: First name of the company's administrative contact.
+          examples:
+          - Laura
+        surname:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Surname
+          description: Last name of the company's administrative contact.
+          examples:
+          - Fernández
+        email:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Email
+          description: Email address of the company's administrative contact.
+          examples:
+          - laura.fernandez@acme.com
+      type: object
+      title: ContactSchema
+    ListCompaniesResponseSchema:
+      properties:
+        data:
+          items:
+            $ref: '#/components/schemas/CompanyResponseSchema'
+          type: array
+          title: Data
+          description: Companies your credentials have access to.
+      type: object
+      required:
+      - data
+      title: ListCompaniesResponseSchema
+  securitySchemes:
+    HTTPBearer:
+      type: http
+      scheme: bearer

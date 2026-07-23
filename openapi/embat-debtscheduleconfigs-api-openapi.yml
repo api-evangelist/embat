@@ -1,0 +1,600 @@
+openapi: 3.1.0
+info:
+  title: Embat AccountingAccounts DebtScheduleConfigs API
+  description: Embat API enables connections between any third party application and Embat. Is organized around REST principles, using HTTP responses code and returning data in JSON format. While testing the API, you have to request **sandbox credentials**.
+  contact:
+    name: API Support
+    url: https://embat.io/
+    email: tech@embat.io
+  version: 2.120.3
+  x-logo:
+    url: https://storage.googleapis.com/embat-production.appspot.com/assets/embat_dark.svg
+tags:
+- name: DebtScheduleConfigs
+  description: '<div style="background-color:#fff3cd; color:#856404; padding: 10px; border-left: 6px solid #ffeeba;">
+
+    <strong>⚠️ Warning:</strong> This API section is in BETA. It might undergo significant changes and may not be stable.
+
+    </div>
+
+
+    <code>Debt Schedule Config</code> represents the amortization schedule configured for a debt product: payment frequency, interest rate, outstanding and granted balances, and the full calendar of scheduled payments broken down into principal, interest and tax components.
+
+
+    A debt schedule config is linked to the `Bank` relationship the debt is held with (`bankId`) and to two `Products`: the `debtProductId` being amortized and the product used to pay each installment (`settlementAccountId`, returned as `settlementProductId`).
+
+
+    **Typical flow:** debt schedule configurations are read-only from this API — they are set up in Embat and exposed here for consumption.
+
+
+    1. **List configurations** with `GET /debtscheduleconfigs/{companyId}`, optionally filtering by `startUpdatedAt`/`endUpdatedAt` to read only what changed since your last poll.
+
+    2. **Retrieve a single configuration** with `GET /debtscheduleconfigs/{companyId}/{id}` to get its full payment calendar (`debtSchedulePaymentsCalendar`).
+
+    '
+paths:
+  /debtscheduleconfigs/{companyId}:
+    get:
+      tags:
+      - DebtScheduleConfigs
+      summary: List debt schedule configs
+      description: 'Returns the debt schedule configurations of a company. Results are ordered by last modification time, most recent first, and paginated: use `limit` to control page size and pass the returned `nextPageToken` to fetch the next page. `startUpdatedAt` (inclusive) and `endUpdatedAt` (exclusive) filter by last modification time, which is useful for incremental synchronization.'
+      operationId: list_debt_schedule_configs_debtscheduleconfigs__companyId__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: companyId
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Companyid
+      - name: startUpdatedAt
+        in: query
+        required: false
+        schema:
+          type: string
+          format: date-time
+          description: Only return configurations last modified on or after this timestamp (inclusive).
+          title: Startupdatedat
+        description: Only return configurations last modified on or after this timestamp (inclusive).
+      - name: endUpdatedAt
+        in: query
+        required: false
+        schema:
+          type: string
+          format: date-time
+          description: Only return configurations last modified before this timestamp (exclusive).
+          title: Endupdatedat
+        description: Only return configurations last modified before this timestamp (exclusive).
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          maximum: 50
+          title: Response length of objects limit
+          description: Maximum number of objects to return in the response. Default 10, maximum 50.
+          default: 10
+        description: Maximum number of objects to return in the response. Default 10, maximum 50.
+      - name: nextPageToken
+        in: query
+        required: false
+        schema:
+          type: string
+          title: Pagination token
+          description: Token to fetch the next page of results, taken from the `nextPageToken` returned by the previous request with the same filters. Omit it to fetch the first page. An invalid or malformed token is rejected with `404`.
+        description: Token to fetch the next page of results, taken from the `nextPageToken` returned by the previous request with the same filters. Omit it to fetch the first page. An invalid or malformed token is rejected with `404`.
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListDebtScheduleConfigsResponseSchema'
+        '401':
+          description: Unauthorized. The bearer token is missing, invalid or expired.
+          content:
+            application/json:
+              example:
+                detail: user not authorized
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Company not found, or invalid `nextPageToken`.
+          content:
+            application/json:
+              example:
+                detail: 0021 companyId not found
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /debtscheduleconfigs/{companyId}/{id}:
+    get:
+      tags:
+      - DebtScheduleConfigs
+      summary: Retrieve debt schedule config
+      description: Returns a single debt schedule configuration by its Embat `id`.
+      operationId: retrieve_debt_schedule_config_debtscheduleconfigs__companyId___id__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Id
+      - name: companyId
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Companyid
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetDebtScheduleConfigResponseSchema'
+        '401':
+          description: Unauthorized. The bearer token is missing, invalid or expired.
+          content:
+            application/json:
+              example:
+                detail: user not authorized
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Company not found, or no debt schedule configuration matches the given `id`.
+          content:
+            application/json:
+              example:
+                detail: 0021 companyId not found
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+components:
+  schemas:
+    DebtScheduleConfigSchema:
+      properties:
+        amortisingFrequency:
+          $ref: '#/components/schemas/AmortisingFrequencyEnum'
+          description: 'Frequency at which principal is amortized: `monthly`, `quarterly`, `semiannually` or `yearly`.'
+        outstandingBalance:
+          type: number
+          title: Outstandingbalance
+          description: Balance still pending repayment, in the debt schedule `currency`.
+          examples:
+          - 100000.0
+        grantedBalance:
+          type: number
+          title: Grantedbalance
+          description: Original balance granted for this debt, in the debt schedule `currency`.
+          examples:
+          - 120000.0
+        totalPeriods:
+          type: integer
+          title: Totalperiods
+          description: Total number of payment periods in the schedule.
+          examples:
+          - 12
+        nextPaymentDate:
+          type: string
+          format: date-time
+          title: Nextpaymentdate
+          description: Due date of the next scheduled payment.
+        lastPaymentDate:
+          type: string
+          format: date-time
+          title: Lastpaymentdate
+          description: Due date of the last scheduled payment (maturity date).
+        taxRate:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Taxrate
+          description: Tax rate applied to payments, if any. `null` when no tax applies.
+          examples:
+          - 0.02
+        annualInterestRateOrSpread:
+          type: number
+          title: Annualinterestrateorspread
+          description: Annual interest rate for `fixed` debt, or the spread applied over the reference rate for `variable` debt (see `interestType`).
+          examples:
+          - 0.045
+        interestType:
+          $ref: '#/components/schemas/InterestTypeEnum'
+          description: 'Interest rate type: `fixed` or `variable`.'
+      type: object
+      required:
+      - amortisingFrequency
+      - outstandingBalance
+      - grantedBalance
+      - totalPeriods
+      - nextPaymentDate
+      - lastPaymentDate
+      - annualInterestRateOrSpread
+      - interestType
+      title: DebtScheduleConfigSchema
+    ListDebtScheduleConfigsResponseSchema:
+      properties:
+        data:
+          items:
+            $ref: '#/components/schemas/GetDebtScheduleConfigResponseSchema'
+          type: array
+          title: Data
+          description: Debt schedule configurations matching the query.
+        nextPageToken:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Nextpagetoken
+          description: Token to fetch the next page of results. `null` when there are no more pages.
+      type: object
+      required:
+      - data
+      title: ListDebtScheduleConfigsResponseSchema
+    ErrorResponse:
+      properties:
+        detail:
+          type: string
+          title: Detail
+          description: Human-readable explanation of the error.
+          examples:
+          - user not authorized
+      type: object
+      required:
+      - detail
+      title: ErrorResponse
+      description: Error payload returned by the API (FastAPI `detail` convention).
+    CurrencyEnum:
+      type: string
+      enum:
+      - AED
+      - AFN
+      - ALL
+      - AMD
+      - ANG
+      - AOA
+      - ARS
+      - AUD
+      - AWG
+      - AZN
+      - BAM
+      - BBD
+      - BDT
+      - BGN
+      - BHD
+      - BIF
+      - BMD
+      - BND
+      - BOB
+      - BOV
+      - BRL
+      - BSD
+      - BTC
+      - BTN
+      - BWP
+      - BYN
+      - BZD
+      - CAD
+      - CDF
+      - CHE
+      - CHF
+      - CHW
+      - CLF
+      - CLP
+      - CNH
+      - CNY
+      - COP
+      - COU
+      - CRC
+      - CUP
+      - CVE
+      - CZK
+      - DJF
+      - DKK
+      - DOP
+      - DZD
+      - EEK
+      - EGP
+      - ERN
+      - ETB
+      - ETH
+      - EUR
+      - FJD
+      - FKP
+      - GBP
+      - GEL
+      - GHS
+      - GIP
+      - GMD
+      - GNF
+      - GTQ
+      - GYD
+      - HKD
+      - HNL
+      - HRK
+      - HTG
+      - HUF
+      - IDR
+      - ILS
+      - INR
+      - IQD
+      - IRR
+      - ISK
+      - JMD
+      - JOD
+      - JPY
+      - KES
+      - KGS
+      - KHR
+      - KMF
+      - KPW
+      - KRW
+      - KWD
+      - KYD
+      - KZT
+      - LAK
+      - LBP
+      - LKR
+      - LRD
+      - LSL
+      - LTC
+      - LTL
+      - LVL
+      - LYD
+      - MAD
+      - MDL
+      - MGA
+      - MKD
+      - MMK
+      - MNT
+      - MOP
+      - MRU
+      - MUR
+      - MVR
+      - MWK
+      - MXN
+      - MXV
+      - MYR
+      - MZN
+      - NAD
+      - NGN
+      - NIO
+      - NOK
+      - NPR
+      - NZD
+      - OMR
+      - PAB
+      - PEN
+      - PGK
+      - PHP
+      - PKR
+      - PLN
+      - PYG
+      - QAR
+      - RON
+      - RSD
+      - RUB
+      - RWF
+      - SAR
+      - SBD
+      - SCR
+      - SDG
+      - SEK
+      - SGD
+      - SHP
+      - SLE
+      - SOS
+      - SRD
+      - SSP
+      - STN
+      - SVC
+      - SYP
+      - SZL
+      - THB
+      - TJS
+      - TMT
+      - TND
+      - TOP
+      - TRY
+      - TTD
+      - TWD
+      - TZS
+      - UAH
+      - UGX
+      - USD
+      - USN
+      - UYI
+      - UYU
+      - UYW
+      - UZS
+      - VED
+      - VEF
+      - VES
+      - VND
+      - VUV
+      - WST
+      - XAF
+      - XAG
+      - XAU
+      - XBA
+      - XBB
+      - XBC
+      - XBD
+      - XCD
+      - XDR
+      - XOF
+      - XPD
+      - XPF
+      - XPT
+      - XSU
+      - XTS
+      - XUA
+      - XXX
+      - YER
+      - ZAR
+      - ZMK
+      - ZMW
+      - ZWG
+      - ZWL
+      title: CurrencyEnum
+    DebtSchedulePaymentSchema:
+      properties:
+        period:
+          type: integer
+          title: Period
+          description: Period number in the amortization schedule, starting at 1.
+          examples:
+          - 1
+        date:
+          type: string
+          format: date-time
+          title: Date
+          description: Due date of this scheduled payment.
+        principalPayment:
+          type: number
+          title: Principalpayment
+          description: Principal portion of the payment, in the debt schedule `currency`.
+          examples:
+          - 8333.33
+        interestPayment:
+          type: number
+          title: Interestpayment
+          description: Interest portion of the payment, in the debt schedule `currency`.
+          examples:
+          - 416.67
+        taxPayment:
+          type: number
+          title: Taxpayment
+          description: Tax portion of the payment, in the debt schedule `currency`. `0` when no tax applies.
+          examples:
+          - 0.0
+        totalPayment:
+          type: number
+          title: Totalpayment
+          description: Total amount due for this period, in the debt schedule `currency` (`principalPayment` + `interestPayment` + `taxPayment`).
+          examples:
+          - 8750.0
+      type: object
+      required:
+      - period
+      - date
+      - principalPayment
+      - interestPayment
+      - taxPayment
+      - totalPayment
+      title: DebtSchedulePaymentSchema
+    HTTPValidationError:
+      properties:
+        detail:
+          items:
+            $ref: '#/components/schemas/ValidationError'
+          type: array
+          title: Detail
+      type: object
+      title: HTTPValidationError
+    ValidationError:
+      properties:
+        loc:
+          items:
+            anyOf:
+            - type: string
+            - type: integer
+          type: array
+          title: Location
+        msg:
+          type: string
+          title: Message
+        type:
+          type: string
+          title: Error Type
+        input:
+          title: Input
+        ctx:
+          type: object
+          title: Context
+      type: object
+      required:
+      - loc
+      - msg
+      - type
+      title: ValidationError
+    AmortisingFrequencyEnum:
+      type: string
+      enum:
+      - monthly
+      - quarterly
+      - semiannually
+      - yearly
+      title: AmortisingFrequencyEnum
+    GetDebtScheduleConfigResponseSchema:
+      properties:
+        id:
+          type: string
+          title: Id
+          description: Embat debt schedule configuration ID.
+        companyId:
+          type: string
+          title: Companyid
+          description: Embat company ID. You can get them from "companies" endpoints.
+        currency:
+          $ref: '#/components/schemas/CurrencyEnum'
+          description: ISO currency code of the amounts in this debt schedule.
+          examples:
+          - EUR
+        bankId:
+          type: string
+          title: Bankid
+          description: Embat ID of the bank relationship this debt is held with. You can get them from "banks" endpoints.
+        debtProductId:
+          type: string
+          title: Debtproductid
+          description: Embat ID of the debt product this schedule is configured over. You can get them from "products" endpoints.
+        settlementProductId:
+          type: string
+          title: Settlementproductid
+          description: Embat ID of the product used to pay this debt schedule (returned as `settlementProductId`). You can get them from "products" endpoints.
+        config:
+          $ref: '#/components/schemas/DebtScheduleConfigSchema'
+          description: 'Configuration of the debt schedule: frequency, balances, rates and period count.'
+        debtSchedulePaymentsCalendar:
+          items:
+            $ref: '#/components/schemas/DebtSchedulePaymentSchema'
+          type: array
+          title: Debtschedulepaymentscalendar
+          description: Full calendar of scheduled payments for this debt, one entry per period, with the principal, interest and tax breakdown.
+      type: object
+      required:
+      - id
+      - companyId
+      - currency
+      - bankId
+      - debtProductId
+      - settlementProductId
+      - config
+      - debtSchedulePaymentsCalendar
+      title: GetDebtScheduleConfigResponseSchema
+    InterestTypeEnum:
+      type: string
+      enum:
+      - fixed
+      - variable
+      title: InterestTypeEnum
+  securitySchemes:
+    HTTPBearer:
+      type: http
+      scheme: bearer

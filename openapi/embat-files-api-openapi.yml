@@ -1,0 +1,563 @@
+openapi: 3.1.0
+info:
+  title: Embat AccountingAccounts Files API
+  description: Embat API enables connections between any third party application and Embat. Is organized around REST principles, using HTTP responses code and returning data in JSON format. While testing the API, you have to request **sandbox credentials**.
+  contact:
+    name: API Support
+    url: https://embat.io/
+    email: tech@embat.io
+  version: 2.120.3
+  x-logo:
+    url: https://storage.googleapis.com/embat-production.appspot.com/assets/embat_dark.svg
+tags:
+- name: Files
+  description: '`File` represents a banking file exchanged between Embat and a bank: either a file **received** from a bank (a reception, e.g. an account statement or a confirmation file) or a file **submitted** to a bank (an emission, e.g. a payment order file). Files are identified by an Embat-generated `id` and, when the bank could be identified, carry the related `Bank`.
+
+
+    Files list endpoints are not scoped by `companyId`: they return the files across every company accessible to the authenticated user. `companyId` is only used when creating a file emission.
+
+
+    **Typical flow:**
+
+
+    1. **Discover new receptions.** Poll `GET /files/receptions` periodically; each entry reports whether it has already been `downloaded`. Use `nextPageToken` to page through results.
+
+    2. **Download a reception''s content.** Once you have identified a file of interest, fetch its raw content with `GET /files/receptions/{fileId}`.
+
+    3. **Submit a file to a bank.** To send a file to a bank on behalf of a company (e.g. a payment order), call `POST /files/{companyId}/{bankId}` with the file content and its format.
+
+    4. **Track emissions.** List the files you have submitted, and any submitted on your behalf, with `GET /files/emissions`.
+
+    '
+paths:
+  /files/receptions:
+    get:
+      tags:
+      - Files
+      summary: List file receptions
+      description: 'Returns the banking files received across every company accessible to the authenticated user (e.g. account statements or confirmation files sent by a bank). Results are paginated: use `limit` to control page size and pass the returned `nextPageToken` to fetch the next page. Download the content of a specific file with `GET /files/receptions/{fileId}`. Errors from the file service are reported with their original status code and message, so responses may include statuses other than the ones listed here.'
+      operationId: list_files_receptions_files_receptions_get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          maximum: 2000
+          title: Response length of objects limit
+          description: Maximum number of file receptions to return. Defaults to 500, up to 2000.
+          default: 500
+        description: Maximum number of file receptions to return. Defaults to 500, up to 2000.
+      - name: nextPageToken
+        in: query
+        required: false
+        schema:
+          type: string
+          title: Pagination token
+          description: Token to fetch the next page of results, returned by a previous call to this endpoint.
+        description: Token to fetch the next page of results, returned by a previous call to this endpoint.
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListFilesReceptionsResponseSchema'
+        '401':
+          description: Unauthorized. The bearer token is missing, invalid or expired.
+          content:
+            application/json:
+              example:
+                detail: user not authorized
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /files/receptions/{fileId}:
+    get:
+      tags:
+      - Files
+      summary: Download file reception
+      description: Downloads the raw content of a file reception by `fileId`. The response content type matches the original file (e.g. XML, TXT, PDF). The `Content-Disposition` header names the file after `fileId`, not its original file name; use `fileName` from `GET /files/receptions` if you need the original name. Errors are reported with the same status code and message that occurred while retrieving the file, which may include statuses other than the ones listed here.
+      operationId: download_receptions_file_files_receptions__fileId__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: fileId
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Fileid
+      responses:
+        '200':
+          description: 'Binary file downloaded (content-type may vary: XML, TXT, PDF, etc.)'
+          content:
+            application/octet-stream: {}
+        '401':
+          description: Unauthorized. The bearer token is missing, invalid or expired.
+          content:
+            application/json:
+              example:
+                detail: user not authorized
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: No file matches the given `fileId`.
+          content:
+            application/json:
+              example:
+                detail: 0021 companyId not found
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /files/emissions:
+    get:
+      tags:
+      - Files
+      summary: List file emissions
+      description: 'Returns the banking files submitted to banks (e.g. payment order files) across every company accessible to the authenticated user. Results are paginated: use `limit` to control page size and pass the returned `nextPageToken` to fetch the next page. Errors from the file service are reported with their original status code and message, so responses may include statuses other than the ones listed here.'
+      operationId: list_files_emissions_files_emissions_get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          maximum: 2000
+          title: Response length of objects limit
+          description: Maximum number of file emissions to return. Defaults to 500, up to 2000.
+          default: 500
+        description: Maximum number of file emissions to return. Defaults to 500, up to 2000.
+      - name: nextPageToken
+        in: query
+        required: false
+        schema:
+          type: string
+          title: Pagination token
+          description: Token to fetch the next page of results, returned by a previous call to this endpoint.
+        description: Token to fetch the next page of results, returned by a previous call to this endpoint.
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListFilesEmissionsResponseSchema'
+        '401':
+          description: Unauthorized. The bearer token is missing, invalid or expired.
+          content:
+            application/json:
+              example:
+                detail: user not authorized
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /files/{companyId}/{bankId}:
+    post:
+      tags:
+      - Files
+      summary: Create file emission
+      description: Submits a file to a bank (`bankId`) on behalf of a company, e.g. a payment order file. Returns the Embat ID of the created file emission; retrieve its status later with `GET /files/emissions`.
+      operationId: create_file_emission_files__companyId___bankId__post
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: companyId
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Companyid
+      - name: bankId
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Bankid
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Body_create_file_emission_files__companyId___bankId__post'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PostFilesEmissionResponseSchema'
+        '401':
+          description: Unauthorized. The bearer token is missing, invalid or expired.
+          content:
+            application/json:
+              example:
+                detail: user not authorized
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Not found. The requested resource or `companyId` does not exist.
+          content:
+            application/json:
+              example:
+                detail: 0021 companyId not found
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Unexpected error. Contact support if it persists.
+          content:
+            application/json:
+              example:
+                detail: Internal server error
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+components:
+  schemas:
+    GetFilesEmissionResponseSchema:
+      properties:
+        id:
+          type: string
+          title: Id
+          description: Embat ID of the file emission.
+        groupId:
+          type: string
+          title: Groupid
+          description: Embat group ID the file belongs to.
+        companyId:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Companyid
+          description: Embat company ID the file was submitted for, if identified.
+        fileName:
+          type: string
+          title: Filename
+          description: Name of the emitted file.
+          examples:
+          - payment-order.xml
+        bank:
+          anyOf:
+          - $ref: '#/components/schemas/BankFileSchema'
+          - type: 'null'
+          description: Bank the file was submitted to, if identified.
+        user:
+          anyOf:
+          - $ref: '#/components/schemas/UserFileSchema'
+          - type: 'null'
+          description: User who requested the file emission, if it was created by a user rather than automatically.
+        provider:
+          type: string
+          title: Provider
+          description: Channel or provider through which the file was submitted.
+          examples:
+          - bank
+        format:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Format
+          description: Format of the emitted file.
+          examples:
+          - sepa34
+        emissionDate:
+          type: string
+          format: date-time
+          title: Emissiondate
+          description: Date the file was submitted to the bank.
+        createdAt:
+          type: string
+          format: date-time
+          title: Createdat
+          description: Created date of the entity in the database
+        updatedAt:
+          type: string
+          format: date-time
+          title: Updatedat
+          description: Last updated date of the entity in the database
+      type: object
+      required:
+      - id
+      - groupId
+      - fileName
+      - provider
+      - emissionDate
+      - createdAt
+      - updatedAt
+      title: GetFilesEmissionResponseSchema
+      description: Files response data schema
+    ErrorResponse:
+      properties:
+        detail:
+          type: string
+          title: Detail
+          description: Human-readable explanation of the error.
+          examples:
+          - user not authorized
+      type: object
+      required:
+      - detail
+      title: ErrorResponse
+      description: Error payload returned by the API (FastAPI `detail` convention).
+    HTTPValidationError:
+      properties:
+        detail:
+          items:
+            $ref: '#/components/schemas/ValidationError'
+          type: array
+          title: Detail
+      type: object
+      title: HTTPValidationError
+    ValidationError:
+      properties:
+        loc:
+          items:
+            anyOf:
+            - type: string
+            - type: integer
+          type: array
+          title: Location
+        msg:
+          type: string
+          title: Message
+        type:
+          type: string
+          title: Error Type
+        input:
+          title: Input
+        ctx:
+          type: object
+          title: Context
+      type: object
+      required:
+      - loc
+      - msg
+      - type
+      title: ValidationError
+    UserFileSchema:
+      properties:
+        id:
+          type: string
+          title: Id
+          description: Embat ID of the user who requested the file emission.
+        name:
+          type: string
+          title: Name
+          description: First name of the user.
+          examples:
+          - Maria
+        surname:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Surname
+          description: Last name of the user.
+          examples:
+          - Garcia
+      type: object
+      required:
+      - id
+      - name
+      title: UserFileSchema
+    BankFileSchema:
+      properties:
+        id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Id
+          description: Identifier of the bank associated with the file.
+          examples:
+          - bank-001
+        fullName:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Fullname
+          description: Full name of the bank.
+          examples:
+          - Banco Santander
+        service:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Service
+          description: Banking service or channel used to exchange the file with the bank.
+          examples:
+          - h2h
+        countryCode:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Countrycode
+          description: ISO country code of the bank.
+          examples:
+          - ES
+      type: object
+      title: BankFileSchema
+    FileFormatsEnum:
+      type: string
+      enum:
+      - sepa34
+      - sepa19
+      - confir
+      - dev019
+      - n19_financiada
+      - omfpag
+      - rec019
+      - sctdiv
+      - sepint
+      title: FileFormatsEnum
+    Body_create_file_emission_files__companyId___bankId__post:
+      properties:
+        file:
+          type: string
+          contentMediaType: application/octet-stream
+          title: File
+          description: Binary content of the file to submit to the bank.
+        format:
+          $ref: '#/components/schemas/FileFormatsEnum'
+          description: Format of the submitted file.
+      type: object
+      required:
+      - file
+      - format
+      title: Body_create_file_emission_files__companyId___bankId__post
+    PostFilesEmissionResponseSchema:
+      properties:
+        id:
+          type: string
+          title: Id
+          description: Embat ID of the created file emission.
+      type: object
+      required:
+      - id
+      title: PostFilesEmissionResponseSchema
+    ListFilesReceptionsResponseSchema:
+      properties:
+        data:
+          items:
+            $ref: '#/components/schemas/GetFilesReceptionResponseSchema'
+          type: array
+          title: Data
+          description: File receptions matching the query.
+        nextPageToken:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Nextpagetoken
+          description: Token to fetch the next page of results. `null` when there are no more pages.
+      type: object
+      required:
+      - data
+      title: ListFilesReceptionsResponseSchema
+    ListFilesEmissionsResponseSchema:
+      properties:
+        data:
+          items:
+            $ref: '#/components/schemas/GetFilesEmissionResponseSchema'
+          type: array
+          title: Data
+          description: File emissions matching the query.
+        nextPageToken:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Nextpagetoken
+          description: Token to fetch the next page of results. `null` when there are no more pages.
+      type: object
+      required:
+      - data
+      title: ListFilesEmissionsResponseSchema
+    GetFilesReceptionResponseSchema:
+      properties:
+        id:
+          type: string
+          title: Id
+          description: Embat ID of the file reception.
+        groupId:
+          type: string
+          title: Groupid
+          description: Embat group ID the file belongs to.
+        companyId:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Companyid
+          description: Embat company ID the file was matched to, if identified.
+        fileName:
+          type: string
+          title: Filename
+          description: Name of the file as received from the bank.
+          examples:
+          - statement.xml
+        bank:
+          anyOf:
+          - $ref: '#/components/schemas/BankFileSchema'
+          - type: 'null'
+          description: Bank the file was received from, if identified.
+        downloaded:
+          type: boolean
+          title: Downloaded
+          description: Whether the file has already been downloaded.
+        provider:
+          type: string
+          title: Provider
+          description: Channel or provider through which the file was received.
+          examples:
+          - bank
+        receptionDate:
+          type: string
+          format: date-time
+          title: Receptiondate
+          description: Date the file was received from the bank.
+        createdAt:
+          type: string
+          format: date-time
+          title: Createdat
+          description: Created date of the entity in the database
+        updatedAt:
+          type: string
+          format: date-time
+          title: Updatedat
+          description: Last updated date of the entity in the database
+      type: object
+      required:
+      - id
+      - groupId
+      - fileName
+      - downloaded
+      - provider
+      - receptionDate
+      - createdAt
+      - updatedAt
+      title: GetFilesReceptionResponseSchema
+      description: Files response data schema
+  securitySchemes:
+    HTTPBearer:
+      type: http
+      scheme: bearer

@@ -1,0 +1,606 @@
+openapi: 3.1.0
+info:
+  title: Embat AccountingAccounts PaymentOrders API
+  description: Embat API enables connections between any third party application and Embat. Is organized around REST principles, using HTTP responses code and returning data in JSON format. While testing the API, you have to request **sandbox credentials**.
+  contact:
+    name: API Support
+    url: https://embat.io/
+    email: tech@embat.io
+  version: 2.120.3
+  x-logo:
+    url: https://storage.googleapis.com/embat-production.appspot.com/assets/embat_dark.svg
+tags:
+- name: PaymentOrders
+  description: '<div style="background-color:#fff3cd; color:#856404; padding: 10px; border-left: 6px solid #ffeeba;">
+
+    <strong>⚠️ Warning:</strong> This API section is in BETA. It might undergo significant changes and may not be stable.
+
+    </div>
+
+
+    A <code>PaymentOrder</code> represents a payment executed through Embat, such as a wire transfer or SEPA payment sent to a bank on behalf of a company. It can reference a `documentId` identifying the invoice or operation it settles, a <code>Product</code> used to fund it, and the <code>Bank</code> it was executed through.
+
+
+    **Typical flow:** poll `GET /paymentorders/{companyId}` to track the payment orders created in Embat and their execution `status` (`IN_PROGRESS`, `COMPLETED`, `REJECTED`, `ON_HOLD`). Once a payment order is executed, download its signed receipt with `GET /paymentorders/{id}/receipt`.'
+paths:
+  /paymentorders/{companyId}:
+    get:
+      tags:
+      - PaymentOrders
+      summary: List payment orders
+      description: 'Returns the payment orders of a company, ordered by execution date (most recent first). Results are paginated: use `limit` to control page size and pass the returned `nextPageToken` to fetch the next page; `nextPageToken` is `null` once the last page has been reached. `startPaymentDate`/`endPaymentDate` filter by execution date. If only one of the two is given, the other defaults: `endPaymentDate` defaults to now, and `startPaymentDate` defaults to 6 months before `endPaymentDate`. If neither is given, no date filter is applied. Explicit date ranges are not capped: any span is accepted.'
+      operationId: list_payment_orders_paymentorders__companyId__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: companyId
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Companyid
+      - name: startPaymentDate
+        in: query
+        required: false
+        schema:
+          type: string
+          format: date-time
+          description: Only return payment orders executed on or after this date. If given without `endPaymentDate`, `endPaymentDate` defaults to now.
+          title: Startpaymentdate
+        description: Only return payment orders executed on or after this date. If given without `endPaymentDate`, `endPaymentDate` defaults to now.
+      - name: endPaymentDate
+        in: query
+        required: false
+        schema:
+          type: string
+          format: date-time
+          description: Only return payment orders executed up to this date. If given without `startPaymentDate`, `startPaymentDate` defaults to 6 months before `endPaymentDate`.
+          title: Endpaymentdate
+        description: Only return payment orders executed up to this date. If given without `startPaymentDate`, `startPaymentDate` defaults to 6 months before `endPaymentDate`.
+      - name: status
+        in: query
+        required: false
+        schema:
+          $ref: '#/components/schemas/PaymentOrderStatusEnum'
+          description: Filter by payment order execution status.
+        description: Filter by payment order execution status.
+      - name: beneficiaryLegalNameContains
+        in: query
+        required: false
+        schema:
+          type: string
+          description: Filter payment orders whose beneficiary legal name contains this text.
+          title: Beneficiarylegalnamecontains
+        description: Filter payment orders whose beneficiary legal name contains this text.
+      - name: documentIdContains
+        in: query
+        required: false
+        schema:
+          type: string
+          description: Filter payment orders whose `documentId` contains this text.
+          title: Documentidcontains
+        description: Filter payment orders whose `documentId` contains this text.
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          maximum: 200
+          title: Response length of objects limit
+          description: Maximum number of payment orders to return per page. Defaults to 200, which is also the maximum allowed value.
+          default: 200
+        description: Maximum number of payment orders to return per page. Defaults to 200, which is also the maximum allowed value.
+      - name: nextPageToken
+        in: query
+        required: false
+        schema:
+          type: string
+          title: Pagination token
+          description: Token to fetch the next page of results, returned by a previous call to this endpoint. An invalid token returns a `404` error.
+        description: Token to fetch the next page of results, returned by a previous call to this endpoint. An invalid token returns a `404` error.
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListPaymentOrdersResponseSchema'
+        '401':
+          description: Unauthorized. The bearer token is missing, invalid or expired.
+          content:
+            application/json:
+              example:
+                detail: user not authorized
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Company not found, or `nextPageToken` is not a valid pagination token.
+          content:
+            application/json:
+              example:
+                detail: 0021 companyId not found
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /paymentorders/{id}/receipt:
+    get:
+      tags:
+      - PaymentOrders
+      summary: Download payment order receipt
+      description: 'Downloads the PDF receipt of a payment order by its Embat `id`. This endpoint is not scoped by `companyId`: authorization is checked per payment order, and callers without access to it receive a `403`. Errors are reported with the same status code and message returned while retrieving the receipt, which may include statuses other than the ones listed here.'
+      operationId: download_payment_order_receipt_paymentorders__id__receipt_get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Id
+      responses:
+        '200':
+          description: Payment order receipt document
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+        '403':
+          description: You are not authorized to download this receipt
+          content:
+            application/json:
+              example:
+                detail: 'Forbidden: you are not authorized to download this receipt.'
+              schema:
+                $ref: '#/components/schemas/ErrorDetailSchema'
+        '401':
+          description: Unauthorized. The bearer token is missing, invalid or expired.
+          content:
+            application/json:
+              example:
+                detail: user not authorized
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: No payment order matches the given `id`.
+          content:
+            application/json:
+              example:
+                detail: 0021 companyId not found
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+components:
+  schemas:
+    ListPaymentOrdersResponseSchema:
+      properties:
+        data:
+          items:
+            $ref: '#/components/schemas/PaymentOrderSchema'
+          type: array
+          title: Data
+          description: Payment orders matching the query.
+        nextPageToken:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Nextpagetoken
+          description: Token to fetch the next page of results. `null` when there are no more pages.
+      type: object
+      required:
+      - data
+      title: ListPaymentOrdersResponseSchema
+    ErrorResponse:
+      properties:
+        detail:
+          type: string
+          title: Detail
+          description: Human-readable explanation of the error.
+          examples:
+          - user not authorized
+      type: object
+      required:
+      - detail
+      title: ErrorResponse
+      description: Error payload returned by the API (FastAPI `detail` convention).
+    BeneficiarySchema:
+      properties:
+        legalName:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Legalname
+          description: Legal name of the payment order beneficiary.
+          examples:
+          - Acme Supplies S.L.
+      type: object
+      title: BeneficiarySchema
+    HTTPValidationError:
+      properties:
+        detail:
+          items:
+            $ref: '#/components/schemas/ValidationError'
+          type: array
+          title: Detail
+      type: object
+      title: HTTPValidationError
+    ValidationError:
+      properties:
+        loc:
+          items:
+            anyOf:
+            - type: string
+            - type: integer
+          type: array
+          title: Location
+        msg:
+          type: string
+          title: Message
+        type:
+          type: string
+          title: Error Type
+        input:
+          title: Input
+        ctx:
+          type: object
+          title: Context
+      type: object
+      required:
+      - loc
+      - msg
+      - type
+      title: ValidationError
+    PaymentOrderStatusEnum:
+      type: string
+      enum:
+      - COMPLETED
+      - REJECTED
+      - IN_PROGRESS
+      - ON_HOLD
+      title: PaymentOrderStatusEnum
+    PaymentOrderSchema:
+      properties:
+        id:
+          type: string
+          title: Id
+          description: Embat payment order ID.
+          examples:
+          - po_8f2a1c9e
+        companyId:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Companyid
+          description: Embat company ID. You can get them from "companies" endpoints.
+        concept:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Concept
+          description: Free-text description of the payment order.
+          examples:
+          - Supplier invoice payment
+        documentId:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Documentid
+          description: Identifier of the source document (e.g. invoice) the payment order was created from, if any.
+          examples:
+          - INV-2024-0456
+        status:
+          anyOf:
+          - $ref: '#/components/schemas/PaymentOrderStatusEnum'
+          - type: 'null'
+          description: 'Execution status of the payment order: `IN_PROGRESS` while it is being processed, `COMPLETED` once executed, `REJECTED` if it was declined, or `ON_HOLD` while execution is paused.'
+        amount:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Amount
+          description: Payment order amount, in `currency`.
+          examples:
+          - 1500.0
+        currency:
+          anyOf:
+          - $ref: '#/components/schemas/CurrencyEnum'
+          - type: 'null'
+          description: ISO currency code of `amount`.
+          examples:
+          - EUR
+        beneficiary:
+          anyOf:
+          - $ref: '#/components/schemas/BeneficiarySchema'
+          - type: 'null'
+          description: Beneficiary the payment order was sent to.
+        product:
+          anyOf:
+          - $ref: '#/components/schemas/app__schemas__paymentOrders__ProductSchema'
+          - type: 'null'
+          description: Product linked to the payment order, if any.
+        bank:
+          anyOf:
+          - $ref: '#/components/schemas/BankSchema'
+          - type: 'null'
+          description: Bank the payment order was executed through.
+        paymentDate:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Paymentdate
+          description: Date the payment order was (or is scheduled to be) executed.
+        createdAt:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Createdat
+          description: Created date of the entity in the database
+        updatedAt:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Updatedat
+          description: Last updated date of the entity in the database
+      type: object
+      required:
+      - id
+      title: PaymentOrderSchema
+    app__schemas__paymentOrders__ProductSchema:
+      properties:
+        id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Id
+          description: Embat product ID linked to the payment order, if any.
+        alias:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Alias
+          description: Display alias of the linked product. `null` if the payment order has no product, or the product no longer exists.
+          examples:
+          - Main disbursement account
+      type: object
+      title: ProductSchema
+    ErrorDetailSchema:
+      properties:
+        detail:
+          type: string
+          title: Detail
+          description: Human-readable explanation of the error.
+          examples:
+          - 'Forbidden: you are not authorized to download this receipt.'
+      type: object
+      required:
+      - detail
+      title: ErrorDetailSchema
+    BankSchema:
+      properties:
+        id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Id
+          description: Embat bank ID the payment order was executed through.
+        fullName:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Fullname
+          description: Full name of the bank.
+          examples:
+          - Banco Santander
+      type: object
+      title: BankSchema
+    CurrencyEnum:
+      type: string
+      enum:
+      - AED
+      - AFN
+      - ALL
+      - AMD
+      - ANG
+      - AOA
+      - ARS
+      - AUD
+      - AWG
+      - AZN
+      - BAM
+      - BBD
+      - BDT
+      - BGN
+      - BHD
+      - BIF
+      - BMD
+      - BND
+      - BOB
+      - BOV
+      - BRL
+      - BSD
+      - BTC
+      - BTN
+      - BWP
+      - BYN
+      - BZD
+      - CAD
+      - CDF
+      - CHE
+      - CHF
+      - CHW
+      - CLF
+      - CLP
+      - CNH
+      - CNY
+      - COP
+      - COU
+      - CRC
+      - CUP
+      - CVE
+      - CZK
+      - DJF
+      - DKK
+      - DOP
+      - DZD
+      - EEK
+      - EGP
+      - ERN
+      - ETB
+      - ETH
+      - EUR
+      - FJD
+      - FKP
+      - GBP
+      - GEL
+      - GHS
+      - GIP
+      - GMD
+      - GNF
+      - GTQ
+      - GYD
+      - HKD
+      - HNL
+      - HRK
+      - HTG
+      - HUF
+      - IDR
+      - ILS
+      - INR
+      - IQD
+      - IRR
+      - ISK
+      - JMD
+      - JOD
+      - JPY
+      - KES
+      - KGS
+      - KHR
+      - KMF
+      - KPW
+      - KRW
+      - KWD
+      - KYD
+      - KZT
+      - LAK
+      - LBP
+      - LKR
+      - LRD
+      - LSL
+      - LTC
+      - LTL
+      - LVL
+      - LYD
+      - MAD
+      - MDL
+      - MGA
+      - MKD
+      - MMK
+      - MNT
+      - MOP
+      - MRU
+      - MUR
+      - MVR
+      - MWK
+      - MXN
+      - MXV
+      - MYR
+      - MZN
+      - NAD
+      - NGN
+      - NIO
+      - NOK
+      - NPR
+      - NZD
+      - OMR
+      - PAB
+      - PEN
+      - PGK
+      - PHP
+      - PKR
+      - PLN
+      - PYG
+      - QAR
+      - RON
+      - RSD
+      - RUB
+      - RWF
+      - SAR
+      - SBD
+      - SCR
+      - SDG
+      - SEK
+      - SGD
+      - SHP
+      - SLE
+      - SOS
+      - SRD
+      - SSP
+      - STN
+      - SVC
+      - SYP
+      - SZL
+      - THB
+      - TJS
+      - TMT
+      - TND
+      - TOP
+      - TRY
+      - TTD
+      - TWD
+      - TZS
+      - UAH
+      - UGX
+      - USD
+      - USN
+      - UYI
+      - UYU
+      - UYW
+      - UZS
+      - VED
+      - VEF
+      - VES
+      - VND
+      - VUV
+      - WST
+      - XAF
+      - XAG
+      - XAU
+      - XBA
+      - XBB
+      - XBC
+      - XBD
+      - XCD
+      - XDR
+      - XOF
+      - XPD
+      - XPF
+      - XPT
+      - XSU
+      - XTS
+      - XUA
+      - XXX
+      - YER
+      - ZAR
+      - ZMK
+      - ZMW
+      - ZWG
+      - ZWL
+      title: CurrencyEnum
+  securitySchemes:
+    HTTPBearer:
+      type: http
+      scheme: bearer

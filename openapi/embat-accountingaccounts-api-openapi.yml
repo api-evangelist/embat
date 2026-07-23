@@ -1,0 +1,947 @@
+openapi: 3.1.0
+info:
+  title: Embat AccountingAccounts API
+  description: Embat API enables connections between any third party application and Embat. Is organized around REST principles, using HTTP responses code and returning data in JSON format. While testing the API, you have to request **sandbox credentials**.
+  contact:
+    name: API Support
+    url: https://embat.io/
+    email: tech@embat.io
+  version: 2.120.3
+  x-logo:
+    url: https://storage.googleapis.com/embat-production.appspot.com/assets/embat_dark.svg
+tags:
+- name: AccountingAccounts
+  description: '`AccountingAccount` represents an account in the company''s chart of accounts. `accountingCode` is the unique identifier of an account and is used as its ID; it also determines the account''s default classification (`type`) when none is sent.
+
+
+    Accounting accounts are the backbone Embat uses to classify money movements: `Payments` and accounting entries reference an account by `accountingCode` to record where a transaction is posted, and `Transactions` are reconciled against the account''s `balance`.
+
+
+    **Typical flow:** notify Embat of the accounts that exist in your ERP so that payments and reconciliations can reference them.
+
+
+    1. **Create or update accounts.** Send each account from your chart of accounts with `POST /accountingaccounts/{companyId}` (or the bulk variant `POST /accountingaccounts/{companyId}/bulk`). Sending an `accountingCode` that already exists updates that account instead of creating a duplicate.
+
+    2. **Keep accounts in sync.** As accounts change in your ERP (renamed, deactivated, reclassified), reflect those changes with `PATCH /accountingaccounts/{companyId}/{accountingCode}` (or the bulk variant `PATCH /accountingaccounts/{companyId}`), or simply resend the account with `POST` — creation is an upsert, so an existing `accountingCode` is updated instead of duplicated. Note that `type` can only be changed via `PATCH`.
+
+    3. **Read accounts.** Use `GET /accountingaccounts/{companyId}` to list all accounts, or `GET /accountingaccounts/{companyId}/{accountingCode}` to retrieve a single one, including its current `balance`.
+
+    4. **Delete accounts.** `DELETE /accountingaccounts/{companyId}/{accountingCode}` (or the bulk variant) deactivates an account rather than permanently removing it; deactivated accounts still appear in list/retrieve responses with `active: false`.
+
+    '
+paths:
+  /accountingaccounts/{companyId}:
+    get:
+      tags:
+      - AccountingAccounts
+      summary: List accounting accounts
+      description: 'Returns the accounting accounts (chart of accounts) of a company, including deactivated ones. Results are paginated: use `limit` to control page size and pass the returned `nextPageToken` to fetch the next page.'
+      operationId: list_accountings_accounts_accountingaccounts__companyId__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: companyId
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Companyid
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          maximum: 2000
+          title: Response length of objects limit
+          description: Maximum number of objects to return in the response. Default 500, maximum 2000.
+          default: 500
+        description: Maximum number of objects to return in the response. Default 500, maximum 2000.
+      - name: nextPageToken
+        in: query
+        required: false
+        schema:
+          type: string
+          title: Pagination token
+          description: Token to fetch the next page of results, taken from the `nextPageToken` returned by the previous request with the same filters. Omit it to fetch the first page. An invalid or malformed token is rejected with `404`.
+        description: Token to fetch the next page of results, taken from the `nextPageToken` returned by the previous request with the same filters. Omit it to fetch the first page. An invalid or malformed token is rejected with `404`.
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListAccountingsAccountsResponseSchema'
+        '401':
+          description: Unauthorized. The bearer token is missing, invalid or expired.
+          content:
+            application/json:
+              example:
+                detail: user not authorized
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Company not found, or invalid `nextPageToken`.
+          content:
+            application/json:
+              example:
+                detail: 0021 companyId not found
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    post:
+      tags:
+      - AccountingAccounts
+      summary: Create accounting account
+      description: 'Creates an accounting account identified by `accountingCode`. If an account with the same `accountingCode` already exists, this call updates it instead of failing; if the submitted data is identical to the existing account, the call is a no-op. `accountingName` defaults to `accountingCode` when omitted. `type` is inferred from `accountingCode` when not sent, and an `accountingCode` starting with `572` is always classified as `banks` on creation regardless of the `type` sent — see the `type` field description. Once an account exists, `type` cannot be changed through this endpoint: any `type` sent for an existing account (including the `572` override) is silently ignored and only applies when the account is first created — use the update endpoints to change it. Recreating a previously deleted (deactivated) account does not reactivate it unless `active: true` is explicitly sent. Entries in `attributes` with an empty or missing `customId` or `value` are silently discarded.'
+      operationId: create_accountings_account_accountingaccounts__companyId__post
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: companyId
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Companyid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PostAccountingsAccountsRequestSchema'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UpsertAccountingsAccountsResponseSchema'
+        '401':
+          description: Unauthorized. The bearer token is missing, invalid or expired.
+          content:
+            application/json:
+              example:
+                detail: user not authorized
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Not found. The requested resource or `companyId` does not exist.
+          content:
+            application/json:
+              example:
+                detail: 0021 companyId not found
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Unexpected error. Contact support if it persists.
+          content:
+            application/json:
+              example:
+                detail: Internal server error
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    patch:
+      tags:
+      - AccountingAccounts
+      summary: Update accounting accounts in bulk
+      description: Updates several accounting accounts in a single call, identified by `accountingCode`, following the same rules as the single update endpoint. Entries whose `accountingCode` does not match any existing account are silently skipped — the call returns `200` for the whole batch.
+      operationId: update_accountings_accounts_bulk_accountingaccounts__companyId__patch
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: companyId
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Companyid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BulkPatchAccountingsAccountsRequestSchema'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BulkUpsertAccountingsAccountsResponseSchema'
+        '401':
+          description: Unauthorized. The bearer token is missing, invalid or expired.
+          content:
+            application/json:
+              example:
+                detail: user not authorized
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Not found. The requested resource or `companyId` does not exist.
+          content:
+            application/json:
+              example:
+                detail: 0021 companyId not found
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Unexpected error. Contact support if it persists.
+          content:
+            application/json:
+              example:
+                detail: Internal server error
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    delete:
+      tags:
+      - AccountingAccounts
+      summary: Delete accounting accounts in bulk
+      description: Deletes several accounting accounts in a single call, identified by `accountingCode`. Accounts are deactivated (`active` set to `false`) rather than permanently removed, and continue to appear in `GET`/list responses. The response includes an entry for every requested `accountingCode`, even ones that do not match an existing account — those are silently skipped with no error.
+      operationId: delete_accountings_accounts_bulk_accountingaccounts__companyId__delete
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: companyId
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Companyid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BulkDeleteAccountingsAccountsRequestSchema'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BulkModifyAccountingsAccountsResponseSchema'
+        '401':
+          description: Unauthorized. The bearer token is missing, invalid or expired.
+          content:
+            application/json:
+              example:
+                detail: user not authorized
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Not found. The requested resource or `companyId` does not exist.
+          content:
+            application/json:
+              example:
+                detail: 0021 companyId not found
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Unexpected error. Contact support if it persists.
+          content:
+            application/json:
+              example:
+                detail: Internal server error
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /accountingaccounts/{companyId}/{accountingCode}:
+    get:
+      tags:
+      - AccountingAccounts
+      summary: Retrieve accounting account
+      description: Returns a single accounting account by `accountingCode`, including deactivated accounts.
+      operationId: retrieve_accountings_account_accountingaccounts__companyId___accountingCode__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: accountingCode
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Accountingcode
+      - name: companyId
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Companyid
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetAccountingsAccountsResponseSchema'
+        '401':
+          description: Unauthorized. The bearer token is missing, invalid or expired.
+          content:
+            application/json:
+              example:
+                detail: user not authorized
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Company not found, or no accounting account matches the given `accountingCode`.
+          content:
+            application/json:
+              example:
+                detail: 0021 companyId not found
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    patch:
+      tags:
+      - AccountingAccounts
+      summary: Update accounting account
+      description: Updates the active status, type, name, collective flag, additional info or attributes of an accounting account identified by `accountingCode`. Updating an `accountingCode` that does not match any existing account returns `200` without creating or changing anything — no `404` is raised. Sending an empty `additionalInfo` object leaves any previously stored metadata unchanged. Entries in `attributes` with an empty or missing `customId` or `value` are silently discarded.
+      operationId: update_accountings_account_accountingaccounts__companyId___accountingCode__patch
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: accountingCode
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Accountingcode
+      - name: companyId
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Companyid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchAccountingsAccountsRequestSchema'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UpsertAccountingsAccountsResponseSchema'
+        '401':
+          description: Unauthorized. The bearer token is missing, invalid or expired.
+          content:
+            application/json:
+              example:
+                detail: user not authorized
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Not found. The requested resource or `companyId` does not exist.
+          content:
+            application/json:
+              example:
+                detail: 0021 companyId not found
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Unexpected error. Contact support if it persists.
+          content:
+            application/json:
+              example:
+                detail: Internal server error
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    delete:
+      tags:
+      - AccountingAccounts
+      summary: Delete accounting account
+      description: Deletes an accounting account by `accountingCode`. The account is deactivated (`active` set to `false`) rather than permanently removed, and continues to appear in `GET`/list responses. Deleting an `accountingCode` that does not match any existing account still returns `200` without error.
+      operationId: delete_accountings_account_accountingaccounts__companyId___accountingCode__delete
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: accountingCode
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Accountingcode
+      - name: companyId
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Companyid
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ModifyAccountingsAccountsResponseSchema'
+        '401':
+          description: Unauthorized. The bearer token is missing, invalid or expired.
+          content:
+            application/json:
+              example:
+                detail: user not authorized
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Not found. The requested resource or `companyId` does not exist.
+          content:
+            application/json:
+              example:
+                detail: 0021 companyId not found
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Unexpected error. Contact support if it persists.
+          content:
+            application/json:
+              example:
+                detail: Internal server error
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /accountingaccounts/{companyId}/bulk:
+    post:
+      tags:
+      - AccountingAccounts
+      summary: Create accounting accounts in bulk
+      description: Creates several accounting accounts in a single call, following the same rules as the single account creation endpoint. Entries sharing the same `accountingCode` within the request are deduplicated and only the first occurrence is processed.
+      operationId: create_accountings_accounts_bulk_accountingaccounts__companyId__bulk_post
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: companyId
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Companyid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BulkPostAccountingsAccountsRequestSchema'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BulkUpsertAccountingsAccountsResponseSchema'
+        '401':
+          description: Unauthorized. The bearer token is missing, invalid or expired.
+          content:
+            application/json:
+              example:
+                detail: user not authorized
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Not found. The requested resource or `companyId` does not exist.
+          content:
+            application/json:
+              example:
+                detail: 0021 companyId not found
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Unexpected error. Contact support if it persists.
+          content:
+            application/json:
+              example:
+                detail: Internal server error
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+components:
+  schemas:
+    BulkUpsertAccountingsAccountsResponseSchema:
+      properties:
+        data:
+          items:
+            $ref: '#/components/schemas/UpsertAccountingsAccountsResponseSchema'
+          type: array
+          title: Data
+          description: Result of the bulk operation, one entry per account.
+      type: object
+      required:
+      - data
+      title: BulkUpsertAccountingsAccountsResponseSchema
+    PatchAccountingsAccountsRequestSchema:
+      properties:
+        active:
+          anyOf:
+          - type: boolean
+          - type: 'null'
+          title: Active
+          description: Whether the accounting account is active.
+        type:
+          anyOf:
+          - $ref: '#/components/schemas/AccountingTypeEnum'
+          - type: 'null'
+          description: 'Accounting account classification: `banks`, `analytics` or `accountings`. If omitted, it is inferred from `accountingCode`: codes starting with `572` are classified as `banks`, codes starting with `6` or `7` as `analytics`, and any other code as `accountings`. When creating an account, an `accountingCode` starting with `572` is always classified as `banks`, even if a different `type` is sent. Once an account exists, any `type` sent through the create endpoints is silently ignored — the value (inferred, overridden or explicit) only applies when the account is first created. Use the update endpoints to change the `type` of an existing account.'
+          examples:
+          - banks
+        accountingName:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Accountingname
+          description: Display name of the accounting account.
+          examples:
+          - Bank account - Santander EUR
+        collective:
+          anyOf:
+          - type: boolean
+          - type: 'null'
+          title: Collective
+          description: Whether this is a collective (grouping) accounting account rather than an individual one.
+        additionalInfo:
+          anyOf:
+          - additionalProperties: true
+            type: object
+          - type: 'null'
+          title: Additionalinfo
+          description: Free-form key/value metadata to attach to the account. Sending an empty object leaves any previously stored metadata unchanged instead of clearing it.
+        attributes:
+          anyOf:
+          - items:
+              $ref: '#/components/schemas/AttributeValueRequestACCOUNTSchema'
+            type: array
+          - type: 'null'
+          title: Attributes
+          description: Custom attribute values to attach to the account. Entries with an empty or missing `customId` or `value` are silently discarded.
+      type: object
+      title: PatchAccountingsAccountsRequestSchema
+    ErrorResponse:
+      properties:
+        detail:
+          type: string
+          title: Detail
+          description: Human-readable explanation of the error.
+          examples:
+          - user not authorized
+      type: object
+      required:
+      - detail
+      title: ErrorResponse
+      description: Error payload returned by the API (FastAPI `detail` convention).
+    DeleteAccountingsAccountsRequestSchema:
+      properties:
+        accountingCode:
+          type: string
+          title: Accountingcode
+          description: Accounting code of the account to delete.
+          examples:
+          - '430001'
+      type: object
+      required:
+      - accountingCode
+      title: DeleteAccountingsAccountsRequestSchema
+    HTTPValidationError:
+      properties:
+        detail:
+          items:
+            $ref: '#/components/schemas/ValidationError'
+          type: array
+          title: Detail
+      type: object
+      title: HTTPValidationError
+    AccountingTypeEnum:
+      type: string
+      enum:
+      - banks
+      - analytics
+      - accountings
+      title: AccountingTypeEnum
+    BulkPatchAccountingsAccountsRequestSchema:
+      properties:
+        data:
+          items:
+            $ref: '#/components/schemas/AuxBulkPatchAccountingsAccountsRequestSchema'
+          type: array
+          title: Data
+          description: Accounting accounts to update, identified by `accountingCode`.
+      type: object
+      required:
+      - data
+      title: BulkPatchAccountingsAccountsRequestSchema
+    ValidationError:
+      properties:
+        loc:
+          items:
+            anyOf:
+            - type: string
+            - type: integer
+          type: array
+          title: Location
+        msg:
+          type: string
+          title: Message
+        type:
+          type: string
+          title: Error Type
+        input:
+          title: Input
+        ctx:
+          type: object
+          title: Context
+      type: object
+      required:
+      - loc
+      - msg
+      - type
+      title: ValidationError
+    AttributeValueRequestACCOUNTSchema:
+      properties:
+        customId:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Customid
+          description: Custom ID of the attribute definition this value belongs to. Entries missing `customId` or `value` are silently discarded.
+          examples:
+          - cost-center
+        value:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Value
+          description: Value assigned to the attribute.
+          examples:
+          - Marketing
+        valueCustomId:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Valuecustomid
+          description: Custom ID of the selected option, for list-type attributes.
+          examples:
+          - cc-marketing
+      type: object
+      title: AttributeValueRequestACCOUNTSchema
+    ModifyAccountingsAccountsResponseSchema:
+      properties:
+        id:
+          type: string
+          title: Id
+          description: Embat resource ID
+      type: object
+      required:
+      - id
+      title: ModifyAccountingsAccountsResponseSchema
+    AuxBulkPatchAccountingsAccountsRequestSchema:
+      properties:
+        active:
+          anyOf:
+          - type: boolean
+          - type: 'null'
+          title: Active
+          description: Whether the accounting account is active.
+        type:
+          anyOf:
+          - $ref: '#/components/schemas/AccountingTypeEnum'
+          - type: 'null'
+          description: 'Accounting account classification: `banks`, `analytics` or `accountings`. If omitted, it is inferred from `accountingCode`: codes starting with `572` are classified as `banks`, codes starting with `6` or `7` as `analytics`, and any other code as `accountings`. When creating an account, an `accountingCode` starting with `572` is always classified as `banks`, even if a different `type` is sent. Once an account exists, any `type` sent through the create endpoints is silently ignored — the value (inferred, overridden or explicit) only applies when the account is first created. Use the update endpoints to change the `type` of an existing account.'
+          examples:
+          - banks
+        accountingName:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Accountingname
+          description: Display name of the accounting account.
+          examples:
+          - Bank account - Santander EUR
+        collective:
+          anyOf:
+          - type: boolean
+          - type: 'null'
+          title: Collective
+          description: Whether this is a collective (grouping) accounting account rather than an individual one.
+        additionalInfo:
+          anyOf:
+          - additionalProperties: true
+            type: object
+          - type: 'null'
+          title: Additionalinfo
+          description: Free-form key/value metadata to attach to the account. Sending an empty object leaves any previously stored metadata unchanged instead of clearing it.
+        attributes:
+          anyOf:
+          - items:
+              $ref: '#/components/schemas/AttributeValueRequestACCOUNTSchema'
+            type: array
+          - type: 'null'
+          title: Attributes
+          description: Custom attribute values to attach to the account. Entries with an empty or missing `customId` or `value` are silently discarded.
+        accountingCode:
+          type: string
+          title: Accountingcode
+          description: Accounting code of the account to update.
+          examples:
+          - '430001'
+      type: object
+      required:
+      - accountingCode
+      title: AuxBulkPatchAccountingsAccountsRequestSchema
+    ListAccountingsAccountsResponseSchema:
+      properties:
+        data:
+          items:
+            $ref: '#/components/schemas/GetAccountingsAccountsResponseSchema'
+          type: array
+          title: Data
+          description: Accounting accounts matching the query.
+        nextPageToken:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Nextpagetoken
+          description: Token to fetch the next page of results. `null` when there are no more pages.
+      type: object
+      required:
+      - data
+      title: ListAccountingsAccountsResponseSchema
+    BulkModifyAccountingsAccountsResponseSchema:
+      properties:
+        data:
+          items:
+            $ref: '#/components/schemas/ModifyAccountingsAccountsResponseSchema'
+          type: array
+          title: Data
+          description: Result of the bulk deletion, one entry per requested `accountingCode`.
+      type: object
+      required:
+      - data
+      title: BulkModifyAccountingsAccountsResponseSchema
+    GetAccountingsAccountsResponseSchema:
+      properties:
+        active:
+          anyOf:
+          - type: boolean
+          - type: 'null'
+          title: Active
+          description: Whether the accounting account is active.
+        type:
+          anyOf:
+          - $ref: '#/components/schemas/AccountingTypeEnum'
+          - type: 'null'
+          description: 'Accounting account classification: `banks`, `analytics` or `accountings`. If omitted, it is inferred from `accountingCode`: codes starting with `572` are classified as `banks`, codes starting with `6` or `7` as `analytics`, and any other code as `accountings`. When creating an account, an `accountingCode` starting with `572` is always classified as `banks`, even if a different `type` is sent. Once an account exists, any `type` sent through the create endpoints is silently ignored — the value (inferred, overridden or explicit) only applies when the account is first created. Use the update endpoints to change the `type` of an existing account.'
+          examples:
+          - banks
+        accountingName:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Accountingname
+          description: Display name of the accounting account. Defaults to `accountingCode` when omitted.
+          examples:
+          - Clients - Domestic
+        collective:
+          anyOf:
+          - type: boolean
+          - type: 'null'
+          title: Collective
+          description: Whether this is a collective (grouping) accounting account rather than an individual one.
+        additionalInfo:
+          anyOf:
+          - additionalProperties: true
+            type: object
+          - type: 'null'
+          title: Additionalinfo
+          description: Free-form key/value metadata to attach to the account. Sending an empty object leaves any previously stored metadata unchanged instead of clearing it.
+        attributes:
+          anyOf:
+          - items:
+              $ref: '#/components/schemas/AttributeValueRequestACCOUNTSchema'
+            type: array
+          - type: 'null'
+          title: Attributes
+          description: Custom attribute values to attach to the account. Entries with an empty or missing `customId` or `value` are silently discarded.
+        accountingCode:
+          type: string
+          title: Accountingcode
+          description: Unique code identifying the accounting account in the company's chart of accounts.
+          examples:
+          - '430001'
+        companyId:
+          type: string
+          title: Companyid
+          description: Embat company ID. You can get them from "companies" endpoints
+        updatedAt:
+          type: string
+          format: date-time
+          title: Updatedat
+          description: Last updated date of the entity in the database
+        createdAt:
+          type: string
+          format: date-time
+          title: Createdat
+          description: Created date of the entity in the database
+        balance:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Balance
+          description: Current balance of the accounting account.
+          examples:
+          - 15230.75
+        balanceDate:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Balancedate
+          description: Date the balance was last calculated.
+      type: object
+      required:
+      - accountingCode
+      - companyId
+      - updatedAt
+      - createdAt
+      title: GetAccountingsAccountsResponseSchema
+    BulkPostAccountingsAccountsRequestSchema:
+      properties:
+        data:
+          items:
+            $ref: '#/components/schemas/PostAccountingsAccountsRequestSchema'
+          type: array
+          title: Data
+          description: Accounting accounts to create. Entries sharing the same `accountingCode` within the request are deduplicated and only the first occurrence is processed.
+      type: object
+      required:
+      - data
+      title: BulkPostAccountingsAccountsRequestSchema
+    PostAccountingsAccountsRequestSchema:
+      properties:
+        active:
+          anyOf:
+          - type: boolean
+          - type: 'null'
+          title: Active
+          description: Whether the accounting account is active.
+        type:
+          anyOf:
+          - $ref: '#/components/schemas/AccountingTypeEnum'
+          - type: 'null'
+          description: 'Accounting account classification: `banks`, `analytics` or `accountings`. If omitted, it is inferred from `accountingCode`: codes starting with `572` are classified as `banks`, codes starting with `6` or `7` as `analytics`, and any other code as `accountings`. When creating an account, an `accountingCode` starting with `572` is always classified as `banks`, even if a different `type` is sent. Once an account exists, any `type` sent through the create endpoints is silently ignored — the value (inferred, overridden or explicit) only applies when the account is first created. Use the update endpoints to change the `type` of an existing account.'
+          examples:
+          - banks
+        accountingName:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Accountingname
+          description: Display name of the accounting account. Defaults to `accountingCode` when omitted.
+          examples:
+          - Clients - Domestic
+        collective:
+          anyOf:
+          - type: boolean
+          - type: 'null'
+          title: Collective
+          description: Whether this is a collective (grouping) accounting account rather than an individual one.
+        additionalInfo:
+          anyOf:
+          - additionalProperties: true
+            type: object
+          - type: 'null'
+          title: Additionalinfo
+          description: Free-form key/value metadata to attach to the account. Sending an empty object leaves any previously stored metadata unchanged instead of clearing it.
+        attributes:
+          anyOf:
+          - items:
+              $ref: '#/components/schemas/AttributeValueRequestACCOUNTSchema'
+            type: array
+          - type: 'null'
+          title: Attributes
+          description: Custom attribute values to attach to the account. Entries with an empty or missing `customId` or `value` are silently discarded.
+        accountingCode:
+          type: string
+          title: Accountingcode
+          description: Unique code identifying the accounting account in the company's chart of accounts.
+          examples:
+          - '430001'
+      type: object
+      required:
+      - accountingCode
+      title: PostAccountingsAccountsRequestSchema
+    UpsertAccountingsAccountsResponseSchema:
+      properties:
+        id:
+          type: string
+          title: Id
+          description: Embat resource ID
+        accountingCode:
+          type: string
+          title: Accountingcode
+          description: Client-provided accounting code.
+          examples:
+          - '430001'
+      type: object
+      required:
+      - id
+      - accountingCode
+      title: UpsertAccountingsAccountsResponseSchema
+    BulkDeleteAccountingsAccountsRequestSchema:
+      properties:
+        data:
+          items:
+            $ref: '#/components/schemas/DeleteAccountingsAccountsRequestSchema'
+          type: array
+          title: Data
+          description: Accounting accounts to delete, identified by `accountingCode`.
+      type: object
+      required:
+      - data
+      title: BulkDeleteAccountingsAccountsRequestSchema
+  securitySchemes:
+    HTTPBearer:
+      type: http
+      scheme: bearer
