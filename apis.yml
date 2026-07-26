@@ -1,7 +1,14 @@
 aid: embat
 name: Embat
-description: 'Embat is a company surfaced as a portfolio company of creandum and added to the API Evangelist
-  network as a stub for enrichment. Sector: fintech. This profile is a lead awaiting the enrichment pipeline.'
+description: >-
+  Embat is a real-time treasury management platform for finance teams, founded in Madrid and
+  backed by Creandum. Its REST/JSON API (OpenAPI 3.1, 103 operations across 21 resource areas)
+  connects third-party applications and ERPs to Embat to manage bank connections, balances,
+  transactions, payments and payment orders, cash-flow forecasting, scenarios, accounting
+  entries and accounts, contacts, and bank reconciliation across multiple companies.
+  Authentication is HTTP Bearer using a JWT idToken obtained from an email/password token
+  endpoint (60-minute expiry, no refresh); every resource is scoped by a companyId path
+  parameter and list endpoints paginate with limit + nextPageToken.
 url: https://raw.githubusercontent.com/api-evangelist/embat/refs/heads/main/apis.yml
 x-type: company
 x-source: vc-portfolio
@@ -9,13 +16,1088 @@ x-backed-by:
 - creandum
 x-tier: stub
 x-tier-reason: portfolio-lead
+accessModel:
+  pricing: unknown
+  onboarding: self-serve
+  trial: false
+  try_now: false
+  public: false
+  label: Self-serve signup
+  confidence: medium
+  source:
+  - authentication
+  generated: '2026-07-22'
+  method: derived
 specificationVersion: '0.20'
 created: '2026-07-17'
-modified: '2026-07-17'
+modified: '2026-07-19'
+image: https://storage.googleapis.com/embat-production.appspot.com/assets/favicon.ico
 tags:
 - Company
 - Fintech
-apis: []
+- Treasury Management
+- Payments
+- Cash Flow
+- Banking
+- Reconciliation
+- Forecasting
+apis:
+- aid: embat:embat-accountingaccounts-api
+  name: Embat AccountingAccounts API
+  description: >-
+    `AccountingAccount` represents an account in the company's chart of accounts. `accountingCode` is
+    the unique identifier of an account and is used as its ID; it also determines the account's default
+    classification (`type`) when none is sent.
+
+
+    Accounting accounts are the backbone Embat uses to classify money movements: `Payments` and accounting
+    entries reference an account by `accountingCode` to record where a transaction is posted, and `Transactions`
+    are reconciled against the account's `balance`.
+
+
+    **Typical flow:** notify Embat of the accounts that exist in your ERP so that payments and reconciliations
+    can reference them.
+
+
+    1. **Create or update accounts.** Send each account from your chart of accounts with `POST /accountingaccounts/{companyId}`
+    (or the bulk variant `POST /accountingaccounts/{companyId}/bulk`). Sending an `accountingCode` that
+    already exists updates that account instead of creating a duplicate.
+
+    2. **Keep accounts in sync.** As accounts change in your ERP (renamed, deactivated, reclassified),
+    reflect those changes with `PATCH /accountingaccounts/{companyId}/{accountingCode}` (or the bulk variant
+    `PATCH /accountingaccounts/{companyId}`), or simply resend the account with `POST` — creation is an
+    upsert, so an existing `accountingCode` is updated instead of duplicated. Note that `type` can only
+    be changed via `PATCH`.
+
+    3. **Read accounts.** Use `GET /accountingaccounts/{companyId}` to list all accounts, or `GET /accountingaccounts/{companyId}/{accountingCode}`
+    to retrieve a single one, including its current `balance`.
+
+    4. **Delete accounts.** `DELETE /accountingaccounts/{companyId}/{accountingCode}` (or the bulk variant)
+    deactivates an account rather than permanently removing it; deactivated accounts still appear in list/retrieve
+    responses with `active: false`.
+  humanURL: https://api.embat.io/docs
+  baseURL: https://api.embat.io
+  tags:
+  - AccountingAccounts
+  properties:
+  - type: OpenAPI
+    url: openapi/embat-accountingaccounts-api-openapi.yml
+  - type: Documentation
+    url: https://api.embat.io/docs
+  - type: APIReference
+    url: https://api.embat.io/docs
+- aid: embat:embat-accountingentries-api
+  name: Embat AccountingEntries API
+  description: >-
+    `AccountingEntry` represents a single line of a company's general accounting journal — an outflow
+    (`assetAmount`) or inflow (`liabilityAmount`) movement posted to a ledger account (`accountingCode`).
+    `customId` is the unique identifier of an entry: set your own value to use as your ERP accounting
+    entry ID, or let Embat auto-generate one. Entries that belong to the same journal document (e.g. all
+    the lines of one invoice posting) can share the same `accountingEntryCode`.
+
+
+    Accounting entries are the accounting side of Embat's reconciliation process with `Transactions` (bank
+    movements): Embat matches entries against transactions and exposes the outcome here through `reconciled`
+    and `reconciliationsIds`. An entry can also reference a `Contact` (client/supplier, via `contactCustomId`,
+    when `accountingCode` is a contacts account), a `Payment` it relates to (`paymentId`), or a source
+    document (`documentId`).
+
+
+    **Typical flow:** accounting entries synchronize your general ledger in both directions between your
+    ERP and Embat.
+
+
+    1. **Notify Embat of entries posted in your ERP.** When a journal line is recorded in your ERP, create
+    it in Embat with `POST /accountingentries/{companyId}` (or the bulk variant):
+
+
+    ```json
+
+    POST /accountingentries/{companyId}
+
+    {
+      "customId": "erp-entry-2024-001",
+      "accountingEntryCode": "invoice-2024-001",
+      "accountingCode": "4300001",
+      "accountingName": "Trade debtors",
+      "date": "2024-01-15T00:00:00Z",
+      "assetAmount": 1250.50,
+      "liabilityAmount": 0,
+      "currency": "EUR"
+    }
+
+    ```
+
+
+    2. **Read entries and their reconciliation status.** Use `GET /accountingentries/{companyId}` with
+    the `reconciled` filter and `startUpdatedAt`/`endUpdatedAt` for incremental reads since your last
+    poll, or `GET /accountingentries/{companyId}/{customId}` to retrieve a single entry.
+
+    3. **Correct or remove entries as your ledger changes.** Use `PATCH /accountingentries/{companyId}/{customId}`
+    (or the bulk variant) to update fields — resend the current `description` if you want to keep it,
+    since omitting it resets it to an auto-generated value. You can also resend the full entry with `POST`:
+    creation is an upsert, so an existing `customId` is updated instead of duplicated. Use `DELETE` to
+    remove entries individually or in bulk, by `customId` or by `accountingEntryCode`/`accountingEntryCodeId`.
+  humanURL: https://api.embat.io/docs
+  baseURL: https://api.embat.io
+  tags:
+  - AccountingEntries
+  properties:
+  - type: OpenAPI
+    url: openapi/embat-accountingentries-api-openapi.yml
+  - type: Documentation
+    url: https://api.embat.io/docs
+  - type: APIReference
+    url: https://api.embat.io/docs
+- aid: embat:embat-attributes-api
+  name: Embat Attributes API
+  description: >-
+    `Attribute` represents a custom field that you can define once and then use to tag records across
+    Embat, such as an ERP dimension, a cost center or any other analytic field you want available as a
+    filter in tables, charts and reports. `customId` is the unique identifier of an attribute: set your
+    own value to use as your ERP dimension ID, or let Embat auto-generate one.
+
+
+    An attribute has a `type` — `list` (a fixed set of `values` to choose from), `string` or `number`
+    (free-form value) — and can optionally be nested under a parent attribute via `parentCustomId` to
+    model hierarchies (e.g. a "City" attribute whose values are nested under a "Country" attribute's values).
+
+
+    Attribute values are attached to other entities — `Payments`, `Contacts`, `Operations`, `Transactions`
+    and `AccountingEntries` — by sending the attribute's `customId` together with the chosen `value`/`valueCustomId`
+    in that entity's `attributes` field.
+
+
+    **Typical flow:**
+
+
+    1. **Create the attribute** with `POST /attributes/{companyId}`, defining its `type` and, for `list`
+    attributes, its `values`:
+
+
+    ```json
+
+    POST /attributes/{companyId}
+
+    {
+      "customId": "cost-center",
+      "source": "erp",
+      "name": "Cost Center",
+      "type": "list",
+      "values": [
+        { "customId": "marketing", "name": "Marketing" },
+        { "customId": "sales", "name": "Sales" }
+      ]
+    }
+
+    ```
+
+
+    2. **Tag other entities with the attribute.** When creating or updating a payment, contact, operation,
+    transaction or accounting entry, reference the attribute in its `attributes` field:
+
+
+    ```json
+
+    {
+      "customId": "marketing",
+      "value": "Marketing"
+    }
+
+    ```
+
+
+    3. **Maintain the value list** with `POST /attributes/{companyId}/{customId}/values/bulk` to add values
+    without touching the rest of the attribute, or update the attribute directly to replace its full value
+    list.
+  humanURL: https://api.embat.io/docs
+  baseURL: https://api.embat.io
+  tags:
+  - Attributes
+  properties:
+  - type: OpenAPI
+    url: openapi/embat-attributes-api-openapi.yml
+  - type: Documentation
+    url: https://api.embat.io/docs
+  - type: APIReference
+    url: https://api.embat.io/docs
+- aid: embat:embat-authentication-api
+  name: Embat Authentication API
+  description: >-
+    `Authentication` provides the credentials Embat issues to access the rest of the public API. Every
+    other endpoint requires a JWT `idToken` in the `Authorization: Bearer <idToken>` header; requests
+    with no token, or with an invalid or expired one, are rejected with `401`.
+
+
+    An `email`/`password` pair identifies a service user with access to a group of companies in Embat.
+    Keep these credentials secret: never commit them to a repository, embed them in client-side code,
+    or expose them in publicly accessible logs.
+
+
+    **Typical flow:**
+
+
+    1. Exchange your `email`/`password` for a bearer token:
+
+
+    ```json
+
+    POST /authentication/token
+
+    {
+      "email": "erp-integration@acme-corp.com",
+      "password": "your-service-password"
+    }
+
+    ```
+
+
+    which returns:
+
+
+    ```json
+
+    { "idToken": "eyJhbGciOiJSUzI1NiIsImtpZCI6IjE5YzY4In0..." }
+
+    ```
+
+
+    2. Send that token as `Authorization: Bearer <idToken>` on every subsequent request.
+
+    3. The token expires **60 minutes** after issuance. Call `/authentication/token` again with the same
+    credentials to get a new one; there is no separate refresh endpoint.
+
+    4. Accounts with multi-factor authentication enabled cannot authenticate through this endpoint.
+
+    5. If `email` or `password` is missing or malformed, the validation error response never echoes back
+    the submitted values, so credentials are never reflected in error output.
+
+
+    All requests must be made over **HTTPS**.
+  humanURL: https://api.embat.io/docs
+  baseURL: https://api.embat.io
+  tags:
+  - Authentication
+  properties:
+  - type: OpenAPI
+    url: openapi/embat-authentication-api-openapi.yml
+  - type: Documentation
+    url: https://api.embat.io/docs
+  - type: APIReference
+    url: https://api.embat.io/docs
+- aid: embat:embat-balances-api
+  name: Embat Balances API
+  description: >-
+    `Balance` represents the end-of-day balance of a bank product (account) for a given calendar day.
+    Embat records one balance per product per day, expressed both in the product's own currency (`balance`)
+    and, when available, in the company accounting currency (`accountingBalance`, converted using the
+    exchange rate as of that day).
+
+
+    Each balance is linked to a `Product` (a bank account, credit line, card...) held at one of the company's
+    connected `Banks`. Balances whose linked product no longer exists in Embat are not returned.
+
+
+    **Typical flow:** use `GET /balances/{companyId}` to read the daily balance history of a company's
+    bank products, filtering by `productId` and by date range, or `GET /balances/{companyId}/{id}` to
+    retrieve a single balance you already know the `id` of — for example after obtaining it from a previous
+    list call.
+  humanURL: https://api.embat.io/docs
+  baseURL: https://api.embat.io
+  tags:
+  - Balances
+  properties:
+  - type: OpenAPI
+    url: openapi/embat-balances-api-openapi.yml
+  - type: Documentation
+    url: https://api.embat.io/docs
+  - type: APIReference
+    url: https://api.embat.io/docs
+- aid: embat:embat-banks-api
+  name: Embat Banks API
+  description: >-
+    `Bank` represents a banking relationship connected to your company in Embat — for example, an aggregated
+    connection to a specific banking entity. Each bank relationship groups the `bankProducts` (checking
+    accounts, credit lines, cards...) held at that entity, together with the oldest successful aggregation
+    timestamp among them.
+
+
+    `GET /banks/{companyId}` only returns relationships that have at least one product, and each relationship's
+    `bankProducts` only lists its currently active products. Use `GET /banks/{companyId}/{id}` to retrieve
+    a single relationship by its Embat `id` regardless of whether it currently has active products.
+
+
+    To read balances and transactions for a specific account, use the `id` of an entry in `bankProducts`
+    with the `Products` and `Transactions` endpoints.
+  humanURL: https://api.embat.io/docs
+  baseURL: https://api.embat.io
+  tags:
+  - Banks
+  properties:
+  - type: OpenAPI
+    url: openapi/embat-banks-api-openapi.yml
+  - type: Documentation
+    url: https://api.embat.io/docs
+  - type: APIReference
+    url: https://api.embat.io/docs
+- aid: embat:embat-categories-api
+  name: Embat Categories API
+  description: >-
+    `Category` represents a treasury or cashflow classification in Embat, used to group transactions,
+    forecasts and operations for reporting (e.g. "Providers", "Payroll", "Subscriptions"). Categories
+    are created and managed in the Embat application; this API only lists and retrieves them. `parentId`
+    is the Embat ID of the parent category, letting you build a category tree such as:
+
+
+    - Payments
+        - Providers
+            - Europe
+            - Latam
+        - Payroll
+
+    - Collections
+        - Subscriptions
+
+    A category has no `parentId` when it is a top-level category.
+
+
+    Categories are referenced by `categoryId` on `Transactions`, `Forecasts` and `Operations` to classify
+    each movement. In the Embat application you can also map an ERP ledger account to a category, so operations
+    posted against that account are categorized automatically.
+
+
+    **Typical flow:** look up the categories configured for a company with `GET /categories/{companyId}`
+    (or a single one with `GET /categories/{companyId}/{id}`) and use their `id` as the `categoryId` when
+    creating or reading transactions, forecasts or operations through the corresponding endpoints.
+  humanURL: https://api.embat.io/docs
+  baseURL: https://api.embat.io
+  tags:
+  - Categories
+  properties:
+  - type: OpenAPI
+    url: openapi/embat-categories-api-openapi.yml
+  - type: Documentation
+    url: https://api.embat.io/docs
+  - type: APIReference
+    url: https://api.embat.io/docs
+- aid: embat:embat-companies-api
+  name: Embat Companies API
+  description: >-
+    A `Company` represents a legal entity configured in your Embat workspace. Its `id` is the `companyId`
+    used throughout this API: almost every other endpoint is scoped by `companyId` and requires it as
+    a path parameter.
+
+
+    `Company` is the parent entity of the API: it has no dependency on any other entity, while every other
+    entity (Payments, Operations, Transactions, Contacts, Accounting Accounts, etc.) belongs to one. A
+    company also has `Users` with access to it, retrievable with `GET /companies/{companyId}/users`.
+
+
+    **Typical flow:**
+
+
+    1. **Resolve the `companyId`.** Call `GET /companies` to list the companies your credentials have
+    access to and pick the `id` of the one you want to work with.
+
+    2. **Use it everywhere.** Pass that `id` as `companyId` in the path of any other endpoint in this
+    API.
+
+    3. **Optionally inspect the company.** `GET /companies/{companyId}` returns its legal name, administrative
+    contact, tags and configuration (e.g. accounting currency).
+  humanURL: https://api.embat.io/docs
+  baseURL: https://api.embat.io
+  tags:
+  - Companies
+  properties:
+  - type: OpenAPI
+    url: openapi/embat-companies-api-openapi.yml
+  - type: Documentation
+    url: https://api.embat.io/docs
+  - type: APIReference
+    url: https://api.embat.io/docs
+- aid: embat:embat-contacts-api
+  name: Embat Contacts API
+  description: >-
+    `Contact` represents a client or supplier your company transacts with. `customId` is the unique identifier
+    of a contact: set your own value to use as your ERP contact ID, or let Embat auto-generate one.
+
+
+    A contact is referenced from other entities to identify who is involved in a transaction: `Operations`
+    (invoices/bills) are billed to or from a contact, `Payments` can record a collection or payment made
+    to a contact, and `AccountingEntries` can be linked to a contact for reconciliation. A contact also
+    carries the bank account details (`accounts`, `paymentsAccounts`) Embat uses to execute payments to
+    it.
+
+
+    **Typical flow:** contacts are usually kept in sync from your ERP, since they are the master data
+    referenced when creating operations and payments.
+
+
+    1. **Create or update a contact from your ERP.** Whenever a client or supplier is created or edited
+    in your ERP, upsert it in Embat with its identification and, if relevant, bank account details:
+
+
+    ```json
+
+    POST /contacts/{companyId}
+
+    {
+      "customId": "erp-contact-001",
+      "legalName": "Acme Supplies S.L.",
+      "taxId": "B12345678",
+      "type": "supplier",
+      "paymentsAccounts": [
+        { "currency": "EUR", "default": true, "details": { "iban": "ES9121000418450200051332" } }
+      ]
+    }
+
+    ```
+
+
+    2. **Reference the contact by `customId`.** Use the same `customId` in `Operations` and `Payments`
+    to link them to this contact.
+
+    3. **Keep it up to date.** Sending `POST /contacts/{companyId}` again with the same `customId` updates
+    the existing contact instead of creating a duplicate; use `PATCH /contacts/{companyId}/{customId}`
+    (or the bulk variant) to update specific fields only.
+  humanURL: https://api.embat.io/docs
+  baseURL: https://api.embat.io
+  tags:
+  - Contacts
+  properties:
+  - type: OpenAPI
+    url: openapi/embat-contacts-api-openapi.yml
+  - type: Documentation
+    url: https://api.embat.io/docs
+  - type: APIReference
+    url: https://api.embat.io/docs
+- aid: embat:embat-debtscheduleconfigs-api
+  name: Embat DebtScheduleConfigs API
+  description: >-
+    <div style="background-color:#fff3cd; color:#856404; padding: 10px; border-left: 6px solid #ffeeba;">
+
+    <strong>⚠️ Warning:</strong> This API section is in BETA. It might undergo significant changes and
+    may not be stable.
+
+    </div>
+
+
+    <code>Debt Schedule Config</code> represents the amortization schedule configured for a debt product:
+    payment frequency, interest rate, outstanding and granted balances, and the full calendar of scheduled
+    payments broken down into principal, interest and tax components.
+
+
+    A debt schedule config is linked to the `Bank` relationship the debt is held with (`bankId`) and to
+    two `Products`: the `debtProductId` being amortized and the product used to pay each installment (`settlementAccountId`,
+    returned as `settlementProductId`).
+
+
+    **Typical flow:** debt schedule configurations are read-only from this API — they are set up in Embat
+    and exposed here for consumption.
+
+
+    1. **List configurations** with `GET /debtscheduleconfigs/{companyId}`, optionally filtering by `startUpdatedAt`/`endUpdatedAt`
+    to read only what changed since your last poll.
+
+    2. **Retrieve a single configuration** with `GET /debtscheduleconfigs/{companyId}/{id}` to get its
+    full payment calendar (`debtSchedulePaymentsCalendar`).
+  humanURL: https://api.embat.io/docs
+  baseURL: https://api.embat.io
+  tags:
+  - DebtScheduleConfigs
+  properties:
+  - type: OpenAPI
+    url: openapi/embat-debtscheduleconfigs-api-openapi.yml
+  - type: Documentation
+    url: https://api.embat.io/docs
+  - type: APIReference
+    url: https://api.embat.io/docs
+- aid: embat:embat-files-api
+  name: Embat Files API
+  description: >-
+    `File` represents a banking file exchanged between Embat and a bank: either a file **received** from
+    a bank (a reception, e.g. an account statement or a confirmation file) or a file **submitted** to
+    a bank (an emission, e.g. a payment order file). Files are identified by an Embat-generated `id` and,
+    when the bank could be identified, carry the related `Bank`.
+
+
+    Files list endpoints are not scoped by `companyId`: they return the files across every company accessible
+    to the authenticated user. `companyId` is only used when creating a file emission.
+
+
+    **Typical flow:**
+
+
+    1. **Discover new receptions.** Poll `GET /files/receptions` periodically; each entry reports whether
+    it has already been `downloaded`. Use `nextPageToken` to page through results.
+
+    2. **Download a reception's content.** Once you have identified a file of interest, fetch its raw
+    content with `GET /files/receptions/{fileId}`.
+
+    3. **Submit a file to a bank.** To send a file to a bank on behalf of a company (e.g. a payment order),
+    call `POST /files/{companyId}/{bankId}` with the file content and its format.
+
+    4. **Track emissions.** List the files you have submitted, and any submitted on your behalf, with
+    `GET /files/emissions`.
+  humanURL: https://api.embat.io/docs
+  baseURL: https://api.embat.io
+  tags:
+  - Files
+  properties:
+  - type: OpenAPI
+    url: openapi/embat-files-api-openapi.yml
+  - type: Documentation
+    url: https://api.embat.io/docs
+  - type: APIReference
+    url: https://api.embat.io/docs
+- aid: embat:embat-forecasts-api
+  name: Embat Forecasts API
+  description: >-
+    `Forecast` represents a treasury cash flow projection generated by Embat for a given date, classified
+    under a `Category` and grouped into a `Scenario` (e.g. a base case or a stress scenario). Each scenario
+    has its own currency and periodicity — `daily`, `weekly`, `monthly` or `yearly` — that determines
+    how forecasted periods are spaced.
+
+
+    Forecasts are generated in Embat; this API does not support creating or deleting them. Use it to read
+    forecasted cash flows and, optionally, to mark them as synchronized with your own systems.
+
+
+    **Typical flow:**
+
+
+    1. **Read forecasts.** Pull the forecasted amounts for a company with `GET /forecasts/{companyId}`,
+    optionally filtered by `scenarioId`, a date range, or synchronization status (`sync`).
+
+    2. **Confirm them as synchronized.** Once you have processed a forecast on your side, mark it as synchronized
+    with `PATCH /forecasts/{companyId}/{id}` (or the bulk variant `PATCH /forecasts/{companyId}`):
+
+
+    ```json
+
+    PATCH /forecasts/{companyId}/{id}
+
+    {
+      "sync": true
+    }
+
+    ```
+  humanURL: https://api.embat.io/docs
+  baseURL: https://api.embat.io
+  tags:
+  - Forecasts
+  properties:
+  - type: OpenAPI
+    url: openapi/embat-forecasts-api-openapi.yml
+  - type: Documentation
+    url: https://api.embat.io/docs
+  - type: APIReference
+    url: https://api.embat.io/docs
+- aid: embat:embat-foreignexchangerates-api
+  name: Embat ForeignExchangeRates API
+  description: >-
+    `ForeignExchangeRate` records the daily exchange rates Embat uses to convert amounts between currencies
+    for accounting purposes. Each record captures the rates observed on a given `date` for a set of currencies
+    against a `baseCurrency` (EUR as stored).
+
+
+    These are the same rates Embat applies internally when it computes exchange rates and accounting amounts
+    on entities such as `Payment`, `Balance` and `Transaction`. Foreign exchange rates are read-only reference
+    data: this API does not support creating, updating or deleting them.
+
+
+    **Typical flow:** look up the rate for a given day to reproduce or audit a currency conversion made
+    elsewhere in Embat.
+
+
+    1. List the rates for a date range, optionally expressed against a currency other than EUR:
+
+
+    ```
+
+    GET /foreignexchangerates?baseCurrency=USD&startDate=2024-01-01&endDate=2024-01-31
+
+    ```
+
+
+    2. Or retrieve a single record you already know the `id` of, always expressed against EUR:
+
+
+    ```
+
+    GET /foreignexchangerates/{id}
+
+    ```
+  humanURL: https://api.embat.io/docs
+  baseURL: https://api.embat.io
+  tags:
+  - ForeignExchangeRates
+  properties:
+  - type: OpenAPI
+    url: openapi/embat-foreignexchangerates-api-openapi.yml
+  - type: Documentation
+    url: https://api.embat.io/docs
+  - type: APIReference
+    url: https://api.embat.io/docs
+- aid: embat:embat-logs-api
+  name: Embat Logs API
+  description: >-
+    `Logs` let your integration report execution events, warnings or errors observed while interacting
+    with the Embat API, so Embat's support team can diagnose integration issues.
+
+
+    Logs are write-only: there is no endpoint to list or retrieve the logs you send. Use `code` to classify
+    the event by severity and, where available, by the entity it relates to (for example `PAYMENTS_ERROR`
+    for an issue involving `Payments`, or `AUTHORIZATION_WARNING` for an authentication issue). Use the
+    generic `INFO`, `WARNING` or `ERROR` codes for events not tied to one of those entities.
+
+
+    **Typical flow:** report a log whenever your integration completes, skips or fails a step of its synchronization
+    with Embat, for example after `POST /payments/{companyId}` returns an error:
+
+
+    ```json
+
+    POST /logs/{companyId}
+
+    {
+      "erp": "netsuite",
+      "erpVersion": "2024.1",
+      "connectorVersion": "1.4.2",
+      "level": "ERROR",
+      "code": "PAYMENTS_ERROR",
+      "message": "Failed to post payment: missing accounting account"
+    }
+
+    ```
+
+
+    Log delivery is best-effort: both endpoints return `204` as soon as the request is accepted, and any
+    failure while recording a log afterwards is not reported back to the caller. To send several logs
+    at once, use `POST /logs/{companyId}/bulk`.
+  humanURL: https://api.embat.io/docs
+  baseURL: https://api.embat.io
+  tags:
+  - Logs
+  properties:
+  - type: OpenAPI
+    url: openapi/embat-logs-api-openapi.yml
+  - type: Documentation
+    url: https://api.embat.io/docs
+  - type: APIReference
+    url: https://api.embat.io/docs
+- aid: embat:embat-operations-api
+  name: Embat Operations API
+  description: >-
+    `Operation` represents an accounting operation with a pending amount to settle — typically an invoice
+    or bill due from or to a `Contact` (client or supplier). An invoice with several due dates is modeled
+    as several operations, one per due date. `customId` is the unique identifier of an operation: set
+    your own value to use as your ERP operation ID, or let Embat auto-generate one.
+
+
+    Operations are the counterpart of `Payment`s: each payment created against an operation reduces its
+    `pendingAmount`, and once the full amount is settled the operation's `status` automatically becomes
+    `paid`. Operations can also be grouped into an invoice group or remittance (see `operationsCustomIds`),
+    reference a `Contact`, be classified with a `Category`, and carry custom `attributes`.
+
+
+    **Typical flow:**
+
+
+    1. **Notify Embat of invoices/bills issued in your ERP.** Create the operation with its due date and
+    amount:
+
+
+    ```json
+
+    POST /operations/{companyId}
+
+    {
+      "customId": "invoice-2024-001",
+      "issuanceDate": "2024-01-01T00:00:00Z",
+      "dueDate": "2024-01-31T00:00:00Z",
+      "currency": "EUR",
+      "concept": "Consulting services January",
+      "amount": 1250.50
+    }
+
+    ```
+
+
+    2. **Track settlement.** As payments are recorded against the operation (see `Payments`), its `pendingAmount`
+    decreases and `status` moves from `pending`/`overdue` to `paid`. Once an operation already has a payment
+    recorded against it in Embat, most of its fields can no longer be updated — see the create/update
+    endpoint descriptions for the exact rules.
+
+    3. **Keep dates and status in sync.** Use `PATCH /operations/{companyId}/{customId}` (or the bulk
+    variant) to correct `dueDate`/`paymentDate`, update `status`, or attach `attributes` — or resend the
+    full operation with `POST`, since sending a `customId` that already exists updates the operation instead
+    of duplicating it.
+
+    4. **Group operations into a remittance (invoice group).** Create the individual operations as usual.
+    When your ERP later groups and pays them together, send one more operation representing the remittance
+    — `documentType: invoiceGroup`, the grouped total as `amount`, and the grouped operations' IDs in
+    `operationsCustomIds`:
+
+
+    ```json
+
+    POST /operations/{companyId}
+
+    {
+      "customId": "remittance-2024-07",
+      "documentType": "invoiceGroup",
+      "amount": 3750.0,
+      "issuanceDate": "2024-07-01T00:00:00Z",
+      "dueDate": "2024-07-31T00:00:00Z",
+      "paymentDate": "2024-07-31T00:00:00Z",
+      "operationsCustomIds": ["invoice-2024-001", "invoice-2024-002", "invoice-2024-003"]
+    }
+
+    ```
+
+
+    Embat marks every grouped operation as `paid` with `pendingAmount: 0` and links it to the remittance.
+    From then on, the grouped operations' lifecycle is managed through the remittance: updating them directly
+    has no effect, and resending the remittance without some of them releases those operations back to
+    `pending` with their full pending amount. Use `DELETE /operations/{companyId}/{customId}` to cancel
+    an operation that no longer applies.
+  humanURL: https://api.embat.io/docs
+  baseURL: https://api.embat.io
+  tags:
+  - Operations
+  properties:
+  - type: OpenAPI
+    url: openapi/embat-operations-api-openapi.yml
+  - type: Documentation
+    url: https://api.embat.io/docs
+  - type: APIReference
+    url: https://api.embat.io/docs
+- aid: embat:embat-paymentorders-api
+  name: Embat PaymentOrders API
+  description: >-
+    <div style="background-color:#fff3cd; color:#856404; padding: 10px; border-left: 6px solid #ffeeba;">
+
+    <strong>⚠️ Warning:</strong> This API section is in BETA. It might undergo significant changes and
+    may not be stable.
+
+    </div>
+
+
+    A <code>PaymentOrder</code> represents a payment executed through Embat, such as a wire transfer or
+    SEPA payment sent to a bank on behalf of a company. It can reference a `documentId` identifying the
+    invoice or operation it settles, a <code>Product</code> used to fund it, and the <code>Bank</code>
+    it was executed through.
+
+
+    **Typical flow:** poll `GET /paymentorders/{companyId}` to track the payment orders created in Embat
+    and their execution `status` (`IN_PROGRESS`, `COMPLETED`, `REJECTED`, `ON_HOLD`). Once a payment order
+    is executed, download its signed receipt with `GET /paymentorders/{id}/receipt`.
+  humanURL: https://api.embat.io/docs
+  baseURL: https://api.embat.io
+  tags:
+  - PaymentOrders
+  properties:
+  - type: OpenAPI
+    url: openapi/embat-paymentorders-api-openapi.yml
+  - type: Documentation
+    url: https://api.embat.io/docs
+  - type: APIReference
+    url: https://api.embat.io/docs
+- aid: embat:embat-payments-api
+  name: Embat Payments API
+  description: >-
+    `Payment` represents money moving between a bank transaction and the operations (invoices, bills)
+    or accounting entries it settles. `customId` is the unique identifier of a payment: set your own value
+    to use as your ERP payment ID, or let Embat auto-generate one.
+
+
+    A payment links the bank world and the accounting world in Embat: it can represent the relationship
+    between a `Transaction` (the bank movement) and one or more `Operations` (the invoices/bills being
+    paid), a cash movement posted directly to an accounting account, or a movement involving a `Contact`
+    (client or supplier). Payments can also reference a `Product` to resolve the accounting code used
+    for classification, and a `Category` for reporting.
+
+
+    **Typical flow:** payments synchronize accounting in both directions between your ERP and Embat.
+
+
+    1. **Notify Embat of payments posted in your ERP.** When a payment is recorded in your ERP, create
+    it in Embat with the operations it settles — each settled amount reduces the pending amount of the
+    corresponding operation (invoice/bill) in Embat:
+
+
+    ```json
+
+    POST /payments/{companyId}
+
+    {
+      "customId": "erp-payment-001",
+      "date": "2024-01-15T00:00:00Z",
+      "amount": 1250.50,
+      "currency": "EUR",
+      "operations": [
+        { "customId": "invoice-2024-001", "amount": 1250.50 }
+      ]
+    }
+
+    ```
+
+
+    2. **Read payments created from Embat.** Periodically pull the payments generated in Embat that are
+    pending on your side, using `GET /payments/{companyId}` with the `sync` filter (payments not yet synchronized)
+    and `startUpdatedAt`/`endUpdatedAt` for incremental reads since your last poll. This endpoint never
+    returns payments you created through `POST /payments/{companyId}` — retrieve those by `customId` with
+    `GET /payments/{companyId}/{customId}`.
+
+    3. **Confirm them back.** Once those payments are posted in your ERP, mark them as synchronized and
+    registered (or record an `error`) with `PATCH /payments/{companyId}/{customId}` (or the bulk variant
+    `PATCH /payments/{companyId}`).
+  humanURL: https://api.embat.io/docs
+  baseURL: https://api.embat.io
+  tags:
+  - Payments
+  properties:
+  - type: OpenAPI
+    url: openapi/embat-payments-api-openapi.yml
+  - type: Documentation
+    url: https://api.embat.io/docs
+  - type: APIReference
+    url: https://api.embat.io/docs
+- aid: embat:embat-products-api
+  name: Embat Products API
+  description: >-
+    `Product` represents a bank account, credit line, card or wallet held by the company — either aggregated
+    automatically from a bank connection, or added manually in Embat. A product can optionally be linked
+    to an accounting account via `accountingCode`, used to reconcile its balance against Embat's chart
+    of accounts.
+
+
+    Products are grouped under a `Bank` relationship (`bankId`), hold the end-of-day snapshots reported
+    by `Balances` and the movements reported by `Transactions`, and are referenced by `Payments` (`productId`)
+    to resolve the accounting code used for classification.
+
+
+    **Typical flow:** retrieve the products of a company with `GET /products/{companyId}` (or a single
+    one with `GET /products/{companyId}/{id}`) to obtain the `id` values used across other endpoints —
+    for example to filter `Transactions` or `Balances`, or to set `productId` on a `Payment`. Once a product's
+    accounting account is known, set it with `PATCH /products/{companyId}/{id}` (or the bulk variant `PATCH
+    /products/{companyId}`).
+  humanURL: https://api.embat.io/docs
+  baseURL: https://api.embat.io
+  tags:
+  - Products
+  properties:
+  - type: OpenAPI
+    url: openapi/embat-products-api-openapi.yml
+  - type: Documentation
+    url: https://api.embat.io/docs
+  - type: APIReference
+    url: https://api.embat.io/docs
+- aid: embat:embat-reconcilingitems-api
+  name: Embat ReconcilingItems API
+  description: >-
+    <div style="background-color:#fff3cd; color:#856404; padding: 10px; border-left: 6px solid #ffeeba;">
+
+    <strong>⚠️ Warning:</strong> This API section is in BETA. It might undergo significant changes and
+    may not be stable.
+
+    </div>
+
+
+    <code>ReconcilingItem</code> represents a single financial record — for example a POS sale, an order,
+    or a settlement — that needs to be matched against a product `transaction`. `customId` is the unique
+    identifier of a reconciling item: set your own value to use as your internal identifier.
+
+
+    Every reconciling item belongs to a <code>ReconcilingSource</code>, referenced by `reconcilingSourceCustomId`,
+    which identifies the origin system the item comes from (e.g. a POS, an internal system, or a CRM)
+    and can define a `matchingMetadataKey`. When set, Embat uses the value stored under that key in the
+    item's `metadata` to automatically associate the item with a transaction. `reconciled` and `isMatched`
+    reflect the state of that process and are set by Embat — they cannot be updated through this API.
+
+
+    **Typical flow:**
+
+
+    1. **Register a reconciling source** (see <code>ReconcilingSources</code>) if one does not already
+    exist for the origin system.
+
+    2. **Notify Embat of records to reconcile.** Create a reconciling item for each record, including
+    the metadata your reconciling source uses for matching:
+
+
+    ```json
+
+    POST /reconcilingitems/{companyId}
+
+    {
+      "customId": "stripe-order-4821",
+      "reconcilingSourceCustomId": "stripe-orders",
+      "amount": 199.90,
+      "currency": "EUR",
+      "date": "2024-01-15T00:00:00Z",
+      "description": "Stripe order #4821",
+      "metadata": { "orderId": "ORD-48213" }
+    }
+
+    ```
+
+
+    Calling this again with the same `customId` updates the existing item instead of creating a duplicate,
+    unless it has already been matched to a transaction.
+
+
+    3. **Track reconciliation status.** Retrieve or list items with `GET /reconcilingitems/{companyId}/{customId}`
+    or `GET /reconcilingitems/{companyId}` — filter by `reconcilingSourceCustomId` or `reconciled` and
+    check `isMatched`/`reconciled` on each item to see whether Embat has matched and reconciled it.
+
+    4. **Correct or remove items** while they are still unmatched: use `PATCH`/`DELETE /reconcilingitems/{companyId}/{customId}`
+    (or their bulk variants), or resend the item with `POST` — creation is an upsert, so an existing `customId`
+    is updated instead of duplicated.
+  humanURL: https://api.embat.io/docs
+  baseURL: https://api.embat.io
+  tags:
+  - ReconcilingItems
+  properties:
+  - type: OpenAPI
+    url: openapi/embat-reconcilingitems-api-openapi.yml
+  - type: Documentation
+    url: https://api.embat.io/docs
+  - type: APIReference
+    url: https://api.embat.io/docs
+- aid: embat:embat-reconcilingsources-api
+  name: Embat ReconcilingSources API
+  description: >-
+    <div style="background-color:#fff3cd; color:#856404; padding: 10px; border-left: 6px solid #ffeeba;">
+
+    <strong>⚠️ Warning:</strong> This API section is in BETA. It might undergo significant changes and
+    may not be stable.
+
+    </div>
+
+
+    <code>ReconcilingSource</code> represents the origin of financial records that need to be matched
+    against product transactions — for example a point-of-sale system, an internal financial system, or
+    a CRM. <code>customId</code> is the unique identifier of a reconciling source: set your own value
+    to use as your internal source ID.
+
+
+    A reconciling source is the parent of one or more <code>ReconcilingItems</code>: each item references
+    its source through <code>reconcilingSourceCustomId</code>. The source's <code>matchingMetadataKey</code>
+    names the field within its items' <code>metadata</code> that Embat uses to associate each item with
+    a product transaction. A reconciling source does not carry financial data itself — amounts, currencies
+    and dates live on its <code>ReconcilingItems</code>.
+
+
+    **Typical flow:**
+
+
+    1. **Register a reconciling source.** Create one for each origin system you want to reconcile from,
+    defining the metadata key used to match its items to transactions:
+
+
+    ```json
+
+    POST /reconcilingsources/{companyId}
+
+    {
+      "customId": "stripe-orders",
+      "name": "Stripe orders feed",
+      "matchingMetadataKey": "orderId"
+    }
+
+    ```
+
+
+    Calling this again with the same `customId` updates the existing source instead of creating a duplicate.
+
+
+    2. **Create the reconciling items** for that source (see <code>ReconcilingItems</code>), each carrying
+    the metadata value that will later be matched against product transactions.
+
+    3. **Retrieve or list sources** with `GET /reconcilingsources/{companyId}/{customId}` or `GET /reconcilingsources/{companyId}`.
+
+    4. **Update or delete a source** as your origin systems change: use `PATCH`/`DELETE /reconcilingsources/{companyId}/{customId}`,
+    or resend the source with `POST` — creation is an upsert, so an existing `customId` is updated instead
+    of duplicated.
+  humanURL: https://api.embat.io/docs
+  baseURL: https://api.embat.io
+  tags:
+  - ReconcilingSources
+  properties:
+  - type: OpenAPI
+    url: openapi/embat-reconcilingsources-api-openapi.yml
+  - type: Documentation
+    url: https://api.embat.io/docs
+  - type: APIReference
+    url: https://api.embat.io/docs
+- aid: embat:embat-scenarios-api
+  name: Embat Scenarios API
+  description: >-
+    A `Scenario` represents a forecasting hypothesis in Embat's treasury forecast: a named, currency-denominated
+    projection covering a defined horizon (`startPeriod` to `endPeriod`) at a given time granularity (`periodicity`).
+    Only published scenarios are returned when listing scenarios.
+
+
+    Scenarios are the grouping unit for `Forecasts`: each forecast belongs to one scenario, and its figures
+    are only meaningful in the context of that scenario's currency, periodicity and horizon.
+
+
+    **Typical flow:** list the company's published scenarios with `GET /scenarios/{companyId}` to discover
+    which forecasting hypotheses are available, then use a scenario's `id` to retrieve its details with
+    `GET /scenarios/{companyId}/{id}` or to filter the related `Forecasts` endpoints.
+  humanURL: https://api.embat.io/docs
+  baseURL: https://api.embat.io
+  tags:
+  - Scenarios
+  properties:
+  - type: OpenAPI
+    url: openapi/embat-scenarios-api-openapi.yml
+  - type: Documentation
+    url: https://api.embat.io/docs
+  - type: APIReference
+    url: https://api.embat.io/docs
+- aid: embat:embat-transactions-api
+  name: Embat Transactions API
+  description: >-
+    `Transaction` represents a movement recorded on one of your bank accounts (`Product`). Each transaction
+    reports the balance of its product immediately after the movement, and can carry a classification
+    (`type`), a breakdown across `Categories` for reporting, custom `Attributes`, and the IDs of any reconciliations
+    it is part of.
+
+
+    Transactions are the bank side of the money movements Embat tracks: `Payments` link a transaction
+    to the `Operations` (invoices/bills) it settles, and accounting entries reconcile it against your
+    ledger. Transactions are generated automatically as your bank accounts (`Products`) are connected
+    to Embat; the only way to create transactions through this API is for products classified as "Manual"
+    (accounts with no bank connection), via the bulk creation endpoint below.
+
+
+    **Typical flow:** transactions synchronize in one direction, from Embat to your ERP.
+
+
+    1. **Read transactions generated in Embat.** Periodically pull the transactions pending on your side
+    with `GET /transactions/{companyId}`, using the `sync` filter (transactions not yet synchronized)
+    and `startUpdatedAt`/`endUpdatedAt` for incremental reads since your last poll.
+
+    2. **Confirm them back.** Once a transaction has been recorded in your ERP, mark it as synchronized
+    with `PATCH /transactions/{companyId}/{id}` (or the bulk variant `PATCH /transactions/{companyId}`).
+
+    3. **Manual accounts only.** For products classified as Manual, record their transactions yourself
+    with `POST /transactions/{companyId}/{productId}/bulk`. See that endpoint's description for how it
+    replaces same-day transactions.
+  humanURL: https://api.embat.io/docs
+  baseURL: https://api.embat.io
+  tags:
+  - Transactions
+  properties:
+  - type: OpenAPI
+    url: openapi/embat-transactions-api-openapi.yml
+  - type: Documentation
+    url: https://api.embat.io/docs
+  - type: APIReference
+    url: https://api.embat.io/docs
 maintainers:
 - FN: Kin Lane
   email: kin@apievangelist.com
@@ -24,3 +1106,40 @@ maintainers:
 common:
 - type: Website
   url: https://www.embat.io/
+- type: Login
+  url: https://app.embat.io/
+- type: Documentation
+  url: https://api.embat.io/docs
+- type: APIReference
+  url: https://api.embat.io/docs
+- type: Authentication
+  url: authentication/embat-authentication.yml
+- type: Conventions
+  url: conventions/embat-conventions.yml
+- type: ErrorCatalog
+  url: errors/embat-problem-types.yml
+- type: DataModel
+  url: data-model/embat-data-model.yml
+- type: Lifecycle
+  url: lifecycle/embat-lifecycle.yml
+- type: Conformance
+  url: conformance/embat-conformance.yml
+- type: Sandbox
+  url: sandbox/embat-sandbox.yml
+- type: MCPServer
+  url: mcp/embat-mcp.yml
+- type: AgentSkill
+  url: skills/_index.yml
+- type: LLMsTxt
+  url: llms/embat-llms.txt
+- type: Overlay
+  url: overlays/embat-openapi-overlay.yaml
+- type: AgenticAccess
+  url: agentic-access/embat-agentic-access.yml
+- type: DomainSecurity
+  url: security/embat-domain-security.yml
+x-enrichment:
+  date: '2026-07-19'
+  status: backfilled
+  pass: local-v1
+  note: backfilled from .gitignore signal + verified work evidence

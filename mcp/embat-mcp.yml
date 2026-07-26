@@ -1,0 +1,529 @@
+generated: '2026-07-19'
+method: derived
+status: candidate
+source: openapi/embat-openapi-original.json
+note: Candidate MCP tool surface derived one-to-one from Embat OpenAPI operations. No official hosted
+  Embat MCP server was found (searched docs + registries). All tools require an HTTP Bearer token from
+  POST /authentication/token.
+server:
+  name: embat
+  transport: http
+  auth: bearer
+  base_url: https://api.embat.io
+tool_count: 103
+tools:
+- name: auth_token_authentication_token_post
+  description: Generate access token
+  method: POST
+  path: /authentication/token
+  source_operation: openapi/embat-openapi-original.json#auth_token_authentication_token_post
+- name: list_accounting_entries_accountingentries__companyId__get
+  description: List accounting entries
+  method: GET
+  path: /accountingentries/{companyId}
+  source_operation: openapi/embat-openapi-original.json#list_accounting_entries_accountingentries__companyId__get
+- name: create_accounting_entry_accountingentries__companyId__post
+  description: Create accounting entry
+  method: POST
+  path: /accountingentries/{companyId}
+  source_operation: openapi/embat-openapi-original.json#create_accounting_entry_accountingentries__companyId__post
+- name: update_accounting_entries_bulk_accountingentries__companyId__patch
+  description: Update accounting entries in bulk
+  method: PATCH
+  path: /accountingentries/{companyId}
+  source_operation: openapi/embat-openapi-original.json#update_accounting_entries_bulk_accountingentries__companyId__patch
+- name: delete_accounting_entries_bulk_accountingentries__companyId__delete
+  description: Delete accounting entries in bulk
+  method: DELETE
+  path: /accountingentries/{companyId}
+  source_operation: openapi/embat-openapi-original.json#delete_accounting_entries_bulk_accountingentries__companyId__delete
+- name: retrieve_accounting_entry_accountingentries__companyId___customId__get
+  description: Retrieve accounting entry
+  method: GET
+  path: /accountingentries/{companyId}/{customId}
+  source_operation: openapi/embat-openapi-original.json#retrieve_accounting_entry_accountingentries__companyId___customId__get
+- name: update_accounting_entry_accountingentries__companyId___customId__patch
+  description: Update accounting entry
+  method: PATCH
+  path: /accountingentries/{companyId}/{customId}
+  source_operation: openapi/embat-openapi-original.json#update_accounting_entry_accountingentries__companyId___customId__patch
+- name: delete_accounting_entry_accountingentries__companyId___customId__delete
+  description: Delete accounting entry
+  method: DELETE
+  path: /accountingentries/{companyId}/{customId}
+  source_operation: openapi/embat-openapi-original.json#delete_accounting_entry_accountingentries__companyId___customId__delete
+- name: create_accounting_entries_bulk_accountingentries__companyId__bulk_post
+  description: Create accounting entries in bulk
+  method: POST
+  path: /accountingentries/{companyId}/bulk
+  source_operation: openapi/embat-openapi-original.json#create_accounting_entries_bulk_accountingentries__companyId__bulk_post
+- name: delete_accounting_entries_bulk_by_entry_code_accountingentries_accountingentrycode__companyId__delete
+  description: Delete accounting entries in bulk by entry code
+  method: DELETE
+  path: /accountingentries/accountingentrycode/{companyId}
+  source_operation: openapi/embat-openapi-original.json#delete_accounting_entries_bulk_by_entry_code_accountingentries_accountingentrycode__companyId__delete
+- name: list_accountings_accounts_accountingaccounts__companyId__get
+  description: List accounting accounts
+  method: GET
+  path: /accountingaccounts/{companyId}
+  source_operation: openapi/embat-openapi-original.json#list_accountings_accounts_accountingaccounts__companyId__get
+- name: create_accountings_account_accountingaccounts__companyId__post
+  description: Create accounting account
+  method: POST
+  path: /accountingaccounts/{companyId}
+  source_operation: openapi/embat-openapi-original.json#create_accountings_account_accountingaccounts__companyId__post
+- name: update_accountings_accounts_bulk_accountingaccounts__companyId__patch
+  description: Update accounting accounts in bulk
+  method: PATCH
+  path: /accountingaccounts/{companyId}
+  source_operation: openapi/embat-openapi-original.json#update_accountings_accounts_bulk_accountingaccounts__companyId__patch
+- name: delete_accountings_accounts_bulk_accountingaccounts__companyId__delete
+  description: Delete accounting accounts in bulk
+  method: DELETE
+  path: /accountingaccounts/{companyId}
+  source_operation: openapi/embat-openapi-original.json#delete_accountings_accounts_bulk_accountingaccounts__companyId__delete
+- name: retrieve_accountings_account_accountingaccounts__companyId___accountingCode__get
+  description: Retrieve accounting account
+  method: GET
+  path: /accountingaccounts/{companyId}/{accountingCode}
+  source_operation: openapi/embat-openapi-original.json#retrieve_accountings_account_accountingaccounts__companyId___accountingCode__get
+- name: update_accountings_account_accountingaccounts__companyId___accountingCode__patch
+  description: Update accounting account
+  method: PATCH
+  path: /accountingaccounts/{companyId}/{accountingCode}
+  source_operation: openapi/embat-openapi-original.json#update_accountings_account_accountingaccounts__companyId___accountingCode__patch
+- name: delete_accountings_account_accountingaccounts__companyId___accountingCode__delete
+  description: Delete accounting account
+  method: DELETE
+  path: /accountingaccounts/{companyId}/{accountingCode}
+  source_operation: openapi/embat-openapi-original.json#delete_accountings_account_accountingaccounts__companyId___accountingCode__delete
+- name: create_accountings_accounts_bulk_accountingaccounts__companyId__bulk_post
+  description: Create accounting accounts in bulk
+  method: POST
+  path: /accountingaccounts/{companyId}/bulk
+  source_operation: openapi/embat-openapi-original.json#create_accountings_accounts_bulk_accountingaccounts__companyId__bulk_post
+- name: list_attributes_attributes__companyId__get
+  description: List attributes
+  method: GET
+  path: /attributes/{companyId}
+  source_operation: openapi/embat-openapi-original.json#list_attributes_attributes__companyId__get
+- name: create_attribute_attributes__companyId__post
+  description: Create attribute
+  method: POST
+  path: /attributes/{companyId}
+  source_operation: openapi/embat-openapi-original.json#create_attribute_attributes__companyId__post
+- name: update_attributes_bulk_attributes__companyId__patch
+  description: Update attributes in bulk
+  method: PATCH
+  path: /attributes/{companyId}
+  source_operation: openapi/embat-openapi-original.json#update_attributes_bulk_attributes__companyId__patch
+- name: delete_attributes_bulk_attributes__companyId__delete
+  description: Delete attributes in bulk
+  method: DELETE
+  path: /attributes/{companyId}
+  source_operation: openapi/embat-openapi-original.json#delete_attributes_bulk_attributes__companyId__delete
+- name: retrieve_attribute_attributes__companyId___customId__get
+  description: Retrieve attribute
+  method: GET
+  path: /attributes/{companyId}/{customId}
+  source_operation: openapi/embat-openapi-original.json#retrieve_attribute_attributes__companyId___customId__get
+- name: update_attribute_attributes__companyId___customId__patch
+  description: Update attribute
+  method: PATCH
+  path: /attributes/{companyId}/{customId}
+  source_operation: openapi/embat-openapi-original.json#update_attribute_attributes__companyId___customId__patch
+- name: delete_attribute_attributes__companyId___customId__delete
+  description: Delete attribute
+  method: DELETE
+  path: /attributes/{companyId}/{customId}
+  source_operation: openapi/embat-openapi-original.json#delete_attribute_attributes__companyId___customId__delete
+- name: create_attributes_bulk_attributes__companyId__bulk_post
+  description: Create attributes in bulk
+  method: POST
+  path: /attributes/{companyId}/bulk
+  source_operation: openapi/embat-openapi-original.json#create_attributes_bulk_attributes__companyId__bulk_post
+- name: add_attribute_values_attributes__companyId___customId__values_bulk_post
+  description: Add values to an attribute
+  method: POST
+  path: /attributes/{companyId}/{customId}/values/bulk
+  source_operation: openapi/embat-openapi-original.json#add_attribute_values_attributes__companyId___customId__values_bulk_post
+- name: remove_attribute_values_attributes__companyId___customId__values_delete
+  description: Remove values from an attribute
+  method: DELETE
+  path: /attributes/{companyId}/{customId}/values
+  source_operation: openapi/embat-openapi-original.json#remove_attribute_values_attributes__companyId___customId__values_delete
+- name: list_banks_banks__companyId__get
+  description: List banks
+  method: GET
+  path: /banks/{companyId}
+  source_operation: openapi/embat-openapi-original.json#list_banks_banks__companyId__get
+- name: retrieve_bank_banks__companyId___id__get
+  description: Retrieve bank
+  method: GET
+  path: /banks/{companyId}/{id}
+  source_operation: openapi/embat-openapi-original.json#retrieve_bank_banks__companyId___id__get
+- name: list_balances_balances__companyId__get
+  description: List balances
+  method: GET
+  path: /balances/{companyId}
+  source_operation: openapi/embat-openapi-original.json#list_balances_balances__companyId__get
+- name: retrieve_balance_balances__companyId___id__get
+  description: Retrieve balance
+  method: GET
+  path: /balances/{companyId}/{id}
+  source_operation: openapi/embat-openapi-original.json#retrieve_balance_balances__companyId___id__get
+- name: list_companies_companies_get
+  description: List user companies
+  method: GET
+  path: /companies
+  source_operation: openapi/embat-openapi-original.json#list_companies_companies_get
+- name: retrieve_company_companies__companyId__get
+  description: Retrieve company
+  method: GET
+  path: /companies/{companyId}
+  source_operation: openapi/embat-openapi-original.json#retrieve_company_companies__companyId__get
+- name: list_company_users_companies__companyId__users_get
+  description: List company users
+  method: GET
+  path: /companies/{companyId}/users
+  source_operation: openapi/embat-openapi-original.json#list_company_users_companies__companyId__users_get
+- name: list_categories_categories__companyId__get
+  description: List categories
+  method: GET
+  path: /categories/{companyId}
+  source_operation: openapi/embat-openapi-original.json#list_categories_categories__companyId__get
+- name: get_category_categories__companyId___id__get
+  description: Retrieve category
+  method: GET
+  path: /categories/{companyId}/{id}
+  source_operation: openapi/embat-openapi-original.json#get_category_categories__companyId___id__get
+- name: list_contacts_contacts__companyId__get
+  description: List contacts
+  method: GET
+  path: /contacts/{companyId}
+  source_operation: openapi/embat-openapi-original.json#list_contacts_contacts__companyId__get
+- name: create_contact_contacts__companyId__post
+  description: Create contact
+  method: POST
+  path: /contacts/{companyId}
+  source_operation: openapi/embat-openapi-original.json#create_contact_contacts__companyId__post
+- name: update_contacts_bulk_contacts__companyId__patch
+  description: Update contacts in bulk
+  method: PATCH
+  path: /contacts/{companyId}
+  source_operation: openapi/embat-openapi-original.json#update_contacts_bulk_contacts__companyId__patch
+- name: delete_contacts_bulk_contacts__companyId__delete
+  description: Delete contacts in bulk
+  method: DELETE
+  path: /contacts/{companyId}
+  source_operation: openapi/embat-openapi-original.json#delete_contacts_bulk_contacts__companyId__delete
+- name: retrieve_contact_contacts__companyId___customId__get
+  description: Retrieve contact
+  method: GET
+  path: /contacts/{companyId}/{customId}
+  source_operation: openapi/embat-openapi-original.json#retrieve_contact_contacts__companyId___customId__get
+- name: update_contact_contacts__companyId___customId__patch
+  description: Update contact
+  method: PATCH
+  path: /contacts/{companyId}/{customId}
+  source_operation: openapi/embat-openapi-original.json#update_contact_contacts__companyId___customId__patch
+- name: delete_contact_contacts__companyId___customId__delete
+  description: Delete contact
+  method: DELETE
+  path: /contacts/{companyId}/{customId}
+  source_operation: openapi/embat-openapi-original.json#delete_contact_contacts__companyId___customId__delete
+- name: create_contacts_bulk_contacts__companyId__bulk_post
+  description: Create contacts in bulk
+  method: POST
+  path: /contacts/{companyId}/bulk
+  source_operation: openapi/embat-openapi-original.json#create_contacts_bulk_contacts__companyId__bulk_post
+- name: list_debt_schedule_configs_debtscheduleconfigs__companyId__get
+  description: List debt schedule configs
+  method: GET
+  path: /debtscheduleconfigs/{companyId}
+  source_operation: openapi/embat-openapi-original.json#list_debt_schedule_configs_debtscheduleconfigs__companyId__get
+- name: retrieve_debt_schedule_config_debtscheduleconfigs__companyId___id__get
+  description: Retrieve debt schedule config
+  method: GET
+  path: /debtscheduleconfigs/{companyId}/{id}
+  source_operation: openapi/embat-openapi-original.json#retrieve_debt_schedule_config_debtscheduleconfigs__companyId___id__get
+- name: list_files_receptions_files_receptions_get
+  description: List file receptions
+  method: GET
+  path: /files/receptions
+  source_operation: openapi/embat-openapi-original.json#list_files_receptions_files_receptions_get
+- name: download_receptions_file_files_receptions__fileId__get
+  description: Download file reception
+  method: GET
+  path: /files/receptions/{fileId}
+  source_operation: openapi/embat-openapi-original.json#download_receptions_file_files_receptions__fileId__get
+- name: list_files_emissions_files_emissions_get
+  description: List file emissions
+  method: GET
+  path: /files/emissions
+  source_operation: openapi/embat-openapi-original.json#list_files_emissions_files_emissions_get
+- name: create_file_emission_files__companyId___bankId__post
+  description: Create file emission
+  method: POST
+  path: /files/{companyId}/{bankId}
+  source_operation: openapi/embat-openapi-original.json#create_file_emission_files__companyId___bankId__post
+- name: list_forecasts_forecasts__companyId__get
+  description: List forecasts
+  method: GET
+  path: /forecasts/{companyId}
+  source_operation: openapi/embat-openapi-original.json#list_forecasts_forecasts__companyId__get
+- name: update_forecasts_bulk_forecasts__companyId__patch
+  description: Update forecasts in bulk
+  method: PATCH
+  path: /forecasts/{companyId}
+  source_operation: openapi/embat-openapi-original.json#update_forecasts_bulk_forecasts__companyId__patch
+- name: retrieve_forecast_forecasts__companyId___id__get
+  description: Retrieve forecast
+  method: GET
+  path: /forecasts/{companyId}/{id}
+  source_operation: openapi/embat-openapi-original.json#retrieve_forecast_forecasts__companyId___id__get
+- name: update_forecast_forecasts__companyId___id__patch
+  description: Update forecast
+  method: PATCH
+  path: /forecasts/{companyId}/{id}
+  source_operation: openapi/embat-openapi-original.json#update_forecast_forecasts__companyId___id__patch
+- name: list_foreign_exchange_rates_foreignexchangerates_get
+  description: List foreign exchange rates
+  method: GET
+  path: /foreignexchangerates
+  source_operation: openapi/embat-openapi-original.json#list_foreign_exchange_rates_foreignexchangerates_get
+- name: retrieve_foreign_exchange_rate_foreignexchangerates__id__get
+  description: Retrieve foreign exchange rate
+  method: GET
+  path: /foreignexchangerates/{id}
+  source_operation: openapi/embat-openapi-original.json#retrieve_foreign_exchange_rate_foreignexchangerates__id__get
+- name: create_log_logs__companyId__post
+  description: Create log
+  method: POST
+  path: /logs/{companyId}
+  source_operation: openapi/embat-openapi-original.json#create_log_logs__companyId__post
+- name: create_logs_bulk_logs__companyId__bulk_post
+  description: Create logs in bulk
+  method: POST
+  path: /logs/{companyId}/bulk
+  source_operation: openapi/embat-openapi-original.json#create_logs_bulk_logs__companyId__bulk_post
+- name: list_operations_operations__companyId__get
+  description: List operations
+  method: GET
+  path: /operations/{companyId}
+  source_operation: openapi/embat-openapi-original.json#list_operations_operations__companyId__get
+- name: create_operation_operations__companyId__post
+  description: Create operation
+  method: POST
+  path: /operations/{companyId}
+  source_operation: openapi/embat-openapi-original.json#create_operation_operations__companyId__post
+- name: update_operations_bulk_operations__companyId__patch
+  description: Update operations in bulk
+  method: PATCH
+  path: /operations/{companyId}
+  source_operation: openapi/embat-openapi-original.json#update_operations_bulk_operations__companyId__patch
+- name: delete_operations_bulk_operations__companyId__delete
+  description: Delete operations in bulk
+  method: DELETE
+  path: /operations/{companyId}
+  source_operation: openapi/embat-openapi-original.json#delete_operations_bulk_operations__companyId__delete
+- name: read_operation_operations__companyId___customId__get
+  description: Retrieve operation
+  method: GET
+  path: /operations/{companyId}/{customId}
+  source_operation: openapi/embat-openapi-original.json#read_operation_operations__companyId___customId__get
+- name: update_operation_operations__companyId___customId__patch
+  description: Update operation
+  method: PATCH
+  path: /operations/{companyId}/{customId}
+  source_operation: openapi/embat-openapi-original.json#update_operation_operations__companyId___customId__patch
+- name: delete_operation_operations__companyId___customId__delete
+  description: Delete operation
+  method: DELETE
+  path: /operations/{companyId}/{customId}
+  source_operation: openapi/embat-openapi-original.json#delete_operation_operations__companyId___customId__delete
+- name: create_operations_bulk_operations__companyId__bulk_post
+  description: Create operations in bulk
+  method: POST
+  path: /operations/{companyId}/bulk
+  source_operation: openapi/embat-openapi-original.json#create_operations_bulk_operations__companyId__bulk_post
+- name: add_attribute_values_operations__companyId__attributes_bulk_post
+  description: Add internal attributes to operations in bulk
+  method: POST
+  path: /operations/{companyId}/attributes/bulk
+  source_operation: openapi/embat-openapi-original.json#add_attribute_values_operations__companyId__attributes_bulk_post
+- name: delete_contacts_bulk_operations__companyId__attributes_bulk_delete
+  description: Remove internal attributes from operations in bulk
+  method: DELETE
+  path: /operations/{companyId}/attributes/bulk
+  source_operation: openapi/embat-openapi-original.json#delete_contacts_bulk_operations__companyId__attributes_bulk_delete
+- name: list_payment_orders_paymentorders__companyId__get
+  description: List payment orders
+  method: GET
+  path: /paymentorders/{companyId}
+  source_operation: openapi/embat-openapi-original.json#list_payment_orders_paymentorders__companyId__get
+- name: download_payment_order_receipt_paymentorders__id__receipt_get
+  description: Download payment order receipt
+  method: GET
+  path: /paymentorders/{id}/receipt
+  source_operation: openapi/embat-openapi-original.json#download_payment_order_receipt_paymentorders__id__receipt_get
+- name: list_payments_payments__companyId__get
+  description: List payments
+  method: GET
+  path: /payments/{companyId}
+  source_operation: openapi/embat-openapi-original.json#list_payments_payments__companyId__get
+- name: create_payment_payments__companyId__post
+  description: Create payment
+  method: POST
+  path: /payments/{companyId}
+  source_operation: openapi/embat-openapi-original.json#create_payment_payments__companyId__post
+- name: update_payments_bulk_payments__companyId__patch
+  description: Update payments in bulk
+  method: PATCH
+  path: /payments/{companyId}
+  source_operation: openapi/embat-openapi-original.json#update_payments_bulk_payments__companyId__patch
+- name: delete_payments_bulk_payments__companyId__delete
+  description: Delete payments in bulk
+  method: DELETE
+  path: /payments/{companyId}
+  source_operation: openapi/embat-openapi-original.json#delete_payments_bulk_payments__companyId__delete
+- name: retrieve_payment_payments__companyId___customId__get
+  description: Retrieve payment
+  method: GET
+  path: /payments/{companyId}/{customId}
+  source_operation: openapi/embat-openapi-original.json#retrieve_payment_payments__companyId___customId__get
+- name: update_payment_payments__companyId___customId__patch
+  description: Update payment
+  method: PATCH
+  path: /payments/{companyId}/{customId}
+  source_operation: openapi/embat-openapi-original.json#update_payment_payments__companyId___customId__patch
+- name: delete_payment_payments__companyId___customId__delete
+  description: Delete payment
+  method: DELETE
+  path: /payments/{companyId}/{customId}
+  source_operation: openapi/embat-openapi-original.json#delete_payment_payments__companyId___customId__delete
+- name: create_payments_bulk_payments__companyId__bulk_post
+  description: Create payments in bulk
+  method: POST
+  path: /payments/{companyId}/bulk
+  source_operation: openapi/embat-openapi-original.json#create_payments_bulk_payments__companyId__bulk_post
+- name: list_products_products__companyId__get
+  description: List products
+  method: GET
+  path: /products/{companyId}
+  source_operation: openapi/embat-openapi-original.json#list_products_products__companyId__get
+- name: update_products_bulk_products__companyId__patch
+  description: Update products in bulk
+  method: PATCH
+  path: /products/{companyId}
+  source_operation: openapi/embat-openapi-original.json#update_products_bulk_products__companyId__patch
+- name: retrieve_product_products__companyId___id__get
+  description: Retrieve product
+  method: GET
+  path: /products/{companyId}/{id}
+  source_operation: openapi/embat-openapi-original.json#retrieve_product_products__companyId___id__get
+- name: update_product_products__companyId___id__patch
+  description: Update product
+  method: PATCH
+  path: /products/{companyId}/{id}
+  source_operation: openapi/embat-openapi-original.json#update_product_products__companyId___id__patch
+- name: list_operations_reconcilingitems__companyId__get
+  description: List reconciling items
+  method: GET
+  path: /reconcilingitems/{companyId}
+  source_operation: openapi/embat-openapi-original.json#list_operations_reconcilingitems__companyId__get
+- name: create_reconciling_item_reconcilingitems__companyId__post
+  description: Create reconciling item
+  method: POST
+  path: /reconcilingitems/{companyId}
+  source_operation: openapi/embat-openapi-original.json#create_reconciling_item_reconcilingitems__companyId__post
+- name: update_reconciling_items_bulk_reconcilingitems__companyId__patch
+  description: Update reconciling items in bulk
+  method: PATCH
+  path: /reconcilingitems/{companyId}
+  source_operation: openapi/embat-openapi-original.json#update_reconciling_items_bulk_reconcilingitems__companyId__patch
+- name: delete_reconciling_items_bulk_reconcilingitems__companyId__delete
+  description: Delete reconciling items in bulk
+  method: DELETE
+  path: /reconcilingitems/{companyId}
+  source_operation: openapi/embat-openapi-original.json#delete_reconciling_items_bulk_reconcilingitems__companyId__delete
+- name: read_reconciling_item_reconcilingitems__companyId___customId__get
+  description: Retrieve reconciling item
+  method: GET
+  path: /reconcilingitems/{companyId}/{customId}
+  source_operation: openapi/embat-openapi-original.json#read_reconciling_item_reconcilingitems__companyId___customId__get
+- name: update_reconciling_item_reconcilingitems__companyId___customId__patch
+  description: Update reconciling item
+  method: PATCH
+  path: /reconcilingitems/{companyId}/{customId}
+  source_operation: openapi/embat-openapi-original.json#update_reconciling_item_reconcilingitems__companyId___customId__patch
+- name: delete_reconciling_item_reconcilingitems__companyId___customId__delete
+  description: Delete reconciling item
+  method: DELETE
+  path: /reconcilingitems/{companyId}/{customId}
+  source_operation: openapi/embat-openapi-original.json#delete_reconciling_item_reconcilingitems__companyId___customId__delete
+- name: create_reconciling_items_bulk_reconcilingitems__companyId__bulk_post
+  description: Create reconciling items in bulk
+  method: POST
+  path: /reconcilingitems/{companyId}/bulk
+  source_operation: openapi/embat-openapi-original.json#create_reconciling_items_bulk_reconcilingitems__companyId__bulk_post
+- name: list_reconciling_sources_reconcilingsources__companyId__get
+  description: List reconciling sources
+  method: GET
+  path: /reconcilingsources/{companyId}
+  source_operation: openapi/embat-openapi-original.json#list_reconciling_sources_reconcilingsources__companyId__get
+- name: create_reconciling_source_reconcilingsources__companyId__post
+  description: Create reconciling source
+  method: POST
+  path: /reconcilingsources/{companyId}
+  source_operation: openapi/embat-openapi-original.json#create_reconciling_source_reconcilingsources__companyId__post
+- name: retrieve_reconciling_source_reconcilingsources__companyId___customId__get
+  description: Retrieve reconciling source
+  method: GET
+  path: /reconcilingsources/{companyId}/{customId}
+  source_operation: openapi/embat-openapi-original.json#retrieve_reconciling_source_reconcilingsources__companyId___customId__get
+- name: update_reconciling_source_reconcilingsources__companyId___customId__patch
+  description: Update reconciling source
+  method: PATCH
+  path: /reconcilingsources/{companyId}/{customId}
+  source_operation: openapi/embat-openapi-original.json#update_reconciling_source_reconcilingsources__companyId___customId__patch
+- name: delete_reconciling_source_reconcilingsources__companyId___customId__delete
+  description: Delete reconciling source
+  method: DELETE
+  path: /reconcilingsources/{companyId}/{customId}
+  source_operation: openapi/embat-openapi-original.json#delete_reconciling_source_reconcilingsources__companyId___customId__delete
+- name: list_scenarios_scenarios__companyId__get
+  description: List scenarios
+  method: GET
+  path: /scenarios/{companyId}
+  source_operation: openapi/embat-openapi-original.json#list_scenarios_scenarios__companyId__get
+- name: retrieve_scenario_scenarios__companyId___id__get
+  description: Retrieve scenario
+  method: GET
+  path: /scenarios/{companyId}/{id}
+  source_operation: openapi/embat-openapi-original.json#retrieve_scenario_scenarios__companyId___id__get
+- name: list_transactions_transactions__companyId__get
+  description: List transactions
+  method: GET
+  path: /transactions/{companyId}
+  source_operation: openapi/embat-openapi-original.json#list_transactions_transactions__companyId__get
+- name: update_transactions_bulk_transactions__companyId__patch
+  description: Update transactions in bulk
+  method: PATCH
+  path: /transactions/{companyId}
+  source_operation: openapi/embat-openapi-original.json#update_transactions_bulk_transactions__companyId__patch
+- name: retrieve_transaction_transactions__companyId___id__get
+  description: Retrieve transaction
+  method: GET
+  path: /transactions/{companyId}/{id}
+  source_operation: openapi/embat-openapi-original.json#retrieve_transaction_transactions__companyId___id__get
+- name: update_transaction_transactions__companyId___id__patch
+  description: Update transaction
+  method: PATCH
+  path: /transactions/{companyId}/{id}
+  source_operation: openapi/embat-openapi-original.json#update_transaction_transactions__companyId___id__patch
+- name: create_manual_transactions_bulk_transactions__companyId___productId__bulk_post
+  description: Create manual transactions in bulk
+  method: POST
+  path: /transactions/{companyId}/{productId}/bulk
+  source_operation: openapi/embat-openapi-original.json#create_manual_transactions_bulk_transactions__companyId___productId__bulk_post

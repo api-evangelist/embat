@@ -1,0 +1,15 @@
+generated: '2026-07-19'
+method: searched
+source: https://api.embat.io/docs
+note: >-
+  Embat documents a sandbox/testing mode. The API reference states: "While testing the
+  API, you have to request sandbox credentials." Sandbox access is credential-gated
+  (request from Embat) rather than a self-serve key prefix, and no public magic test
+  values (test IBANs / accounts) are published. No test values are invented here.
+sandbox:
+  available: true
+  access: request-credentials
+  request_contact: tech@embat.io
+  base_url: https://api.embat.io
+  test_values_published: false
+  note: Separate sandbox credentials are issued on request; the same base URL and bearer-token flow apply.

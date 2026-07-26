@@ -1,0 +1,24 @@
+generated: '2026-07-19'
+method: generated
+source: openapi/embat-openapi-original.json
+note: >-
+  Packaged Agent Skills for the Embat treasury API. Every step is grounded in a real
+  operationId verified against openapi/embat-openapi-original.json. All flows require an
+  HTTP Bearer token from POST /authentication/token and are scoped by companyId.
+skills:
+  - file: embat-authenticate-and-select-company.md
+    name: Authenticate and select a company
+    api: openapi/embat-openapi-original.json
+    operations: [auth_token_authentication_token_post, list_companies_companies_get, retrieve_company_companies__companyId__get]
+  - file: embat-monitor-cash-positions.md
+    name: Monitor bank balances and cash positions
+    api: openapi/embat-openapi-original.json
+    operations: [list_banks_banks__companyId__get, list_balances_balances__companyId__get, list_transactions_transactions__companyId__get]
+  - file: embat-create-and-track-payment.md
+    name: Create and track a payment
+    api: openapi/embat-openapi-original.json
+    operations: [create_payment_payments__companyId__post, list_payments_payments__companyId__get, retrieve_payment_payments__companyId___customId__get, list_payment_orders_paymentorders__companyId__get]
+  - file: embat-reconcile-transactions.md
+    name: Reconcile bank transactions
+    api: openapi/embat-openapi-original.json
+    operations: [list_transactions_transactions__companyId__get, list_operations_reconcilingitems__companyId__get, create_reconciling_item_reconcilingitems__companyId__post]

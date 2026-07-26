@@ -1,0 +1,38 @@
+generated: '2026-07-19'
+method: derived
+source: openapi/embat-openapi-original.json
+note: >-
+  Cross-cutting standards conformance derived from the Embat OpenAPI (3.1.0) and its
+  documented conventions. Embat is a REST/JSON treasury API secured with HTTP Bearer
+  (JWT) tokens. No published third-party certification program (SOC 2 / ISO 27001 /
+  PCI) was discoverable from the public surface, so no Compliance pointer is emitted.
+standards:
+  - id: openapi-3.1
+    conforms: true
+    evidence: openapi field is 3.1.0
+  - id: rest-json
+    conforms: true
+    evidence: resource-oriented paths returning application/json
+  - id: http-bearer-jwt
+    conforms: true
+    evidence: securitySchemes.HTTPBearer type http scheme bearer; JWT idToken from POST /authentication/token
+  - id: oauth2
+    conforms: false
+    evidence: no oauth2 security scheme; auth is email/password to JWT
+  - id: oidc
+    conforms: false
+  - id: rfc9457-problem-details
+    conforms: false
+    evidence: errors use application/json with a FastAPI {detail} envelope, not application/problem+json
+  - id: token-pagination
+    conforms: true
+    evidence: list endpoints use nextPageToken + limit query params with a data[] + nextPageToken envelope
+  - id: idempotency-key
+    conforms: false
+    evidence: no Idempotency-Key header/param; only DELETE operations are documented as naturally idempotent
+  - id: rate-limiting-headers
+    conforms: false
+    evidence: no X-RateLimit-* response headers defined in the spec
+  - id: webhooks-asyncapi
+    conforms: false
+    evidence: no webhooks/callbacks/AsyncAPI event surface published

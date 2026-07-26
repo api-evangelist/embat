@@ -1,0 +1,54 @@
+generated: '2026-07-19'
+method: derived
+source: openapi/embat-openapi-original.json
+note: >-
+  Cross-cutting request/response semantics for the Embat API, derived from the OpenAPI
+  and its operation descriptions. Embat is NOT emitting an Idempotency pointer: it has
+  no Idempotency-Key contract for safe write retries; only DELETE operations are
+  documented as naturally idempotent.
+authentication:
+  style: http-bearer
+  scheme: JWT idToken
+  obtain: POST /authentication/token with email/password
+  token_ttl_minutes: 60
+  refresh: none
+  mfa_note: If MFA is enabled on the account, programmatic token auth is unavailable.
+  cross_ref: authentication/embat-authentication.yml
+tenancy:
+  scope_field: companyId
+  location: path
+  note: Every resource collection is nested under /{resource}/{companyId}; list /companies to discover accessible companies.
+identifiers:
+  client_supplied: customId
+  server_supplied: id
+  note: Many resources are addressable by a client-owned customId as well as an Embat id.
+pagination:
+  style: token
+  request_params: [limit, nextPageToken]
+  response_fields: [data, nextPageToken]
+  note: Cursor-style paging; pass the returned nextPageToken to fetch the next page. Absent nextPageToken means last page.
+bulk_operations:
+  supported: true
+  patterns:
+  - "/{resource}/{companyId}/bulk"
+  - bulk PATCH
+  - bulk DELETE
+  - bulk upsert
+  note: Most resources expose bulk create/upsert/modify/delete endpoints for batch treasury data loads.
+filtering:
+  common_params: [startDate, endDate, status, productId, scenarioId, reconciled, registered, baseCurrency]
+  note: List endpoints accept rich date-range and status filters; date ranges require matched start/end bounds.
+idempotency:
+  key_header: null
+  supported: false
+  note: No Idempotency-Key mechanism. DELETE endpoints are idempotent by design (deleting a non-existent item is a no-op).
+error_envelope:
+  field: detail
+  media_type: application/json
+  shape: '{ "detail": "<message>" }, or { "detail": [ {loc, msg, type} ] } for 422 validation errors'
+  cross_ref: errors/embat-problem-types.yml
+rate_limiting:
+  signaled: false
+  note: No X-RateLimit-* headers documented in the spec.
+versioning:
+  cross_ref: lifecycle/embat-lifecycle.yml

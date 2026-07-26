@@ -1,0 +1,40 @@
+# Embat
+
+> Embat is a real-time treasury management platform for finance teams. Its REST/JSON API connects third-party applications to Embat to manage bank connections, balances, transactions, payments, cash-flow forecasting, accounting entries, and reconciliation across multiple companies. Organized around REST principles with HTTP Bearer (JWT) authentication.
+
+Auth: obtain a JWT `idToken` via `POST /authentication/token` (email/password); send it as `Authorization: Bearer <idToken>`. Tokens expire after 60 minutes; there is no refresh endpoint. All resources are scoped by a `companyId` path parameter. List endpoints paginate with `limit` + `nextPageToken`. Sandbox testing requires requesting sandbox credentials (tech@embat.io).
+
+## API
+
+- [Embat API reference (ReDoc)](https://api.embat.io/docs): Full OpenAPI 3.1 reference, 103 operations across 21 resource areas.
+- [Embat OpenAPI (JSON)](https://api.embat.io/openapi.json): Machine-readable OpenAPI 3.1.0 spec (v2.120.3).
+
+## Specs
+
+- [OpenAPI (captured)](openapi/embat-openapi-original.json): Verbatim Embat OpenAPI 3.1.0.
+- [OpenAPI Overlay](overlays/embat-openapi-overlay.yaml): API Evangelist enhancements.
+
+## Artifacts
+
+- [Authentication profile](authentication/embat-authentication.yml)
+- [API conventions](conventions/embat-conventions.yml): auth, pagination, tenancy, bulk, errors.
+- [Error catalog](errors/embat-problem-types.yml): 400/401/403/404/422/500 with the `detail` envelope.
+- [Data model / ERD](data-model/embat-data-model.yml): entities and id-reference relationships.
+- [Lifecycle](lifecycle/embat-lifecycle.yml): versioning and token lifecycle.
+- [Conformance](conformance/embat-conformance.yml): standards conformance.
+- [Sandbox](sandbox/embat-sandbox.yml): credential-gated test mode.
+- [Agentic access](agentic-access/embat-agentic-access.yml): recommended x-agentic-access contracts.
+- [MCP (candidate)](mcp/embat-mcp.yml): candidate MCP tool surface from operations.
+- [Domain security](security/embat-domain-security.yml): TLS/DNS posture.
+
+## Agent Skills
+
+- [Authenticate and select a company](skills/embat-authenticate-and-select-company.md)
+- [Monitor bank balances and cash positions](skills/embat-monitor-cash-positions.md)
+- [Create and track a payment](skills/embat-create-and-track-payment.md)
+- [Reconcile bank transactions](skills/embat-reconcile-transactions.md)
+
+## Resources
+
+- [Embat website](https://www.embat.io/)
+- [Embat app (login)](https://app.embat.io/)

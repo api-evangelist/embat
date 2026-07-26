@@ -1,0 +1,27 @@
+overlay: 1.0.0
+info:
+  title: API Evangelist enhancements for Embat API
+  version: 1.0.0
+extends: openapi/embat-openapi-original.json
+actions:
+  - target: $.info
+    update:
+      x-apievangelist-provider: embat
+      x-apievangelist-category: treasury-management
+      x-apievangelist-auth: http-bearer-jwt
+      x-apievangelist-pagination: token
+      x-apievangelist-tenancy: companyId-in-path
+  - target: $.servers
+    update:
+      - url: https://api.embat.io
+        description: Embat production API (no version path prefix; info.version is semantic)
+  - target: $.info
+    update:
+      x-apievangelist-artifacts:
+        authentication: authentication/embat-authentication.yml
+        conventions: conventions/embat-conventions.yml
+        errors: errors/embat-problem-types.yml
+        data-model: data-model/embat-data-model.yml
+        lifecycle: lifecycle/embat-lifecycle.yml
+        agentic-access: agentic-access/embat-agentic-access.yml
+        mcp: mcp/embat-mcp.yml

@@ -1,0 +1,73 @@
+generated: '2026-07-19'
+method: derived
+source: openapi/embat-openapi-original.json
+format: custom-json
+note: 'Embat returns errors as a FastAPI-style JSON body: {"detail": "<message>"} (schema ErrorResponse).
+  422 validation errors return {"detail": [ {loc, msg, type} ]} (HTTPValidationError). No RFC 9457 application/problem+json
+  media type is used; content type is application/json.'
+envelope:
+  field: detail
+  type: string-or-array
+  schemas:
+  - ErrorResponse
+  - ErrorDetailSchema
+  - HTTPValidationError
+problems:
+- status: 400
+  title: Bad request
+  envelope_schema: ErrorResponse
+  occurrences: 6
+  examples:
+  - 'The credentials could not be validated: unknown email, wrong password, disabled account, or too many
+    failed attempts.'
+  - 'Invalid date range: when only a start bound (`startDate` or `startUpdatedAt`) is given, it must not
+    be in the future and cannot be more than 90 days in the past.'
+  - 'Invalid date range: when only a start bound (`startDate`) is given, it must not be in the future
+    and cannot be more than 90 days in the past.'
+  - 'Invalid date range: when only `startIssuanceDate` is given, it must not be in the future and cannot
+    be more than 90 days in the past.'
+  remediation: Fix the malformed request (check date ranges, query params and body fields).
+- status: 401
+  title: Unauthorized
+  envelope_schema: ErrorResponse
+  occurrences: 103
+  examples:
+  - The account has multi-factor authentication enabled, which this endpoint does not support.
+  - Unauthorized. The bearer token is missing, invalid or expired.
+  remediation: Obtain a fresh bearer token from POST /authentication/token (tokens expire 60 minutes after
+    issuance). If MFA is enabled on the account, API token auth is not available.
+- status: 403
+  title: Forbidden
+  envelope_schema: ErrorResponse
+  occurrences: 1
+  examples:
+  - You are not authorized to download this receipt
+  remediation: The authenticated principal lacks permission for this company/resource; use credentials
+    with access.
+- status: 404
+  title: Not found
+  envelope_schema: ErrorResponse
+  occurrences: 99
+  examples:
+  - Company not found, invalid `nextPageToken`, or an invalid date range when both bounds are given (start
+    after end, or a span of more than 90 days).
+  - Not found. The requested resource or `companyId` does not exist.
+  - Company not found, or no accounting entry matches the given `customId`.
+  - Company not found, or invalid `nextPageToken`.
+  remediation: Verify the companyId and resource identifier (customId/id/code) exist and are visible to
+    your credentials.
+- status: 422
+  title: Validation error
+  envelope_schema: HTTPValidationError
+  occurrences: 102
+  examples:
+  - Validation Error
+  remediation: 'Correct the request per the returned detail[] (FastAPI validation): each item gives loc,
+    msg and type.'
+- status: 500
+  title: Internal server error
+  envelope_schema: ErrorResponse
+  occurrences: 48
+  examples:
+  - Unexpected error. Contact support if it persists.
+  remediation: Retry with backoff; contact tech@embat.io if the error persists.

@@ -1,0 +1,25 @@
+generated: '2026-07-19'
+method: searched
+source: https://api.embat.io/docs
+note: >-
+  Versioning and lifecycle signals for the Embat API. The OpenAPI reports a semantic
+  info.version (2.120.3) but the API is served without a version prefix at
+  https://api.embat.io. No public status page (status.embat.io did not resolve) and no
+  published deprecation policy or Sunset/Deprecation header support were discoverable
+  from the public surface, so no StatusPage or Deprecation pointer is emitted.
+versioning:
+  scheme: semantic-info-version
+  current: 2.120.3
+  path_prefix: none
+  docs: https://api.embat.io/docs
+token_lifecycle:
+  access_token_ttl_minutes: 60
+  refresh: none
+  note: JWT idToken expires 60 minutes after issuance; re-authenticate at POST /authentication/token.
+deprecation:
+  policy_url: null
+  sunset_header: false
+sla:
+  url: null
+status_page: null
+deprecated_operations: []
