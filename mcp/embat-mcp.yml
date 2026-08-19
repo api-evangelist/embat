@@ -527,3 +527,9 @@ tools:
   method: POST
   path: /transactions/{companyId}/{productId}/bulk
   source_operation: openapi/embat-openapi-original.json#create_manual_transactions_bulk_transactions__companyId___productId__bulk_post
+deployment:
+  mode: none
+  verified: derived
+  tools: 103
+  checked: '2026-08-12'
+  source: catalog MCP census

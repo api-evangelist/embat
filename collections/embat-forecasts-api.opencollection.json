@@ -1,0 +1,166 @@
+{
+  "opencollection": "1.0.0",
+  "info": {
+    "name": "Embat AccountingAccounts Forecasts API",
+    "version": "2.120.3"
+  },
+  "items": [
+    {
+      "info": {
+        "name": "Forecasts",
+        "type": "folder"
+      },
+      "items": [
+        {
+          "info": {
+            "name": "List forecasts",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "{{baseUrl}}/forecasts/:companyId",
+            "params": [
+              {
+                "name": "companyId",
+                "value": "",
+                "type": "path"
+              },
+              {
+                "name": "scenarioId",
+                "value": "",
+                "type": "query",
+                "description": "Filter forecasts belonging to a given scenario, by its Embat scenario ID."
+              },
+              {
+                "name": "sync",
+                "value": "",
+                "type": "query",
+                "description": "Filter by synchronization status. `false` also matches forecasts where the value is not set."
+              },
+              {
+                "name": "operations",
+                "value": "",
+                "type": "query",
+                "description": "Reserved for future use; currently has no effect on the results."
+              },
+              {
+                "name": "startDate",
+                "value": "",
+                "type": "query",
+                "description": "Only return forecasts dated on or after this date (inclusive)."
+              },
+              {
+                "name": "endDate",
+                "value": "",
+                "type": "query",
+                "description": "Only return forecasts dated before this date (exclusive)."
+              },
+              {
+                "name": "limit",
+                "value": "",
+                "type": "query",
+                "description": "Maximum number of objects to return in the response. Default 500, maximum 2000."
+              },
+              {
+                "name": "nextPageToken",
+                "value": "",
+                "type": "query",
+                "description": "Token to fetch the next page of results, taken from the `nextPageToken` returned by the previous request with the same filters. Omit it to fetch the first page. An invalid or malformed token is rejected with `404`."
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Returns the treasury forecasts of a company. Results are paginated: use `limit` to control page size and pass the returned `nextPageToken` to fetch the next page. `startDate` is inclusive and `endDate` is exclusive; either bound can be used on its own to leave the other end of the range unbounded. Only forecasts linked to a scenario that is currently visible are returned."
+        },
+        {
+          "info": {
+            "name": "Update forecasts in bulk",
+            "type": "http"
+          },
+          "http": {
+            "method": "PATCH",
+            "url": "{{baseUrl}}/forecasts/:companyId",
+            "params": [
+              {
+                "name": "companyId",
+                "value": "",
+                "type": "path"
+              }
+            ],
+            "body": {
+              "type": "json",
+              "data": "{}"
+            },
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Updates the synchronization status or additional info of several forecasts in a single call, identified by `id`. Follows the same rules as the single-forecast update endpoint: fields omitted from the request, or sent as `null`, are left unchanged, and entries whose `id` does not match any forecast are silently skipped — the call still returns `200` for the whole batch."
+        },
+        {
+          "info": {
+            "name": "Retrieve forecast",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "{{baseUrl}}/forecasts/:companyId/:id",
+            "params": [
+              {
+                "name": "id",
+                "value": "",
+                "type": "path"
+              },
+              {
+                "name": "companyId",
+                "value": "",
+                "type": "path"
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Returns a single forecast by its Embat `id`. `accountingAmount` and `exchangeRate` are not computed for this endpoint and are returned as stored, typically `null` — use `GET /forecasts/{companyId}` to get them populated. If the forecast's scenario is no longer visible, this endpoint returns a response with every field set to `null` instead of the forecast data."
+        },
+        {
+          "info": {
+            "name": "Update forecast",
+            "type": "http"
+          },
+          "http": {
+            "method": "PATCH",
+            "url": "{{baseUrl}}/forecasts/:companyId/:id",
+            "params": [
+              {
+                "name": "id",
+                "value": "",
+                "type": "path"
+              },
+              {
+                "name": "companyId",
+                "value": "",
+                "type": "path"
+              }
+            ],
+            "body": {
+              "type": "json",
+              "data": "{}"
+            },
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Updates the synchronization status or additional info of a forecast identified by `id`. Fields omitted from the request, or sent as `null`, are left unchanged. Updating an `id` that does not match any forecast also returns `200` without applying any change — no `404` is raised."
+        }
+      ]
+    }
+  ],
+  "bundled": true
+}

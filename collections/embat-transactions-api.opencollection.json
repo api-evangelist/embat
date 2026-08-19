@@ -1,0 +1,215 @@
+{
+  "opencollection": "1.0.0",
+  "info": {
+    "name": "Embat AccountingAccounts Transactions API",
+    "version": "2.120.3"
+  },
+  "items": [
+    {
+      "info": {
+        "name": "Transactions",
+        "type": "folder"
+      },
+      "items": [
+        {
+          "info": {
+            "name": "List transactions",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "{{baseUrl}}/transactions/:companyId",
+            "params": [
+              {
+                "name": "companyId",
+                "value": "",
+                "type": "path"
+              },
+              {
+                "name": "productId",
+                "value": "",
+                "type": "query",
+                "description": "Filter transactions belonging to a given product (`productId`)."
+              },
+              {
+                "name": "sync",
+                "value": "",
+                "type": "query",
+                "description": "Filter by synchronization status with your ERP. `false` also matches transactions where the value is not set."
+              },
+              {
+                "name": "startValueDate",
+                "value": "",
+                "type": "query",
+                "description": "Only return transactions whose value date is on or after this date (inclusive). Cannot be later than `endValueDate`, and cannot be in the future when used without `endValueDate`."
+              },
+              {
+                "name": "endValueDate",
+                "value": "",
+                "type": "query",
+                "description": "Only return transactions whose value date is before this date (exclusive)."
+              },
+              {
+                "name": "startOperationDate",
+                "value": "",
+                "type": "query",
+                "description": "Only return transactions booked on or after this date (inclusive). Cannot be later than `endOperationDate`, and cannot be in the future when used without `endOperationDate`."
+              },
+              {
+                "name": "endOperationDate",
+                "value": "",
+                "type": "query",
+                "description": "Only return transactions booked before this date (exclusive)."
+              },
+              {
+                "name": "startUpdatedAt",
+                "value": "",
+                "type": "query",
+                "description": "Only return transactions last modified on or after this timestamp (inclusive). Cannot be later than `endUpdatedAt`, and cannot be in the future when used without `endUpdatedAt`."
+              },
+              {
+                "name": "endUpdatedAt",
+                "value": "",
+                "type": "query",
+                "description": "Only return transactions last modified before this timestamp (exclusive)."
+              },
+              {
+                "name": "limit",
+                "value": "",
+                "type": "query",
+                "description": "Maximum number of objects to return in the response. Default 500, maximum 2000."
+              },
+              {
+                "name": "nextPageToken",
+                "value": "",
+                "type": "query",
+                "description": "Token to fetch the next page of results, taken from the `nextPageToken` returned by the previous request with the same filters. Omit it to fetch the first page. An invalid or malformed token is rejected with `404`."
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Returns the bank transactions of a company. Results are paginated: use `limit` to control page size and pass the returned `nextPageToken` to fetch the next page. `startValueDate`/`endValueDate` filter by value date, `startOperationDate`/`endOperationDate` filter by the date the transaction was booked, and `startUpdatedAt`/`endUpdatedAt` filter by last modification time, which is useful for incremental synchronization. Each start bound is inclusive and each end bound is exclusive. Transactions ma"
+        },
+        {
+          "info": {
+            "name": "Update transactions in bulk",
+            "type": "http"
+          },
+          "http": {
+            "method": "PATCH",
+            "url": "{{baseUrl}}/transactions/:companyId",
+            "params": [
+              {
+                "name": "companyId",
+                "value": "",
+                "type": "path"
+              }
+            ],
+            "body": {
+              "type": "json",
+              "data": "{}"
+            },
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Updates the synchronization status, additional info or custom attribute values of several transactions in a single call, identified by `id`. Only the fields you send are changed. Entries whose `id` does not match any transaction are silently skipped — the call still returns `200` for the whole batch."
+        },
+        {
+          "info": {
+            "name": "Retrieve transaction",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "{{baseUrl}}/transactions/:companyId/:id",
+            "params": [
+              {
+                "name": "id",
+                "value": "",
+                "type": "path"
+              },
+              {
+                "name": "companyId",
+                "value": "",
+                "type": "path"
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Returns a single transaction by its Embat `id`. If the transaction's product no longer exists, this endpoint returns `404` even though the transaction record exists."
+        },
+        {
+          "info": {
+            "name": "Update transaction",
+            "type": "http"
+          },
+          "http": {
+            "method": "PATCH",
+            "url": "{{baseUrl}}/transactions/:companyId/:id",
+            "params": [
+              {
+                "name": "id",
+                "value": "",
+                "type": "path"
+              },
+              {
+                "name": "companyId",
+                "value": "",
+                "type": "path"
+              }
+            ],
+            "body": {
+              "type": "json",
+              "data": "{}"
+            },
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Updates the synchronization status, additional info or custom attribute values of a transaction identified by `id`. Only the fields you send are changed. Note that updating an `id` that does not match any transaction also returns `200` without applying any change — no `404` is raised."
+        },
+        {
+          "info": {
+            "name": "Create manual transactions in bulk",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "{{baseUrl}}/transactions/:companyId/:productId/bulk",
+            "params": [
+              {
+                "name": "companyId",
+                "value": "",
+                "type": "path"
+              },
+              {
+                "name": "productId",
+                "value": "",
+                "type": "path"
+              }
+            ],
+            "body": {
+              "type": "json",
+              "data": "{}"
+            },
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Creates transactions for a company's product in a single call, grouped by day. Returns an empty response with status `201` on success.\n\n> **Manual products only.** This endpoint only works with products classified as \"Manual\". Using it with a `productId` that exists but is not classified as Manual returns a `400 Bad Request` error. If `productId` does not exist, or its associated bank record does not exist, a `404` is returned instead.\n\n> **Mirrors the Embat website.** This endpoint behaves like"
+        }
+      ]
+    }
+  ],
+  "bundled": true
+}

@@ -1,0 +1,3149 @@
+{
+  "item": [
+    {
+      "id": "73d3719f-54fd-4406-af41-285b26bdd30f",
+      "name": "Payments",
+      "description": {
+        "content": "`Payment` represents money moving between a bank transaction and the operations (invoices, bills) or accounting entries it settles. `customId` is the unique identifier of a payment: set your own value to use as your ERP payment ID, or let Embat auto-generate one.\n\nA payment links the bank world and the accounting world in Embat: it can represent the relationship between a `Transaction` (the bank movement) and one or more `Operations` (the invoices/bills being paid), a cash movement posted directly to an accounting account, or a movement involving a `Contact` (client or supplier). Payments can also reference a `Product` to resolve the accounting code used for classification, and a `Category` for reporting.\n\n**Typical flow:** payments synchronize accounting in both directions between your ERP and Embat.\n\n1. **Notify Embat of payments posted in your ERP.** When a payment is recorded in your ERP, create it in Embat with the operations it settles — each settled amount reduces the pending amount of the corresponding operation (invoice/bill) in Embat:\n\n```json\nPOST /payments/{companyId}\n{\n  \"customId\": \"erp-payment-001\",\n  \"date\": \"2024-01-15T00:00:00Z\",\n  \"amount\": 1250.50,\n  \"currency\": \"EUR\",\n  \"operations\": [\n    { \"customId\": \"invoice-2024-001\", \"amount\": 1250.50 }\n  ]\n}\n```\n\n2. **Read payments created from Embat.** Periodically pull the payments generated in Embat that are pending on your side, using `GET /payments/{companyId}` with the `sync` filter (payments not yet synchronized) and `startUpdatedAt`/`endUpdatedAt` for incremental reads since your last poll. This endpoint never returns payments you created through `POST /payments/{companyId}` — retrieve those by `customId` with `GET /payments/{companyId}/{customId}`.\n3. **Confirm them back.** Once those payments are posted in your ERP, mark them as synchronized and registered (or record an `error`) with `PATCH /payments/{companyId}/{customId}` (or the bulk variant `PATCH /payments/{companyId}`).\n",
+        "type": "text/plain"
+      },
+      "item": [
+        {
+          "id": "cd99e0ae-8535-4683-98ad-eaa419c19d37",
+          "name": "List payments",
+          "request": {
+            "name": "List payments",
+            "description": {
+              "content": "Returns the payments generated in Embat for a company. Payments you created through `POST /payments/{companyId}` are not included here — retrieve them by `customId` with `GET /payments/{companyId}/{customId}` instead. Results are paginated: use `limit` to control page size and pass the returned `nextPageToken` to fetch the next page. `startDate`/`endDate` filter by payment date, and `startUpdatedAt`/`endUpdatedAt` filter by last modification time, which is useful for incremental synchronization. `startDate`/`startUpdatedAt` are inclusive, `endDate`/`endUpdatedAt` are exclusive, and each date range spans at most 90 days. Payments missing required accounting, operation or contact information are excluded from the results.",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "payments",
+                ":companyId"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [
+                {
+                  "disabled": false,
+                  "key": "productId",
+                  "value": "<string>",
+                  "description": "Filter payments linked to a given product (`productId`)."
+                },
+                {
+                  "disabled": false,
+                  "key": "sync",
+                  "value": "<boolean>",
+                  "description": "Filter by synchronization status with the accounting system. `false` also matches payments where the value is not set."
+                },
+                {
+                  "disabled": false,
+                  "key": "registered",
+                  "value": "<boolean>",
+                  "description": "Filter by registration status in the accounting system. `false` also matches payments where the value is not set."
+                },
+                {
+                  "disabled": false,
+                  "key": "startDate",
+                  "value": "<date>",
+                  "description": "Only return payments dated on or after this date (inclusive). The range cannot exceed 90 days: if `endDate` is also given, the span between the two cannot exceed 90 days; if `endDate` is omitted, `startDate` cannot be more than 90 days in the past."
+                },
+                {
+                  "disabled": false,
+                  "key": "endDate",
+                  "value": "<date>",
+                  "description": "Only return payments dated before this date (exclusive). Combined with `startDate`, the range cannot exceed 90 days. If used without `startDate`, results start 90 days before this date."
+                },
+                {
+                  "disabled": false,
+                  "key": "startUpdatedAt",
+                  "value": "<dateTime>",
+                  "description": "Only return payments last modified on or after this timestamp (inclusive). The range cannot exceed 90 days: if `endUpdatedAt` is also given, the span between the two cannot exceed 90 days; if `endUpdatedAt` is omitted, `startUpdatedAt` cannot be more than 90 days in the past."
+                },
+                {
+                  "disabled": false,
+                  "key": "endUpdatedAt",
+                  "value": "<dateTime>",
+                  "description": "Only return payments last modified before this timestamp (exclusive). Combined with `startUpdatedAt`, the range cannot exceed 90 days. If used without `startUpdatedAt`, results start 90 days before this timestamp."
+                },
+                {
+                  "disabled": false,
+                  "key": "internalAttributes",
+                  "value": "false",
+                  "description": "Include attributes flagged as internal in the response."
+                },
+                {
+                  "disabled": false,
+                  "key": "limit",
+                  "value": "500",
+                  "description": "Maximum number of objects to return in the response. Default 500, maximum 2000."
+                },
+                {
+                  "disabled": false,
+                  "key": "nextPageToken",
+                  "value": "<string>",
+                  "description": "Token to fetch the next page of results, taken from the `nextPageToken` returned by the previous request with the same filters. Omit it to fetch the first page. An invalid or malformed token is rejected with `404`."
+                }
+              ],
+              "variable": [
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "<string>",
+                  "key": "companyId",
+                  "description": "(Required) "
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{bearerToken}}"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "id": "632e5b26-d46b-4018-8a8f-fedc4f1dd52e",
+              "name": "Successful Response",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "payments",
+                    ":companyId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "productId",
+                      "value": "<string>"
+                    },
+                    {
+                      "key": "sync",
+                      "value": "<boolean>"
+                    },
+                    {
+                      "key": "registered",
+                      "value": "<boolean>"
+                    },
+                    {
+                      "key": "startDate",
+                      "value": "<date>"
+                    },
+                    {
+                      "key": "endDate",
+                      "value": "<date>"
+                    },
+                    {
+                      "key": "startUpdatedAt",
+                      "value": "<dateTime>"
+                    },
+                    {
+                      "key": "endUpdatedAt",
+                      "value": "<dateTime>"
+                    },
+                    {
+                      "key": "internalAttributes",
+                      "value": "false"
+                    },
+                    {
+                      "key": "limit",
+                      "value": "500"
+                    },
+                    {
+                      "key": "nextPageToken",
+                      "value": "<string>"
+                    }
+                  ],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"data\": [\n    {\n      \"date\": \"1947-01-21T16:17:27.878Z\",\n      \"amount\": 1250.5,\n      \"id\": \"string\",\n      \"companyId\": \"string\",\n      \"updatedAt\": \"1966-04-06T09:37:41.359Z\",\n      \"createdAt\": \"2011-10-20T03:49:54.020Z\",\n      \"method\": \"bank-transaction\",\n      \"transactionId\": \"string\",\n      \"operations\": [\n        {\n          \"amount\": 500,\n          \"customId\": \"invoice-2024-001\",\n          \"currency\": {\n            \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n          },\n          \"paymentAmount\": 13.966319955708295,\n          \"id\": \"string\",\n          \"exchangeRate\": 7295.52157303701,\n          \"invoiceGroupDocumentId\": \"string\",\n          \"documentId\": \"string\",\n          \"issuanceDate\": \"1965-10-23T13:36:14.586Z\",\n          \"documentType\": \"string\",\n          \"paymentMethod\": \"string\",\n          \"operationPaymentAmount\": 7044.4930991746305\n        },\n        {\n          \"amount\": 500,\n          \"customId\": \"invoice-2024-001\",\n          \"currency\": {\n            \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n          },\n          \"paymentAmount\": 2501.279872606339,\n          \"id\": \"string\",\n          \"exchangeRate\": 8955.935504998324,\n          \"invoiceGroupDocumentId\": \"string\",\n          \"documentId\": \"string\",\n          \"issuanceDate\": \"1988-01-01T02:50:02.205Z\",\n          \"documentType\": \"string\",\n          \"paymentMethod\": \"string\",\n          \"operationPaymentAmount\": 4461.910367076492\n        }\n      ],\n      \"productId\": \"string\",\n      \"contactCustomId\": \"string\",\n      \"concept\": \"string\",\n      \"accountingAmount\": 4695.830046988741,\n      \"currency\": \"BGN\",\n      \"accountingCurrency\": \"XPD\",\n      \"exchangeRate\": 1423.5618093885328,\n      \"additionalInfo\": {\n        \"key_0\": \"string\",\n        \"key_1\": false,\n        \"key_2\": true\n      },\n      \"attributes\": [\n        {\n          \"customId\": \"cost-center\",\n          \"value\": \"Marketing\",\n          \"valueCustomId\": \"string\",\n          \"parentCustomId\": \"string\"\n        },\n        {\n          \"customId\": \"cost-center\",\n          \"value\": \"Marketing\",\n          \"valueCustomId\": \"string\",\n          \"parentCustomId\": \"string\"\n        }\n      ],\n      \"customId\": \"string\",\n      \"type\": \"accountings\",\n      \"productAccountingCode\": \"string\",\n      \"accountingCode\": \"string\",\n      \"paymentSource\": \"embat\",\n      \"sync\": false,\n      \"registered\": false,\n      \"userId\": \"string\",\n      \"transactionAmount\": 8294.727294381963,\n      \"transactionAccountingAmount\": 8579.399247856058,\n      \"multicurrency\": false,\n      \"error\": \"string\",\n      \"contact\": {\n        \"tradeName\": \"string\",\n        \"legalName\": \"string\",\n        \"taxId\": \"string\",\n        \"contact\": {\n          \"phone\": {\n            \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n          },\n          \"email\": {\n            \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n          },\n          \"name\": {\n            \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n          },\n          \"surname\": {\n            \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n          }\n        },\n        \"address\": {\n          \"postalCode\": {\n            \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n          },\n          \"address\": {\n            \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n          },\n          \"province\": {\n            \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n          },\n          \"city\": {\n            \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n          },\n          \"country\": {\n            \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n          }\n        },\n        \"contactType\": \"company\",\n        \"type\": \"supplier\",\n        \"accounts\": [\n          {\n            \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n          },\n          {\n            \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n          }\n        ],\n        \"paymentsAccounts\": [\n          {\n            \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n          },\n          {\n            \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n          }\n        ],\n        \"additionalInfo\": {\n          \"key_0\": \"string\"\n        },\n        \"accountingCode\": \"string\",\n        \"paymentMethod\": \"string\",\n        \"paymentTerms\": 3472,\n        \"attributes\": [\n          {\n            \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n          },\n          {\n            \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n          }\n        ],\n        \"customId\": \"string\"\n      },\n      \"intercompany\": {\n        \"id\": \"string\",\n        \"relatedPaymentPairs\": [\n          [\n            {\n              \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n            },\n            {\n              \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n            }\n          ],\n          [\n            {\n              \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n            },\n            {\n              \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n            }\n          ]\n        ],\n        \"relatedPaymentsIds\": [\n          \"string\",\n          \"string\"\n        ],\n        \"counterpartyContact\": \"string\"\n      },\n      \"transactionAttributes\": [\n        {\n          \"customId\": \"cost-center\",\n          \"value\": \"Marketing\",\n          \"valueCustomId\": \"string\",\n          \"parentCustomId\": \"string\"\n        },\n        {\n          \"customId\": \"cost-center\",\n          \"value\": \"Marketing\",\n          \"valueCustomId\": \"string\",\n          \"parentCustomId\": \"string\"\n        }\n      ]\n    },\n    {\n      \"date\": \"1953-12-31T01:24:14.756Z\",\n      \"amount\": 1250.5,\n      \"id\": \"string\",\n      \"companyId\": \"string\",\n      \"updatedAt\": \"2004-02-04T17:21:16.955Z\",\n      \"createdAt\": \"2014-05-05T20:15:50.388Z\",\n      \"method\": \"bank-transaction\",\n      \"transactionId\": \"string\",\n      \"operations\": [\n        {\n          \"amount\": 500,\n          \"customId\": \"invoice-2024-001\",\n          \"currency\": {\n            \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n          },\n          \"paymentAmount\": 828.729887137224,\n          \"id\": \"string\",\n          \"exchangeRate\": 5739.05286328734,\n          \"invoiceGroupDocumentId\": \"string\",\n          \"documentId\": \"string\",\n          \"issuanceDate\": \"1961-05-27T17:46:42.908Z\",\n          \"documentType\": \"string\",\n          \"paymentMethod\": \"string\",\n          \"operationPaymentAmount\": 4640.033245109421\n        },\n        {\n          \"amount\": 500,\n          \"customId\": \"invoice-2024-001\",\n          \"currency\": {\n            \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n          },\n          \"paymentAmount\": 7346.182630922274,\n          \"id\": \"string\",\n          \"exchangeRate\": 4998.89204230772,\n          \"invoiceGroupDocumentId\": \"string\",\n          \"documentId\": \"string\",\n          \"issuanceDate\": \"1957-10-24T13:59:45.484Z\",\n          \"documentType\": \"string\",\n          \"paymentMethod\": \"string\",\n          \"operationPaymentAmount\": 9461.185226337997\n        }\n      ],\n      \"productId\": \"string\",\n      \"contactCustomId\": \"string\",\n      \"concept\": \"string\",\n      \"accountingAmount\": 7880.887346301689,\n      \"currency\": \"COU\",\n      \"accountingCurrency\": \"XAU\",\n      \"exchangeRate\": 18.413858484612746,\n      \"additionalInfo\": {\n        \"key_0\": \"string\"\n      },\n      \"attributes\": [\n        {\n          \"customId\": \"cost-center\",\n          \"value\": \"Marketing\",\n          \"valueCustomId\": \"string\",\n          \"parentCustomId\": \"string\"\n        },\n        {\n          \"customId\": \"cost-center\",\n          \"value\": \"Marketing\",\n          \"valueCustomId\": \"string\",\n          \"parentCustomId\": \"string\"\n        }\n      ],\n      \"customId\": \"string\",\n      \"type\": \"contacts\",\n      \"productAccountingCode\": \"string\",\n      \"accountingCode\": \"string\",\n      \"paymentSource\": \"embat\",\n      \"sync\": false,\n      \"registered\": false,\n      \"userId\": \"string\",\n      \"transactionAmount\": 8910.277144899179,\n      \"transactionAccountingAmount\": 7142.371152614659,\n      \"multicurrency\": false,\n      \"error\": \"string\",\n      \"contact\": {\n        \"tradeName\": \"string\",\n        \"legalName\": \"string\",\n        \"taxId\": \"string\",\n        \"contact\": {\n          \"phone\": {\n            \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n          },\n          \"email\": {\n            \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n          },\n          \"name\": {\n            \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n          },\n          \"surname\": {\n            \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n          }\n        },\n        \"address\": {\n          \"postalCode\": {\n            \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n          },\n          \"address\": {\n            \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n          },\n          \"province\": {\n            \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n          },\n          \"city\": {\n            \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n          },\n          \"country\": {\n            \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n          }\n        },\n        \"contactType\": \"company\",\n        \"type\": \"client-supplier\",\n        \"accounts\": [\n          {\n            \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n          },\n          {\n            \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n          }\n        ],\n        \"paymentsAccounts\": [\n          {\n            \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n          },\n          {\n            \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n          }\n        ],\n        \"additionalInfo\": {\n          \"key_0\": 9702.212482300636,\n          \"key_1\": \"string\",\n          \"key_2\": true\n        },\n        \"accountingCode\": \"string\",\n        \"paymentMethod\": \"string\",\n        \"paymentTerms\": 9179,\n        \"attributes\": [\n          {\n            \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n          },\n          {\n            \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n          }\n        ],\n        \"customId\": \"string\"\n      },\n      \"intercompany\": {\n        \"id\": \"string\",\n        \"relatedPaymentPairs\": [\n          [\n            {\n              \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n            },\n            {\n              \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n            }\n          ],\n          [\n            {\n              \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n            },\n            {\n              \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n            }\n          ]\n        ],\n        \"relatedPaymentsIds\": [\n          \"string\",\n          \"string\"\n        ],\n        \"counterpartyContact\": \"string\"\n      },\n      \"transactionAttributes\": [\n        {\n          \"customId\": \"cost-center\",\n          \"value\": \"Marketing\",\n          \"valueCustomId\": \"string\",\n          \"parentCustomId\": \"string\"\n        },\n        {\n          \"customId\": \"cost-center\",\n          \"value\": \"Marketing\",\n          \"valueCustomId\": \"string\",\n          \"parentCustomId\": \"string\"\n        }\n      ]\n    }\n  ],\n  \"nextPageToken\": \"string\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "f432ce94-ec56-4f15-bf49-bed91e256419",
+              "name": "Invalid date range: when only a start bound (`startDate` or `startUpdatedAt`) is given, it must not be in the future and cannot be more than 90 days in the past.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "payments",
+                    ":companyId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "productId",
+                      "value": "<string>"
+                    },
+                    {
+                      "key": "sync",
+                      "value": "<boolean>"
+                    },
+                    {
+                      "key": "registered",
+                      "value": "<boolean>"
+                    },
+                    {
+                      "key": "startDate",
+                      "value": "<date>"
+                    },
+                    {
+                      "key": "endDate",
+                      "value": "<date>"
+                    },
+                    {
+                      "key": "startUpdatedAt",
+                      "value": "<dateTime>"
+                    },
+                    {
+                      "key": "endUpdatedAt",
+                      "value": "<dateTime>"
+                    },
+                    {
+                      "key": "internalAttributes",
+                      "value": "false"
+                    },
+                    {
+                      "key": "limit",
+                      "value": "500"
+                    },
+                    {
+                      "key": "nextPageToken",
+                      "value": "<string>"
+                    }
+                  ],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": \"startDate is a date after endDate\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "480bee03-578e-43e8-b650-d1be267333c0",
+              "name": "Unauthorized. The bearer token is missing, invalid or expired.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "payments",
+                    ":companyId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "productId",
+                      "value": "<string>"
+                    },
+                    {
+                      "key": "sync",
+                      "value": "<boolean>"
+                    },
+                    {
+                      "key": "registered",
+                      "value": "<boolean>"
+                    },
+                    {
+                      "key": "startDate",
+                      "value": "<date>"
+                    },
+                    {
+                      "key": "endDate",
+                      "value": "<date>"
+                    },
+                    {
+                      "key": "startUpdatedAt",
+                      "value": "<dateTime>"
+                    },
+                    {
+                      "key": "endUpdatedAt",
+                      "value": "<dateTime>"
+                    },
+                    {
+                      "key": "internalAttributes",
+                      "value": "false"
+                    },
+                    {
+                      "key": "limit",
+                      "value": "500"
+                    },
+                    {
+                      "key": "nextPageToken",
+                      "value": "<string>"
+                    }
+                  ],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": \"user not authorized\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "fac7e4e6-85cc-4f0d-a229-a350ccacf2c0",
+              "name": "Company not found, invalid `nextPageToken`, or an invalid date range when both bounds are given (start after end, or a span of more than 90 days).",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "payments",
+                    ":companyId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "productId",
+                      "value": "<string>"
+                    },
+                    {
+                      "key": "sync",
+                      "value": "<boolean>"
+                    },
+                    {
+                      "key": "registered",
+                      "value": "<boolean>"
+                    },
+                    {
+                      "key": "startDate",
+                      "value": "<date>"
+                    },
+                    {
+                      "key": "endDate",
+                      "value": "<date>"
+                    },
+                    {
+                      "key": "startUpdatedAt",
+                      "value": "<dateTime>"
+                    },
+                    {
+                      "key": "endUpdatedAt",
+                      "value": "<dateTime>"
+                    },
+                    {
+                      "key": "internalAttributes",
+                      "value": "false"
+                    },
+                    {
+                      "key": "limit",
+                      "value": "500"
+                    },
+                    {
+                      "key": "nextPageToken",
+                      "value": "<string>"
+                    }
+                  ],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "Not Found",
+              "code": 404,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": \"0021 companyId not found\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "3eaa226c-b3e4-48a2-8968-56c603a92911",
+              "name": "Validation Error",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "payments",
+                    ":companyId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "productId",
+                      "value": "<string>"
+                    },
+                    {
+                      "key": "sync",
+                      "value": "<boolean>"
+                    },
+                    {
+                      "key": "registered",
+                      "value": "<boolean>"
+                    },
+                    {
+                      "key": "startDate",
+                      "value": "<date>"
+                    },
+                    {
+                      "key": "endDate",
+                      "value": "<date>"
+                    },
+                    {
+                      "key": "startUpdatedAt",
+                      "value": "<dateTime>"
+                    },
+                    {
+                      "key": "endUpdatedAt",
+                      "value": "<dateTime>"
+                    },
+                    {
+                      "key": "internalAttributes",
+                      "value": "false"
+                    },
+                    {
+                      "key": "limit",
+                      "value": "500"
+                    },
+                    {
+                      "key": "nextPageToken",
+                      "value": "<string>"
+                    }
+                  ],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "Unprocessable Entity (WebDAV) (RFC 4918)",
+              "code": 422,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": [\n    {\n      \"loc\": [\n        \"string\",\n        \"string\"\n      ],\n      \"msg\": \"string\",\n      \"type\": \"string\",\n      \"input\": {},\n      \"ctx\": {}\n    },\n    {\n      \"loc\": [\n        \"string\",\n        \"string\"\n      ],\n      \"msg\": \"string\",\n      \"type\": \"string\",\n      \"input\": {},\n      \"ctx\": {}\n    }\n  ]\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "e48c7c33-05df-4c42-bad2-8a541d652039",
+          "name": "Create payment",
+          "request": {
+            "name": "Create payment",
+            "description": {
+              "content": "Creates a payment against one or more operations, recording that those operations (invoices/bills) have been settled in your ERP; each settled amount reduces the operation's pending amount in Embat. If `customId` is omitted, Embat auto-generates one.\n\nEach entry in `operations` is validated independently and **silently discarded** when: the referenced operation does not exist, the operation is already paid or canceled, a payment with the same `customId` was already notified for that operation (duplicates are ignored), or the operation already has payments created from Embat. Discarded entries produce no error: if only some operations are eligible the payment is created for those only, and if none are eligible the call still returns `200` with an `id` but **no payment is created**. When a payment covers an operation's full amount, the operation is automatically marked as paid.",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "payments",
+                ":companyId"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "<string>",
+                  "key": "companyId",
+                  "description": "(Required) "
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "POST",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{bearerToken}}"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"operations\": [\n    {\n      \"amount\": \"<number>\",\n      \"customId\": \"<string>\"\n    },\n    {\n      \"amount\": \"<number>\",\n      \"customId\": \"<string>\"\n    }\n  ],\n  \"date\": \"<dateTime>\",\n  \"amount\": \"<number>\",\n  \"method\": \"bank-transaction\",\n  \"transactionId\": \"<string>\",\n  \"productId\": \"<string>\",\n  \"contactCustomId\": \"<string>\",\n  \"concept\": \"<string>\",\n  \"accountingAmount\": \"<number>\",\n  \"currency\": \"<string>\",\n  \"accountingCurrency\": \"<string>\",\n  \"exchangeRate\": \"<number>\",\n  \"additionalInfo\": {\n    \"key_0\": false,\n    \"key_1\": 786.2328740707392,\n    \"key_2\": \"string\",\n    \"key_3\": 655,\n    \"key_4\": 1329.773823161382\n  },\n  \"attributes\": [\n    {\n      \"customId\": \"<string>\",\n      \"value\": \"<string>\",\n      \"valueCustomId\": \"<string>\",\n      \"parentCustomId\": \"<string>\"\n    },\n    {\n      \"customId\": \"<string>\",\n      \"value\": \"<string>\",\n      \"valueCustomId\": \"<string>\",\n      \"parentCustomId\": \"<string>\"\n    }\n  ],\n  \"customId\": \"<string>\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "id": "7f9d1b3d-7f9a-425c-bb04-b6c2821ae465",
+              "name": "Successful Response",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "payments",
+                    ":companyId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"operations\": [\n    {\n      \"amount\": 500,\n      \"customId\": \"invoice-2024-001\"\n    },\n    {\n      \"amount\": 500,\n      \"customId\": \"invoice-2024-001\"\n    }\n  ],\n  \"date\": \"<dateTime>\",\n  \"amount\": 1250.5,\n  \"method\": \"bank-transaction\",\n  \"transactionId\": \"<string>\",\n  \"productId\": \"<string>\",\n  \"contactCustomId\": \"<string>\",\n  \"concept\": \"<string>\",\n  \"accountingAmount\": \"<number>\",\n  \"currency\": \"CLP\",\n  \"accountingCurrency\": \"XPD\",\n  \"exchangeRate\": \"<number>\",\n  \"additionalInfo\": {\n    \"key_0\": \"string\",\n    \"key_1\": 8352\n  },\n  \"attributes\": [\n    {\n      \"customId\": \"cost-center\",\n      \"value\": \"Marketing\",\n      \"valueCustomId\": \"string\",\n      \"parentCustomId\": \"string\"\n    },\n    {\n      \"customId\": \"cost-center\",\n      \"value\": \"Marketing\",\n      \"valueCustomId\": \"string\",\n      \"parentCustomId\": \"string\"\n    }\n  ],\n  \"customId\": \"<string>\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"id\": \"string\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "5f9ae6ab-e080-404f-86b5-bbba65a92580",
+              "name": "Unauthorized. The bearer token is missing, invalid or expired.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "payments",
+                    ":companyId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"operations\": [\n    {\n      \"amount\": 500,\n      \"customId\": \"invoice-2024-001\"\n    },\n    {\n      \"amount\": 500,\n      \"customId\": \"invoice-2024-001\"\n    }\n  ],\n  \"date\": \"<dateTime>\",\n  \"amount\": 1250.5,\n  \"method\": \"bank-transaction\",\n  \"transactionId\": \"<string>\",\n  \"productId\": \"<string>\",\n  \"contactCustomId\": \"<string>\",\n  \"concept\": \"<string>\",\n  \"accountingAmount\": \"<number>\",\n  \"currency\": \"CLP\",\n  \"accountingCurrency\": \"XPD\",\n  \"exchangeRate\": \"<number>\",\n  \"additionalInfo\": {\n    \"key_0\": \"string\",\n    \"key_1\": 8352\n  },\n  \"attributes\": [\n    {\n      \"customId\": \"cost-center\",\n      \"value\": \"Marketing\",\n      \"valueCustomId\": \"string\",\n      \"parentCustomId\": \"string\"\n    },\n    {\n      \"customId\": \"cost-center\",\n      \"value\": \"Marketing\",\n      \"valueCustomId\": \"string\",\n      \"parentCustomId\": \"string\"\n    }\n  ],\n  \"customId\": \"<string>\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": \"user not authorized\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "0506ddc4-2246-4a20-aafb-f2b925d1f022",
+              "name": "Not found. The requested resource or `companyId` does not exist.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "payments",
+                    ":companyId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"operations\": [\n    {\n      \"amount\": 500,\n      \"customId\": \"invoice-2024-001\"\n    },\n    {\n      \"amount\": 500,\n      \"customId\": \"invoice-2024-001\"\n    }\n  ],\n  \"date\": \"<dateTime>\",\n  \"amount\": 1250.5,\n  \"method\": \"bank-transaction\",\n  \"transactionId\": \"<string>\",\n  \"productId\": \"<string>\",\n  \"contactCustomId\": \"<string>\",\n  \"concept\": \"<string>\",\n  \"accountingAmount\": \"<number>\",\n  \"currency\": \"CLP\",\n  \"accountingCurrency\": \"XPD\",\n  \"exchangeRate\": \"<number>\",\n  \"additionalInfo\": {\n    \"key_0\": \"string\",\n    \"key_1\": 8352\n  },\n  \"attributes\": [\n    {\n      \"customId\": \"cost-center\",\n      \"value\": \"Marketing\",\n      \"valueCustomId\": \"string\",\n      \"parentCustomId\": \"string\"\n    },\n    {\n      \"customId\": \"cost-center\",\n      \"value\": \"Marketing\",\n      \"valueCustomId\": \"string\",\n      \"parentCustomId\": \"string\"\n    }\n  ],\n  \"customId\": \"<string>\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Not Found",
+              "code": 404,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": \"0021 companyId not found\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "fb7b7798-f038-4a5f-9be0-23230bf7bd11",
+              "name": "Validation Error",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "payments",
+                    ":companyId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"operations\": [\n    {\n      \"amount\": 500,\n      \"customId\": \"invoice-2024-001\"\n    },\n    {\n      \"amount\": 500,\n      \"customId\": \"invoice-2024-001\"\n    }\n  ],\n  \"date\": \"<dateTime>\",\n  \"amount\": 1250.5,\n  \"method\": \"bank-transaction\",\n  \"transactionId\": \"<string>\",\n  \"productId\": \"<string>\",\n  \"contactCustomId\": \"<string>\",\n  \"concept\": \"<string>\",\n  \"accountingAmount\": \"<number>\",\n  \"currency\": \"CLP\",\n  \"accountingCurrency\": \"XPD\",\n  \"exchangeRate\": \"<number>\",\n  \"additionalInfo\": {\n    \"key_0\": \"string\",\n    \"key_1\": 8352\n  },\n  \"attributes\": [\n    {\n      \"customId\": \"cost-center\",\n      \"value\": \"Marketing\",\n      \"valueCustomId\": \"string\",\n      \"parentCustomId\": \"string\"\n    },\n    {\n      \"customId\": \"cost-center\",\n      \"value\": \"Marketing\",\n      \"valueCustomId\": \"string\",\n      \"parentCustomId\": \"string\"\n    }\n  ],\n  \"customId\": \"<string>\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Unprocessable Entity (WebDAV) (RFC 4918)",
+              "code": 422,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": [\n    {\n      \"loc\": [\n        \"string\",\n        \"string\"\n      ],\n      \"msg\": \"string\",\n      \"type\": \"string\",\n      \"input\": {},\n      \"ctx\": {}\n    },\n    {\n      \"loc\": [\n        \"string\",\n        \"string\"\n      ],\n      \"msg\": \"string\",\n      \"type\": \"string\",\n      \"input\": {},\n      \"ctx\": {}\n    }\n  ]\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "516fa751-c6a9-41c2-b22c-009f5af0e5c7",
+              "name": "Unexpected error. Contact support if it persists.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "payments",
+                    ":companyId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"operations\": [\n    {\n      \"amount\": 500,\n      \"customId\": \"invoice-2024-001\"\n    },\n    {\n      \"amount\": 500,\n      \"customId\": \"invoice-2024-001\"\n    }\n  ],\n  \"date\": \"<dateTime>\",\n  \"amount\": 1250.5,\n  \"method\": \"bank-transaction\",\n  \"transactionId\": \"<string>\",\n  \"productId\": \"<string>\",\n  \"contactCustomId\": \"<string>\",\n  \"concept\": \"<string>\",\n  \"accountingAmount\": \"<number>\",\n  \"currency\": \"CLP\",\n  \"accountingCurrency\": \"XPD\",\n  \"exchangeRate\": \"<number>\",\n  \"additionalInfo\": {\n    \"key_0\": \"string\",\n    \"key_1\": 8352\n  },\n  \"attributes\": [\n    {\n      \"customId\": \"cost-center\",\n      \"value\": \"Marketing\",\n      \"valueCustomId\": \"string\",\n      \"parentCustomId\": \"string\"\n    },\n    {\n      \"customId\": \"cost-center\",\n      \"value\": \"Marketing\",\n      \"valueCustomId\": \"string\",\n      \"parentCustomId\": \"string\"\n    }\n  ],\n  \"customId\": \"<string>\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Internal Server Error",
+              "code": 500,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": \"Internal server error\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "2f2bd3b9-d4f2-44b6-b209-57866dbc055c",
+          "name": "Update payments in bulk",
+          "request": {
+            "name": "Update payments in bulk",
+            "description": {
+              "content": "Updates the synchronization status, error message, registration status or additional info of several payments, identified by `customId`. Entries whose `customId` does not match any payment are silently skipped — the call returns `200` for the whole batch.",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "payments",
+                ":companyId"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "<string>",
+                  "key": "companyId",
+                  "description": "(Required) "
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "PATCH",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{bearerToken}}"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"data\": [\n    {\n      \"customId\": \"<string>\",\n      \"sync\": \"<boolean>\",\n      \"additionalInfo\": {\n        \"key_0\": false,\n        \"key_1\": 356\n      },\n      \"error\": \"<string>\",\n      \"registered\": \"<boolean>\"\n    },\n    {\n      \"customId\": \"<string>\",\n      \"sync\": \"<boolean>\",\n      \"additionalInfo\": {\n        \"key_0\": true,\n        \"key_1\": \"string\",\n        \"key_2\": false,\n        \"key_3\": \"string\"\n      },\n      \"error\": \"<string>\",\n      \"registered\": \"<boolean>\"\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "id": "cd3aef1e-64fd-4eea-bb39-b8b15b02cad0",
+              "name": "Successful Response",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "payments",
+                    ":companyId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "PATCH",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"data\": [\n    {\n      \"customId\": \"string\",\n      \"sync\": false,\n      \"additionalInfo\": {\n        \"key_0\": 8262,\n        \"key_1\": true,\n        \"key_2\": \"string\",\n        \"key_3\": 2530.790659007455,\n        \"key_4\": true\n      },\n      \"error\": \"string\",\n      \"registered\": false\n    },\n    {\n      \"customId\": \"string\",\n      \"sync\": false,\n      \"additionalInfo\": {\n        \"key_0\": \"string\",\n        \"key_1\": 8072.353612644738,\n        \"key_2\": 3108\n      },\n      \"error\": \"string\",\n      \"registered\": true\n    }\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"data\": [\n    {\n      \"id\": \"string\"\n    },\n    {\n      \"id\": \"string\"\n    }\n  ]\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "0c2dcd1b-1d5f-4651-ab3d-4fc0f4d5a922",
+              "name": "Unauthorized. The bearer token is missing, invalid or expired.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "payments",
+                    ":companyId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "PATCH",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"data\": [\n    {\n      \"customId\": \"string\",\n      \"sync\": false,\n      \"additionalInfo\": {\n        \"key_0\": 8262,\n        \"key_1\": true,\n        \"key_2\": \"string\",\n        \"key_3\": 2530.790659007455,\n        \"key_4\": true\n      },\n      \"error\": \"string\",\n      \"registered\": false\n    },\n    {\n      \"customId\": \"string\",\n      \"sync\": false,\n      \"additionalInfo\": {\n        \"key_0\": \"string\",\n        \"key_1\": 8072.353612644738,\n        \"key_2\": 3108\n      },\n      \"error\": \"string\",\n      \"registered\": true\n    }\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": \"user not authorized\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "c63b2cac-ad11-4fbe-89b4-07dc909fba1d",
+              "name": "Not found. The requested resource or `companyId` does not exist.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "payments",
+                    ":companyId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "PATCH",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"data\": [\n    {\n      \"customId\": \"string\",\n      \"sync\": false,\n      \"additionalInfo\": {\n        \"key_0\": 8262,\n        \"key_1\": true,\n        \"key_2\": \"string\",\n        \"key_3\": 2530.790659007455,\n        \"key_4\": true\n      },\n      \"error\": \"string\",\n      \"registered\": false\n    },\n    {\n      \"customId\": \"string\",\n      \"sync\": false,\n      \"additionalInfo\": {\n        \"key_0\": \"string\",\n        \"key_1\": 8072.353612644738,\n        \"key_2\": 3108\n      },\n      \"error\": \"string\",\n      \"registered\": true\n    }\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Not Found",
+              "code": 404,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": \"0021 companyId not found\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "59718a7a-d9c3-4789-a009-798eb318fd82",
+              "name": "Validation Error",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "payments",
+                    ":companyId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "PATCH",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"data\": [\n    {\n      \"customId\": \"string\",\n      \"sync\": false,\n      \"additionalInfo\": {\n        \"key_0\": 8262,\n        \"key_1\": true,\n        \"key_2\": \"string\",\n        \"key_3\": 2530.790659007455,\n        \"key_4\": true\n      },\n      \"error\": \"string\",\n      \"registered\": false\n    },\n    {\n      \"customId\": \"string\",\n      \"sync\": false,\n      \"additionalInfo\": {\n        \"key_0\": \"string\",\n        \"key_1\": 8072.353612644738,\n        \"key_2\": 3108\n      },\n      \"error\": \"string\",\n      \"registered\": true\n    }\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Unprocessable Entity (WebDAV) (RFC 4918)",
+              "code": 422,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": [\n    {\n      \"loc\": [\n        \"string\",\n        \"string\"\n      ],\n      \"msg\": \"string\",\n      \"type\": \"string\",\n      \"input\": {},\n      \"ctx\": {}\n    },\n    {\n      \"loc\": [\n        \"string\",\n        \"string\"\n      ],\n      \"msg\": \"string\",\n      \"type\": \"string\",\n      \"input\": {},\n      \"ctx\": {}\n    }\n  ]\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "4d4d6992-6aeb-4b51-8c5b-6522b1f548b5",
+              "name": "Unexpected error. Contact support if it persists.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "payments",
+                    ":companyId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "PATCH",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"data\": [\n    {\n      \"customId\": \"string\",\n      \"sync\": false,\n      \"additionalInfo\": {\n        \"key_0\": 8262,\n        \"key_1\": true,\n        \"key_2\": \"string\",\n        \"key_3\": 2530.790659007455,\n        \"key_4\": true\n      },\n      \"error\": \"string\",\n      \"registered\": false\n    },\n    {\n      \"customId\": \"string\",\n      \"sync\": false,\n      \"additionalInfo\": {\n        \"key_0\": \"string\",\n        \"key_1\": 8072.353612644738,\n        \"key_2\": 3108\n      },\n      \"error\": \"string\",\n      \"registered\": true\n    }\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Internal Server Error",
+              "code": 500,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": \"Internal server error\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "5fe5c479-64d7-4fdb-8bd6-0c0fb0fdd067",
+          "name": "Delete payments in bulk",
+          "request": {
+            "name": "Delete payments in bulk",
+            "description": {
+              "content": "Deletes several payments in a single call, identified by `customId`.",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "payments",
+                ":companyId"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "<string>",
+                  "key": "companyId",
+                  "description": "(Required) "
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "DELETE",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{bearerToken}}"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"data\": [\n    {\n      \"customId\": \"<string>\"\n    },\n    {\n      \"customId\": \"<string>\"\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "id": "379f4e42-9d5a-4fc2-aa6c-bc2520b94864",
+              "name": "Successful Response",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "payments",
+                    ":companyId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "DELETE",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"data\": [\n    {\n      \"customId\": \"string\"\n    },\n    {\n      \"customId\": \"string\"\n    }\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"data\": [\n    {\n      \"id\": \"string\"\n    },\n    {\n      \"id\": \"string\"\n    }\n  ]\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "cae2ff93-63bf-43e2-bedf-eb8f3afd4a08",
+              "name": "Unauthorized. The bearer token is missing, invalid or expired.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "payments",
+                    ":companyId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "DELETE",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"data\": [\n    {\n      \"customId\": \"string\"\n    },\n    {\n      \"customId\": \"string\"\n    }\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": \"user not authorized\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "5c6f2cbb-3ee0-459b-abd7-1bba66a799f3",
+              "name": "Company not found, or none of the given `customId` values match a payment.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "payments",
+                    ":companyId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "DELETE",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"data\": [\n    {\n      \"customId\": \"string\"\n    },\n    {\n      \"customId\": \"string\"\n    }\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Not Found",
+              "code": 404,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": \"0021 companyId not found\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "39af6287-1a18-4f60-ab4f-76fb0bc7dbd7",
+              "name": "Validation Error",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "payments",
+                    ":companyId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "DELETE",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"data\": [\n    {\n      \"customId\": \"string\"\n    },\n    {\n      \"customId\": \"string\"\n    }\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Unprocessable Entity (WebDAV) (RFC 4918)",
+              "code": 422,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": [\n    {\n      \"loc\": [\n        \"string\",\n        \"string\"\n      ],\n      \"msg\": \"string\",\n      \"type\": \"string\",\n      \"input\": {},\n      \"ctx\": {}\n    },\n    {\n      \"loc\": [\n        \"string\",\n        \"string\"\n      ],\n      \"msg\": \"string\",\n      \"type\": \"string\",\n      \"input\": {},\n      \"ctx\": {}\n    }\n  ]\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "8f5cb44f-935e-4ae7-bd21-d1931a89f3a3",
+              "name": "Unexpected error. Contact support if it persists.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "payments",
+                    ":companyId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "DELETE",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"data\": [\n    {\n      \"customId\": \"string\"\n    },\n    {\n      \"customId\": \"string\"\n    }\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Internal Server Error",
+              "code": 500,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": \"Internal server error\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "1f3b0245-2bd2-4b82-8da6-a0df9098f805",
+          "name": "Retrieve payment",
+          "request": {
+            "name": "Retrieve payment",
+            "description": {
+              "content": "Returns a single payment by `customId`. Payments missing required accounting, operation or contact information are not returned even if they exist.",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "payments",
+                ":companyId",
+                ":customId"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "<string>",
+                  "key": "customId",
+                  "description": "(Required) "
+                },
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "<string>",
+                  "key": "companyId",
+                  "description": "(Required) "
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{bearerToken}}"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "id": "72dd8329-1129-4780-a040-3c3333a65378",
+              "name": "Successful Response",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "payments",
+                    ":companyId",
+                    ":customId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "customId",
+                      "description": "(Required) "
+                    },
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"date\": \"2010-03-06T06:11:22.115Z\",\n  \"amount\": 1250.5,\n  \"id\": \"string\",\n  \"companyId\": \"string\",\n  \"updatedAt\": \"1983-03-26T08:35:00.404Z\",\n  \"createdAt\": \"1981-12-08T04:16:27.921Z\",\n  \"method\": \"bank-transaction\",\n  \"transactionId\": \"string\",\n  \"operations\": [\n    {\n      \"amount\": 500,\n      \"customId\": \"invoice-2024-001\",\n      \"currency\": \"SOS\",\n      \"paymentAmount\": 6671.740117771643,\n      \"id\": \"string\",\n      \"exchangeRate\": 6306.237451820834,\n      \"invoiceGroupDocumentId\": \"string\",\n      \"documentId\": \"string\",\n      \"issuanceDate\": \"2009-08-25T16:19:38.590Z\",\n      \"documentType\": \"string\",\n      \"paymentMethod\": \"string\",\n      \"operationPaymentAmount\": 8247.692407995586\n    },\n    {\n      \"amount\": 500,\n      \"customId\": \"invoice-2024-001\",\n      \"currency\": \"RSD\",\n      \"paymentAmount\": 286.6078953686613,\n      \"id\": \"string\",\n      \"exchangeRate\": 6640.97799643184,\n      \"invoiceGroupDocumentId\": \"string\",\n      \"documentId\": \"string\",\n      \"issuanceDate\": \"1994-11-12T21:02:23.824Z\",\n      \"documentType\": \"string\",\n      \"paymentMethod\": \"string\",\n      \"operationPaymentAmount\": 1549.7182952669098\n    }\n  ],\n  \"productId\": \"string\",\n  \"contactCustomId\": \"string\",\n  \"concept\": \"string\",\n  \"accountingAmount\": 1134.268476314113,\n  \"currency\": \"BHD\",\n  \"accountingCurrency\": \"MWK\",\n  \"exchangeRate\": 5072.895484162945,\n  \"additionalInfo\": {\n    \"key_0\": 3366\n  },\n  \"attributes\": [\n    {\n      \"customId\": \"cost-center\",\n      \"value\": \"Marketing\",\n      \"valueCustomId\": \"string\",\n      \"parentCustomId\": \"string\"\n    },\n    {\n      \"customId\": \"cost-center\",\n      \"value\": \"Marketing\",\n      \"valueCustomId\": \"string\",\n      \"parentCustomId\": \"string\"\n    }\n  ],\n  \"customId\": \"string\",\n  \"type\": \"banks\",\n  \"productAccountingCode\": \"string\",\n  \"accountingCode\": \"string\",\n  \"paymentSource\": \"embat\",\n  \"sync\": false,\n  \"registered\": false,\n  \"userId\": \"string\",\n  \"transactionAmount\": 1922.1291902121063,\n  \"transactionAccountingAmount\": 8856.526245312447,\n  \"multicurrency\": false,\n  \"error\": \"string\",\n  \"contact\": {\n    \"tradeName\": \"string\",\n    \"legalName\": \"string\",\n    \"taxId\": \"string\",\n    \"contact\": {\n      \"phone\": \"string\",\n      \"email\": \"string\",\n      \"name\": \"string\",\n      \"surname\": \"string\"\n    },\n    \"address\": {\n      \"postalCode\": \"string\",\n      \"address\": \"string\",\n      \"province\": \"string\",\n      \"city\": \"string\",\n      \"country\": \"string\"\n    },\n    \"contactType\": \"company\",\n    \"type\": \"client\",\n    \"accounts\": [\n      {\n        \"swift\": \"string\",\n        \"iban\": \"string\",\n        \"default\": false\n      },\n      {\n        \"swift\": \"string\",\n        \"iban\": \"string\",\n        \"default\": false\n      }\n    ],\n    \"paymentsAccounts\": [\n      {\n        \"default\": false,\n        \"currency\": {\n          \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n        },\n        \"details\": {\n          \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n        }\n      },\n      {\n        \"default\": false,\n        \"currency\": {\n          \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n        },\n        \"details\": {\n          \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n        }\n      }\n    ],\n    \"additionalInfo\": {\n      \"key_0\": 6913,\n      \"key_1\": true,\n      \"key_2\": false,\n      \"key_3\": true\n    },\n    \"accountingCode\": \"string\",\n    \"paymentMethod\": \"string\",\n    \"paymentTerms\": 5378,\n    \"attributes\": [\n      {\n        \"customId\": \"cost-center\",\n        \"value\": \"Marketing\",\n        \"valueCustomId\": \"string\",\n        \"parentCustomId\": \"string\"\n      },\n      {\n        \"customId\": \"cost-center\",\n        \"value\": \"Marketing\",\n        \"valueCustomId\": \"string\",\n        \"parentCustomId\": \"string\"\n      }\n    ],\n    \"customId\": \"string\"\n  },\n  \"intercompany\": {\n    \"id\": \"string\",\n    \"relatedPaymentPairs\": [\n      [\n        \"string\",\n        \"string\"\n      ],\n      [\n        \"string\",\n        \"string\"\n      ]\n    ],\n    \"relatedPaymentsIds\": [\n      \"string\",\n      \"string\"\n    ],\n    \"counterpartyContact\": \"string\"\n  },\n  \"transactionAttributes\": [\n    {\n      \"customId\": \"cost-center\",\n      \"value\": \"Marketing\",\n      \"valueCustomId\": \"string\",\n      \"parentCustomId\": \"string\"\n    },\n    {\n      \"customId\": \"cost-center\",\n      \"value\": \"Marketing\",\n      \"valueCustomId\": \"string\",\n      \"parentCustomId\": \"string\"\n    }\n  ]\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "63c31743-fcc3-4d7b-9d65-b726d481341f",
+              "name": "Unauthorized. The bearer token is missing, invalid or expired.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "payments",
+                    ":companyId",
+                    ":customId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "customId",
+                      "description": "(Required) "
+                    },
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": \"user not authorized\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "5dfd59a8-ecae-415a-b866-bf7351c1dbaf",
+              "name": "Company not found, or no payment matches the given `customId`.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "payments",
+                    ":companyId",
+                    ":customId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "customId",
+                      "description": "(Required) "
+                    },
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "Not Found",
+              "code": 404,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": \"0021 companyId not found\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "799eee7e-538a-481f-9377-473eeb0031b8",
+              "name": "Validation Error",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "payments",
+                    ":companyId",
+                    ":customId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "customId",
+                      "description": "(Required) "
+                    },
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "Unprocessable Entity (WebDAV) (RFC 4918)",
+              "code": 422,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": [\n    {\n      \"loc\": [\n        \"string\",\n        \"string\"\n      ],\n      \"msg\": \"string\",\n      \"type\": \"string\",\n      \"input\": {},\n      \"ctx\": {}\n    },\n    {\n      \"loc\": [\n        \"string\",\n        \"string\"\n      ],\n      \"msg\": \"string\",\n      \"type\": \"string\",\n      \"input\": {},\n      \"ctx\": {}\n    }\n  ]\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "2fbaa72e-5b18-4d98-990a-78bf4f6d6441",
+          "name": "Update payment",
+          "request": {
+            "name": "Update payment",
+            "description": {
+              "content": "Updates the synchronization status, error message, registration status or additional info of a payment identified by `customId`. If none of the provided fields change the existing payment, the update is a no-op. Note that updating a `customId` that does not match any payment also returns `200` without applying any change — no `404` is raised. Setting `error` without `sync` marks the payment as synchronized with the error recorded.",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "payments",
+                ":companyId",
+                ":customId"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "<string>",
+                  "key": "customId",
+                  "description": "(Required) "
+                },
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "<string>",
+                  "key": "companyId",
+                  "description": "(Required) "
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "PATCH",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{bearerToken}}"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sync\": \"<boolean>\",\n  \"additionalInfo\": {\n    \"key_0\": 9816\n  },\n  \"error\": \"<string>\",\n  \"registered\": \"<boolean>\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "id": "034a6d0e-1e53-42bf-b41b-72330fea0f02",
+              "name": "Successful Response",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "payments",
+                    ":companyId",
+                    ":customId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "customId",
+                      "description": "(Required) "
+                    },
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "PATCH",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"sync\": \"<boolean>\",\n  \"additionalInfo\": {\n    \"key_0\": true,\n    \"key_1\": false\n  },\n  \"error\": \"<string>\",\n  \"registered\": \"<boolean>\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"id\": \"string\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "053fc5b7-f6a9-4497-9cd3-bd23992a2aea",
+              "name": "Unauthorized. The bearer token is missing, invalid or expired.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "payments",
+                    ":companyId",
+                    ":customId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "customId",
+                      "description": "(Required) "
+                    },
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "PATCH",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"sync\": \"<boolean>\",\n  \"additionalInfo\": {\n    \"key_0\": true,\n    \"key_1\": false\n  },\n  \"error\": \"<string>\",\n  \"registered\": \"<boolean>\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": \"user not authorized\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "85a11e26-a0f4-4995-95a3-16df841d3a37",
+              "name": "Not found. The requested resource or `companyId` does not exist.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "payments",
+                    ":companyId",
+                    ":customId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "customId",
+                      "description": "(Required) "
+                    },
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "PATCH",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"sync\": \"<boolean>\",\n  \"additionalInfo\": {\n    \"key_0\": true,\n    \"key_1\": false\n  },\n  \"error\": \"<string>\",\n  \"registered\": \"<boolean>\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Not Found",
+              "code": 404,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": \"0021 companyId not found\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "30348fba-42a9-40a0-93cc-c3e2be304d5f",
+              "name": "Validation Error",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "payments",
+                    ":companyId",
+                    ":customId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "customId",
+                      "description": "(Required) "
+                    },
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "PATCH",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"sync\": \"<boolean>\",\n  \"additionalInfo\": {\n    \"key_0\": true,\n    \"key_1\": false\n  },\n  \"error\": \"<string>\",\n  \"registered\": \"<boolean>\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Unprocessable Entity (WebDAV) (RFC 4918)",
+              "code": 422,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": [\n    {\n      \"loc\": [\n        \"string\",\n        \"string\"\n      ],\n      \"msg\": \"string\",\n      \"type\": \"string\",\n      \"input\": {},\n      \"ctx\": {}\n    },\n    {\n      \"loc\": [\n        \"string\",\n        \"string\"\n      ],\n      \"msg\": \"string\",\n      \"type\": \"string\",\n      \"input\": {},\n      \"ctx\": {}\n    }\n  ]\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "71255af5-900b-4f13-84a9-eaf89c3c764b",
+              "name": "Unexpected error. Contact support if it persists.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "payments",
+                    ":companyId",
+                    ":customId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "customId",
+                      "description": "(Required) "
+                    },
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "PATCH",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"sync\": \"<boolean>\",\n  \"additionalInfo\": {\n    \"key_0\": true,\n    \"key_1\": false\n  },\n  \"error\": \"<string>\",\n  \"registered\": \"<boolean>\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Internal Server Error",
+              "code": 500,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": \"Internal server error\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "7603e693-be11-4a95-9c17-57f53aa73bd6",
+          "name": "Delete payment",
+          "request": {
+            "name": "Delete payment",
+            "description": {
+              "content": "Deletes a payment by `customId`.",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "payments",
+                ":companyId",
+                ":customId"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "<string>",
+                  "key": "customId",
+                  "description": "(Required) "
+                },
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "<string>",
+                  "key": "companyId",
+                  "description": "(Required) "
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "DELETE",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{bearerToken}}"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "id": "cf3a24c9-ae20-4a1e-8d51-a2d2f6e8d325",
+              "name": "Successful Response",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "payments",
+                    ":companyId",
+                    ":customId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "customId",
+                      "description": "(Required) "
+                    },
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "DELETE",
+                "body": {}
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"id\": \"string\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "69f7a7e3-64d3-463e-aed7-75d281a8df63",
+              "name": "Unauthorized. The bearer token is missing, invalid or expired.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "payments",
+                    ":companyId",
+                    ":customId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "customId",
+                      "description": "(Required) "
+                    },
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "DELETE",
+                "body": {}
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": \"user not authorized\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "eab3d9f4-b5ed-4515-8b03-9d77cd04410f",
+              "name": "Company not found, or no payment matches the given `customId`.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "payments",
+                    ":companyId",
+                    ":customId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "customId",
+                      "description": "(Required) "
+                    },
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "DELETE",
+                "body": {}
+              },
+              "status": "Not Found",
+              "code": 404,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": \"0021 companyId not found\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "52e54147-0f05-49c3-a343-6d5b9a8ddcf5",
+              "name": "Validation Error",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "payments",
+                    ":companyId",
+                    ":customId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "customId",
+                      "description": "(Required) "
+                    },
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "DELETE",
+                "body": {}
+              },
+              "status": "Unprocessable Entity (WebDAV) (RFC 4918)",
+              "code": 422,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": [\n    {\n      \"loc\": [\n        \"string\",\n        \"string\"\n      ],\n      \"msg\": \"string\",\n      \"type\": \"string\",\n      \"input\": {},\n      \"ctx\": {}\n    },\n    {\n      \"loc\": [\n        \"string\",\n        \"string\"\n      ],\n      \"msg\": \"string\",\n      \"type\": \"string\",\n      \"input\": {},\n      \"ctx\": {}\n    }\n  ]\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "103a5308-305f-4e30-9ca1-1c23597607ac",
+              "name": "Unexpected error. Contact support if it persists.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "payments",
+                    ":companyId",
+                    ":customId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "customId",
+                      "description": "(Required) "
+                    },
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "DELETE",
+                "body": {}
+              },
+              "status": "Internal Server Error",
+              "code": 500,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": \"Internal server error\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "c06767e0-7fd5-4889-acc8-6fc6105938a3",
+          "name": "Create payments in bulk",
+          "request": {
+            "name": "Create payments in bulk",
+            "description": {
+              "content": "Creates several payments in a single call, following the same rules as the single payment creation endpoint. Payments sharing the same `customId` within the request are deduplicated and only the first occurrence is processed.",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "payments",
+                ":companyId",
+                "bulk"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "<string>",
+                  "key": "companyId",
+                  "description": "(Required) "
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "POST",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{bearerToken}}"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"data\": [\n    {\n      \"operations\": [\n        {\n          \"amount\": \"<number>\",\n          \"customId\": \"<string>\"\n        },\n        {\n          \"amount\": \"<number>\",\n          \"customId\": \"<string>\"\n        }\n      ],\n      \"date\": \"<dateTime>\",\n      \"amount\": \"<number>\",\n      \"method\": \"bank-transaction\",\n      \"transactionId\": \"<string>\",\n      \"productId\": \"<string>\",\n      \"contactCustomId\": \"<string>\",\n      \"concept\": \"<string>\",\n      \"accountingAmount\": \"<number>\",\n      \"currency\": \"<string>\",\n      \"accountingCurrency\": \"<string>\",\n      \"exchangeRate\": \"<number>\",\n      \"additionalInfo\": {\n        \"key_0\": 9898\n      },\n      \"attributes\": [\n        {\n          \"customId\": \"<string>\",\n          \"value\": \"<string>\",\n          \"valueCustomId\": \"<string>\",\n          \"parentCustomId\": \"<string>\"\n        },\n        {\n          \"customId\": \"<string>\",\n          \"value\": \"<string>\",\n          \"valueCustomId\": \"<string>\",\n          \"parentCustomId\": \"<string>\"\n        }\n      ],\n      \"customId\": \"<string>\"\n    },\n    {\n      \"operations\": [\n        {\n          \"amount\": \"<number>\",\n          \"customId\": \"<string>\"\n        },\n        {\n          \"amount\": \"<number>\",\n          \"customId\": \"<string>\"\n        }\n      ],\n      \"date\": \"<dateTime>\",\n      \"amount\": \"<number>\",\n      \"method\": \"bank-transaction\",\n      \"transactionId\": \"<string>\",\n      \"productId\": \"<string>\",\n      \"contactCustomId\": \"<string>\",\n      \"concept\": \"<string>\",\n      \"accountingAmount\": \"<number>\",\n      \"currency\": \"<string>\",\n      \"accountingCurrency\": \"<string>\",\n      \"exchangeRate\": \"<number>\",\n      \"additionalInfo\": {\n        \"key_0\": 935.4576034405337\n      },\n      \"attributes\": [\n        {\n          \"customId\": \"<string>\",\n          \"value\": \"<string>\",\n          \"valueCustomId\": \"<string>\",\n          \"parentCustomId\": \"<string>\"\n        },\n        {\n          \"customId\": \"<string>\",\n          \"value\": \"<string>\",\n          \"valueCustomId\": \"<string>\",\n          \"parentCustomId\": \"<string>\"\n        }\n      ],\n      \"customId\": \"<string>\"\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "id": "41bdb3c8-05f8-41ff-bf3e-38bc76afa661",
+              "name": "Successful Response",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "payments",
+                    ":companyId",
+                    "bulk"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"data\": [\n    {\n      \"operations\": [\n        {\n          \"amount\": 500,\n          \"customId\": \"invoice-2024-001\"\n        },\n        {\n          \"amount\": 500,\n          \"customId\": \"invoice-2024-001\"\n        }\n      ],\n      \"date\": \"2001-11-06T23:43:05.857Z\",\n      \"amount\": 1250.5,\n      \"method\": \"bank-transaction\",\n      \"transactionId\": \"string\",\n      \"productId\": \"string\",\n      \"contactCustomId\": \"string\",\n      \"concept\": \"string\",\n      \"accountingAmount\": 5360.141096910018,\n      \"currency\": \"CDF\",\n      \"accountingCurrency\": \"CHW\",\n      \"exchangeRate\": 7437.946793617697,\n      \"additionalInfo\": {\n        \"key_0\": false,\n        \"key_1\": false\n      },\n      \"attributes\": [\n        {\n          \"customId\": \"cost-center\",\n          \"value\": \"Marketing\",\n          \"valueCustomId\": \"string\",\n          \"parentCustomId\": \"string\"\n        },\n        {\n          \"customId\": \"cost-center\",\n          \"value\": \"Marketing\",\n          \"valueCustomId\": \"string\",\n          \"parentCustomId\": \"string\"\n        }\n      ],\n      \"customId\": \"string\"\n    },\n    {\n      \"operations\": [\n        {\n          \"amount\": 500,\n          \"customId\": \"invoice-2024-001\"\n        },\n        {\n          \"amount\": 500,\n          \"customId\": \"invoice-2024-001\"\n        }\n      ],\n      \"date\": \"1994-02-12T17:56:27.417Z\",\n      \"amount\": 1250.5,\n      \"method\": \"bank-transaction\",\n      \"transactionId\": \"string\",\n      \"productId\": \"string\",\n      \"contactCustomId\": \"string\",\n      \"concept\": \"string\",\n      \"accountingAmount\": 1544.7912733005965,\n      \"currency\": \"AUD\",\n      \"accountingCurrency\": \"VEF\",\n      \"exchangeRate\": 2910.1083866799136,\n      \"additionalInfo\": {\n        \"key_0\": 5846.047656966914,\n        \"key_1\": true\n      },\n      \"attributes\": [\n        {\n          \"customId\": \"cost-center\",\n          \"value\": \"Marketing\",\n          \"valueCustomId\": \"string\",\n          \"parentCustomId\": \"string\"\n        },\n        {\n          \"customId\": \"cost-center\",\n          \"value\": \"Marketing\",\n          \"valueCustomId\": \"string\",\n          \"parentCustomId\": \"string\"\n        }\n      ],\n      \"customId\": \"string\"\n    }\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"data\": [\n    {\n      \"id\": \"string\",\n      \"customId\": \"string\"\n    },\n    {\n      \"id\": \"string\",\n      \"customId\": \"string\"\n    }\n  ]\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "72dfdb47-83e5-46d5-b5a5-07739505c24a",
+              "name": "Unauthorized. The bearer token is missing, invalid or expired.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "payments",
+                    ":companyId",
+                    "bulk"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"data\": [\n    {\n      \"operations\": [\n        {\n          \"amount\": 500,\n          \"customId\": \"invoice-2024-001\"\n        },\n        {\n          \"amount\": 500,\n          \"customId\": \"invoice-2024-001\"\n        }\n      ],\n      \"date\": \"2001-11-06T23:43:05.857Z\",\n      \"amount\": 1250.5,\n      \"method\": \"bank-transaction\",\n      \"transactionId\": \"string\",\n      \"productId\": \"string\",\n      \"contactCustomId\": \"string\",\n      \"concept\": \"string\",\n      \"accountingAmount\": 5360.141096910018,\n      \"currency\": \"CDF\",\n      \"accountingCurrency\": \"CHW\",\n      \"exchangeRate\": 7437.946793617697,\n      \"additionalInfo\": {\n        \"key_0\": false,\n        \"key_1\": false\n      },\n      \"attributes\": [\n        {\n          \"customId\": \"cost-center\",\n          \"value\": \"Marketing\",\n          \"valueCustomId\": \"string\",\n          \"parentCustomId\": \"string\"\n        },\n        {\n          \"customId\": \"cost-center\",\n          \"value\": \"Marketing\",\n          \"valueCustomId\": \"string\",\n          \"parentCustomId\": \"string\"\n        }\n      ],\n      \"customId\": \"string\"\n    },\n    {\n      \"operations\": [\n        {\n          \"amount\": 500,\n          \"customId\": \"invoice-2024-001\"\n        },\n        {\n          \"amount\": 500,\n          \"customId\": \"invoice-2024-001\"\n        }\n      ],\n      \"date\": \"1994-02-12T17:56:27.417Z\",\n      \"amount\": 1250.5,\n      \"method\": \"bank-transaction\",\n      \"transactionId\": \"string\",\n      \"productId\": \"string\",\n      \"contactCustomId\": \"string\",\n      \"concept\": \"string\",\n      \"accountingAmount\": 1544.7912733005965,\n      \"currency\": \"AUD\",\n      \"accountingCurrency\": \"VEF\",\n      \"exchangeRate\": 2910.1083866799136,\n      \"additionalInfo\": {\n        \"key_0\": 5846.047656966914,\n        \"key_1\": true\n      },\n      \"attributes\": [\n        {\n          \"customId\": \"cost-center\",\n          \"value\": \"Marketing\",\n          \"valueCustomId\": \"string\",\n          \"parentCustomId\": \"string\"\n        },\n        {\n          \"customId\": \"cost-center\",\n          \"value\": \"Marketing\",\n          \"valueCustomId\": \"string\",\n          \"parentCustomId\": \"string\"\n        }\n      ],\n      \"customId\": \"string\"\n    }\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": \"user not authorized\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "de0cac08-c22a-44b2-a45c-afea119182b1",
+              "name": "Not found. The requested resource or `companyId` does not exist.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "payments",
+                    ":companyId",
+                    "bulk"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"data\": [\n    {\n      \"operations\": [\n        {\n          \"amount\": 500,\n          \"customId\": \"invoice-2024-001\"\n        },\n        {\n          \"amount\": 500,\n          \"customId\": \"invoice-2024-001\"\n        }\n      ],\n      \"date\": \"2001-11-06T23:43:05.857Z\",\n      \"amount\": 1250.5,\n      \"method\": \"bank-transaction\",\n      \"transactionId\": \"string\",\n      \"productId\": \"string\",\n      \"contactCustomId\": \"string\",\n      \"concept\": \"string\",\n      \"accountingAmount\": 5360.141096910018,\n      \"currency\": \"CDF\",\n      \"accountingCurrency\": \"CHW\",\n      \"exchangeRate\": 7437.946793617697,\n      \"additionalInfo\": {\n        \"key_0\": false,\n        \"key_1\": false\n      },\n      \"attributes\": [\n        {\n          \"customId\": \"cost-center\",\n          \"value\": \"Marketing\",\n          \"valueCustomId\": \"string\",\n          \"parentCustomId\": \"string\"\n        },\n        {\n          \"customId\": \"cost-center\",\n          \"value\": \"Marketing\",\n          \"valueCustomId\": \"string\",\n          \"parentCustomId\": \"string\"\n        }\n      ],\n      \"customId\": \"string\"\n    },\n    {\n      \"operations\": [\n        {\n          \"amount\": 500,\n          \"customId\": \"invoice-2024-001\"\n        },\n        {\n          \"amount\": 500,\n          \"customId\": \"invoice-2024-001\"\n        }\n      ],\n      \"date\": \"1994-02-12T17:56:27.417Z\",\n      \"amount\": 1250.5,\n      \"method\": \"bank-transaction\",\n      \"transactionId\": \"string\",\n      \"productId\": \"string\",\n      \"contactCustomId\": \"string\",\n      \"concept\": \"string\",\n      \"accountingAmount\": 1544.7912733005965,\n      \"currency\": \"AUD\",\n      \"accountingCurrency\": \"VEF\",\n      \"exchangeRate\": 2910.1083866799136,\n      \"additionalInfo\": {\n        \"key_0\": 5846.047656966914,\n        \"key_1\": true\n      },\n      \"attributes\": [\n        {\n          \"customId\": \"cost-center\",\n          \"value\": \"Marketing\",\n          \"valueCustomId\": \"string\",\n          \"parentCustomId\": \"string\"\n        },\n        {\n          \"customId\": \"cost-center\",\n          \"value\": \"Marketing\",\n          \"valueCustomId\": \"string\",\n          \"parentCustomId\": \"string\"\n        }\n      ],\n      \"customId\": \"string\"\n    }\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Not Found",
+              "code": 404,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": \"0021 companyId not found\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "4eddb973-6ec6-4dde-9d2c-bb79ad26c73f",
+              "name": "Validation Error",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "payments",
+                    ":companyId",
+                    "bulk"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"data\": [\n    {\n      \"operations\": [\n        {\n          \"amount\": 500,\n          \"customId\": \"invoice-2024-001\"\n        },\n        {\n          \"amount\": 500,\n          \"customId\": \"invoice-2024-001\"\n        }\n      ],\n      \"date\": \"2001-11-06T23:43:05.857Z\",\n      \"amount\": 1250.5,\n      \"method\": \"bank-transaction\",\n      \"transactionId\": \"string\",\n      \"productId\": \"string\",\n      \"contactCustomId\": \"string\",\n      \"concept\": \"string\",\n      \"accountingAmount\": 5360.141096910018,\n      \"currency\": \"CDF\",\n      \"accountingCurrency\": \"CHW\",\n      \"exchangeRate\": 7437.946793617697,\n      \"additionalInfo\": {\n        \"key_0\": false,\n        \"key_1\": false\n      },\n      \"attributes\": [\n        {\n          \"customId\": \"cost-center\",\n          \"value\": \"Marketing\",\n          \"valueCustomId\": \"string\",\n          \"parentCustomId\": \"string\"\n        },\n        {\n          \"customId\": \"cost-center\",\n          \"value\": \"Marketing\",\n          \"valueCustomId\": \"string\",\n          \"parentCustomId\": \"string\"\n        }\n      ],\n      \"customId\": \"string\"\n    },\n    {\n      \"operations\": [\n        {\n          \"amount\": 500,\n          \"customId\": \"invoice-2024-001\"\n        },\n        {\n          \"amount\": 500,\n          \"customId\": \"invoice-2024-001\"\n        }\n      ],\n      \"date\": \"1994-02-12T17:56:27.417Z\",\n      \"amount\": 1250.5,\n      \"method\": \"bank-transaction\",\n      \"transactionId\": \"string\",\n      \"productId\": \"string\",\n      \"contactCustomId\": \"string\",\n      \"concept\": \"string\",\n      \"accountingAmount\": 1544.7912733005965,\n      \"currency\": \"AUD\",\n      \"accountingCurrency\": \"VEF\",\n      \"exchangeRate\": 2910.1083866799136,\n      \"additionalInfo\": {\n        \"key_0\": 5846.047656966914,\n        \"key_1\": true\n      },\n      \"attributes\": [\n        {\n          \"customId\": \"cost-center\",\n          \"value\": \"Marketing\",\n          \"valueCustomId\": \"string\",\n          \"parentCustomId\": \"string\"\n        },\n        {\n          \"customId\": \"cost-center\",\n          \"value\": \"Marketing\",\n          \"valueCustomId\": \"string\",\n          \"parentCustomId\": \"string\"\n        }\n      ],\n      \"customId\": \"string\"\n    }\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Unprocessable Entity (WebDAV) (RFC 4918)",
+              "code": 422,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": [\n    {\n      \"loc\": [\n        \"string\",\n        \"string\"\n      ],\n      \"msg\": \"string\",\n      \"type\": \"string\",\n      \"input\": {},\n      \"ctx\": {}\n    },\n    {\n      \"loc\": [\n        \"string\",\n        \"string\"\n      ],\n      \"msg\": \"string\",\n      \"type\": \"string\",\n      \"input\": {},\n      \"ctx\": {}\n    }\n  ]\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "7589f880-27bf-4833-b57c-45e1f3abf81b",
+              "name": "Unexpected error. Contact support if it persists.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "payments",
+                    ":companyId",
+                    "bulk"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"data\": [\n    {\n      \"operations\": [\n        {\n          \"amount\": 500,\n          \"customId\": \"invoice-2024-001\"\n        },\n        {\n          \"amount\": 500,\n          \"customId\": \"invoice-2024-001\"\n        }\n      ],\n      \"date\": \"2001-11-06T23:43:05.857Z\",\n      \"amount\": 1250.5,\n      \"method\": \"bank-transaction\",\n      \"transactionId\": \"string\",\n      \"productId\": \"string\",\n      \"contactCustomId\": \"string\",\n      \"concept\": \"string\",\n      \"accountingAmount\": 5360.141096910018,\n      \"currency\": \"CDF\",\n      \"accountingCurrency\": \"CHW\",\n      \"exchangeRate\": 7437.946793617697,\n      \"additionalInfo\": {\n        \"key_0\": false,\n        \"key_1\": false\n      },\n      \"attributes\": [\n        {\n          \"customId\": \"cost-center\",\n          \"value\": \"Marketing\",\n          \"valueCustomId\": \"string\",\n          \"parentCustomId\": \"string\"\n        },\n        {\n          \"customId\": \"cost-center\",\n          \"value\": \"Marketing\",\n          \"valueCustomId\": \"string\",\n          \"parentCustomId\": \"string\"\n        }\n      ],\n      \"customId\": \"string\"\n    },\n    {\n      \"operations\": [\n        {\n          \"amount\": 500,\n          \"customId\": \"invoice-2024-001\"\n        },\n        {\n          \"amount\": 500,\n          \"customId\": \"invoice-2024-001\"\n        }\n      ],\n      \"date\": \"1994-02-12T17:56:27.417Z\",\n      \"amount\": 1250.5,\n      \"method\": \"bank-transaction\",\n      \"transactionId\": \"string\",\n      \"productId\": \"string\",\n      \"contactCustomId\": \"string\",\n      \"concept\": \"string\",\n      \"accountingAmount\": 1544.7912733005965,\n      \"currency\": \"AUD\",\n      \"accountingCurrency\": \"VEF\",\n      \"exchangeRate\": 2910.1083866799136,\n      \"additionalInfo\": {\n        \"key_0\": 5846.047656966914,\n        \"key_1\": true\n      },\n      \"attributes\": [\n        {\n          \"customId\": \"cost-center\",\n          \"value\": \"Marketing\",\n          \"valueCustomId\": \"string\",\n          \"parentCustomId\": \"string\"\n        },\n        {\n          \"customId\": \"cost-center\",\n          \"value\": \"Marketing\",\n          \"valueCustomId\": \"string\",\n          \"parentCustomId\": \"string\"\n        }\n      ],\n      \"customId\": \"string\"\n    }\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Internal Server Error",
+              "code": 500,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": \"Internal server error\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        }
+      ],
+      "event": []
+    }
+  ],
+  "event": [],
+  "variable": [
+    {
+      "type": "string",
+      "value": "/",
+      "key": "baseUrl"
+    }
+  ],
+  "info": {
+    "_postman_id": "1dadf17f-2d93-4277-b593-b0a265fd5967",
+    "name": "Embat AccountingAccounts Payments API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": {
+      "content": "Embat API enables connections between any third party application and Embat. Is organized around REST principles, using HTTP responses code and returning data in JSON format. While testing the API, you have to request **sandbox credentials**.\n\nContact Support:\n Name: API Support\n Email: tech@embat.io",
+      "type": "text/plain"
+    }
+  }
+}

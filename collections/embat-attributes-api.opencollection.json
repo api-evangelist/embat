@@ -1,0 +1,291 @@
+{
+  "opencollection": "1.0.0",
+  "info": {
+    "name": "Embat AccountingAccounts Attributes API",
+    "version": "2.120.3"
+  },
+  "items": [
+    {
+      "info": {
+        "name": "Attributes",
+        "type": "folder"
+      },
+      "items": [
+        {
+          "info": {
+            "name": "List attributes",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "{{baseUrl}}/attributes/:companyId",
+            "params": [
+              {
+                "name": "companyId",
+                "value": "",
+                "type": "path"
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Returns all attributes configured for a company, including their `values` when the attribute is of type `list`."
+        },
+        {
+          "info": {
+            "name": "Create attribute",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "{{baseUrl}}/attributes/:companyId",
+            "params": [
+              {
+                "name": "companyId",
+                "value": "",
+                "type": "path"
+              }
+            ],
+            "body": {
+              "type": "json",
+              "data": "{}"
+            },
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Creates an attribute. If `customId` is omitted, Embat auto-generates one. If an attribute with the given `customId` already exists, its fields are overwritten instead of raising a duplicate error — this endpoint behaves as an upsert. Sending `values` replaces the attribute's full value list, and **omitting `values` on an existing attribute removes all of its current values** — always resend the values you want to keep."
+        },
+        {
+          "info": {
+            "name": "Update attributes in bulk",
+            "type": "http"
+          },
+          "http": {
+            "method": "PATCH",
+            "url": "{{baseUrl}}/attributes/:companyId",
+            "params": [
+              {
+                "name": "companyId",
+                "value": "",
+                "type": "path"
+              }
+            ],
+            "body": {
+              "type": "json",
+              "data": "{}"
+            },
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Updates several attributes in a single call, following the same rules as the single attribute update endpoint. Entries whose `customId` does not match any attribute are silently skipped — the call still returns `200` for the whole batch."
+        },
+        {
+          "info": {
+            "name": "Delete attributes in bulk",
+            "type": "http"
+          },
+          "http": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/attributes/:companyId",
+            "params": [
+              {
+                "name": "companyId",
+                "value": "",
+                "type": "path"
+              }
+            ],
+            "body": {
+              "type": "json",
+              "data": "{}"
+            },
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Deletes several attributes in a single call, following the same rules as the single attribute deletion endpoint. `customId` values that do not match any attribute still return `200` — no `404` is raised — and each returned `id` is derived from the requested `customId`, so an entry in the response does not confirm that an attribute existed or was removed."
+        },
+        {
+          "info": {
+            "name": "Retrieve attribute",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "{{baseUrl}}/attributes/:companyId/:customId",
+            "params": [
+              {
+                "name": "customId",
+                "value": "",
+                "type": "path"
+              },
+              {
+                "name": "companyId",
+                "value": "",
+                "type": "path"
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Returns a single attribute by `customId`."
+        },
+        {
+          "info": {
+            "name": "Update attribute",
+            "type": "http"
+          },
+          "http": {
+            "method": "PATCH",
+            "url": "{{baseUrl}}/attributes/:companyId/:customId",
+            "params": [
+              {
+                "name": "customId",
+                "value": "",
+                "type": "path"
+              },
+              {
+                "name": "companyId",
+                "value": "",
+                "type": "path"
+              }
+            ],
+            "body": {
+              "type": "json",
+              "data": "{}"
+            },
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Updates an attribute identified by `customId`. Only the fields sent in the request are changed; fields left out keep their current value. If `values` is sent, it **replaces** the attribute's full value list — any previously stored value not included is removed (omit `values` entirely to leave the current values untouched). Updating a `customId` that does not match any attribute returns `200` without applying any change — no `404` is raised."
+        },
+        {
+          "info": {
+            "name": "Delete attribute",
+            "type": "http"
+          },
+          "http": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/attributes/:companyId/:customId",
+            "params": [
+              {
+                "name": "customId",
+                "value": "",
+                "type": "path"
+              },
+              {
+                "name": "companyId",
+                "value": "",
+                "type": "path"
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Deletes an attribute by `customId`, together with all of its values, and clears the `parentId`/`parentCustomId` of any attribute nested under it. Deleting a `customId` that does not match any attribute still returns `200` — no `404` is raised — and the `id` returned in that case is derived from the requested `customId`, so it does not confirm that an attribute existed or was removed."
+        },
+        {
+          "info": {
+            "name": "Create attributes in bulk",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "{{baseUrl}}/attributes/:companyId/bulk",
+            "params": [
+              {
+                "name": "companyId",
+                "value": "",
+                "type": "path"
+              }
+            ],
+            "body": {
+              "type": "json",
+              "data": "{}"
+            },
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Creates several attributes in a single call, following the same rules as the single attribute creation endpoint (upsert by `customId`; omitting `values` on an existing attribute removes all of its current values)."
+        },
+        {
+          "info": {
+            "name": "Add values to an attribute",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "{{baseUrl}}/attributes/:companyId/:customId/values/bulk",
+            "params": [
+              {
+                "name": "customId",
+                "value": "",
+                "type": "path"
+              },
+              {
+                "name": "companyId",
+                "value": "",
+                "type": "path"
+              }
+            ],
+            "body": {
+              "type": "json",
+              "data": "{}"
+            },
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Adds values to an existing attribute, identified by `customId`, without affecting its other values. If a value with the same `customId` already exists on the attribute, it is replaced. This endpoint does not verify that the attribute exists beforehand."
+        },
+        {
+          "info": {
+            "name": "Remove values from an attribute",
+            "type": "http"
+          },
+          "http": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/attributes/:companyId/:customId/values",
+            "params": [
+              {
+                "name": "customId",
+                "value": "",
+                "type": "path"
+              },
+              {
+                "name": "companyId",
+                "value": "",
+                "type": "path"
+              }
+            ],
+            "body": {
+              "type": "json",
+              "data": "{}"
+            },
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Removes one or more values from an attribute, identified by `customId`. Values not found on the attribute are silently ignored — the call still returns `200`. The `id` returned for each entry is the value's `customId` echoed back, not a generated Embat ID."
+        }
+      ]
+    }
+  ],
+  "bundled": true
+}

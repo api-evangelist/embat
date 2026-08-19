@@ -1,0 +1,639 @@
+{
+  "item": [
+    {
+      "id": "ecbb78ab-3b1d-4011-9687-b7e828e8692f",
+      "name": "Logs",
+      "description": {
+        "content": "`Logs` let your integration report execution events, warnings or errors observed while interacting with the Embat API, so Embat's support team can diagnose integration issues.\n\nLogs are write-only: there is no endpoint to list or retrieve the logs you send. Use `code` to classify the event by severity and, where available, by the entity it relates to (for example `PAYMENTS_ERROR` for an issue involving `Payments`, or `AUTHORIZATION_WARNING` for an authentication issue). Use the generic `INFO`, `WARNING` or `ERROR` codes for events not tied to one of those entities.\n\n**Typical flow:** report a log whenever your integration completes, skips or fails a step of its synchronization with Embat, for example after `POST /payments/{companyId}` returns an error:\n\n```json\nPOST /logs/{companyId}\n{\n  \"erp\": \"netsuite\",\n  \"erpVersion\": \"2024.1\",\n  \"connectorVersion\": \"1.4.2\",\n  \"level\": \"ERROR\",\n  \"code\": \"PAYMENTS_ERROR\",\n  \"message\": \"Failed to post payment: missing accounting account\"\n}\n```\n\nLog delivery is best-effort: both endpoints return `204` as soon as the request is accepted, and any failure while recording a log afterwards is not reported back to the caller. To send several logs at once, use `POST /logs/{companyId}/bulk`.\n",
+        "type": "text/plain"
+      },
+      "item": [
+        {
+          "id": "174b6c61-d13b-425f-a105-209bce709965",
+          "name": "Create log",
+          "request": {
+            "name": "Create log",
+            "description": {
+              "content": "Reports a single execution event, warning or error observed by your integration while interacting with the Embat API, so Embat's support team can diagnose integration issues. Log delivery is best-effort: the endpoint returns `204` as soon as the request is accepted, and any failure while recording the log afterwards is not reported back to the caller.",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "logs",
+                ":companyId"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "<string>",
+                  "key": "companyId",
+                  "description": "(Required) "
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "POST",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{bearerToken}}"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"erp\": \"<string>\",\n  \"erpVersion\": \"<string>\",\n  \"connectorVersion\": \"<string>\",\n  \"level\": \"<string>\",\n  \"code\": \"<string>\",\n  \"message\": \"<string>\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "id": "3190a42b-6738-409b-9e74-b6c7f14e5110",
+              "name": "Successful Response",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "logs",
+                    ":companyId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"erp\": \"netsuite\",\n  \"erpVersion\": \"2024.1\",\n  \"connectorVersion\": \"1.4.2\",\n  \"level\": \"ERROR\",\n  \"code\": \"PAYMENTS_ERROR\",\n  \"message\": \"Failed to post payment: missing accounting account\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "No Content",
+              "code": 204,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "text/plain"
+                }
+              ],
+              "body": "",
+              "cookie": [],
+              "_postman_previewlanguage": "text"
+            },
+            {
+              "id": "f816dc4a-9680-4e9a-9f6f-43cd797542b8",
+              "name": "Unauthorized. The bearer token is missing, invalid or expired.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "logs",
+                    ":companyId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"erp\": \"netsuite\",\n  \"erpVersion\": \"2024.1\",\n  \"connectorVersion\": \"1.4.2\",\n  \"level\": \"ERROR\",\n  \"code\": \"PAYMENTS_ERROR\",\n  \"message\": \"Failed to post payment: missing accounting account\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": \"user not authorized\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "567a9625-3d8e-4b02-87a5-8851cf70a5ff",
+              "name": "Not found. The requested resource or `companyId` does not exist.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "logs",
+                    ":companyId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"erp\": \"netsuite\",\n  \"erpVersion\": \"2024.1\",\n  \"connectorVersion\": \"1.4.2\",\n  \"level\": \"ERROR\",\n  \"code\": \"PAYMENTS_ERROR\",\n  \"message\": \"Failed to post payment: missing accounting account\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Not Found",
+              "code": 404,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": \"0021 companyId not found\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "a3629901-ffb9-45bb-87fa-91cd867b33e7",
+              "name": "Validation Error",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "logs",
+                    ":companyId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"erp\": \"netsuite\",\n  \"erpVersion\": \"2024.1\",\n  \"connectorVersion\": \"1.4.2\",\n  \"level\": \"ERROR\",\n  \"code\": \"PAYMENTS_ERROR\",\n  \"message\": \"Failed to post payment: missing accounting account\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Unprocessable Entity (WebDAV) (RFC 4918)",
+              "code": 422,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": [\n    {\n      \"loc\": [\n        \"string\",\n        \"string\"\n      ],\n      \"msg\": \"string\",\n      \"type\": \"string\",\n      \"input\": {},\n      \"ctx\": {}\n    },\n    {\n      \"loc\": [\n        \"string\",\n        \"string\"\n      ],\n      \"msg\": \"string\",\n      \"type\": \"string\",\n      \"input\": {},\n      \"ctx\": {}\n    }\n  ]\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "dc2ebe86-6b3f-4c0f-89d1-930b45c083f6",
+          "name": "Create logs in bulk",
+          "request": {
+            "name": "Create logs in bulk",
+            "description": {
+              "content": "Reports several log entries in a single call, following the same rules as the single log creation endpoint. Each entry is processed independently, so a failure recording one log does not affect the others. Log delivery is best-effort: the endpoint returns `204` as soon as the request is accepted, regardless of the outcome of recording any individual entry.",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "logs",
+                ":companyId",
+                "bulk"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "<string>",
+                  "key": "companyId",
+                  "description": "(Required) "
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "POST",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{bearerToken}}"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"data\": [\n    {\n      \"erp\": \"<string>\",\n      \"erpVersion\": \"<string>\",\n      \"connectorVersion\": \"<string>\",\n      \"level\": \"<string>\",\n      \"code\": \"<string>\",\n      \"message\": \"<string>\"\n    },\n    {\n      \"erp\": \"<string>\",\n      \"erpVersion\": \"<string>\",\n      \"connectorVersion\": \"<string>\",\n      \"level\": \"<string>\",\n      \"code\": \"<string>\",\n      \"message\": \"<string>\"\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "id": "c4521839-31eb-4a91-9d69-9b81dc9f5397",
+              "name": "Successful Response",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "logs",
+                    ":companyId",
+                    "bulk"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"data\": [\n    {\n      \"erp\": \"netsuite\",\n      \"erpVersion\": \"2024.1\",\n      \"connectorVersion\": \"1.4.2\",\n      \"level\": \"ERROR\",\n      \"code\": \"PAYMENTS_ERROR\",\n      \"message\": \"Failed to post payment: missing accounting account\"\n    },\n    {\n      \"erp\": \"netsuite\",\n      \"erpVersion\": \"2024.1\",\n      \"connectorVersion\": \"1.4.2\",\n      \"level\": \"ERROR\",\n      \"code\": \"PAYMENTS_ERROR\",\n      \"message\": \"Failed to post payment: missing accounting account\"\n    }\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "No Content",
+              "code": 204,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "text/plain"
+                }
+              ],
+              "body": "",
+              "cookie": [],
+              "_postman_previewlanguage": "text"
+            },
+            {
+              "id": "61ca8b6b-e239-4b9e-b4d5-3363d2846bfa",
+              "name": "Unauthorized. The bearer token is missing, invalid or expired.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "logs",
+                    ":companyId",
+                    "bulk"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"data\": [\n    {\n      \"erp\": \"netsuite\",\n      \"erpVersion\": \"2024.1\",\n      \"connectorVersion\": \"1.4.2\",\n      \"level\": \"ERROR\",\n      \"code\": \"PAYMENTS_ERROR\",\n      \"message\": \"Failed to post payment: missing accounting account\"\n    },\n    {\n      \"erp\": \"netsuite\",\n      \"erpVersion\": \"2024.1\",\n      \"connectorVersion\": \"1.4.2\",\n      \"level\": \"ERROR\",\n      \"code\": \"PAYMENTS_ERROR\",\n      \"message\": \"Failed to post payment: missing accounting account\"\n    }\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": \"user not authorized\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "0ec3130c-42f6-4829-a1ca-b732308277f6",
+              "name": "Not found. The requested resource or `companyId` does not exist.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "logs",
+                    ":companyId",
+                    "bulk"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"data\": [\n    {\n      \"erp\": \"netsuite\",\n      \"erpVersion\": \"2024.1\",\n      \"connectorVersion\": \"1.4.2\",\n      \"level\": \"ERROR\",\n      \"code\": \"PAYMENTS_ERROR\",\n      \"message\": \"Failed to post payment: missing accounting account\"\n    },\n    {\n      \"erp\": \"netsuite\",\n      \"erpVersion\": \"2024.1\",\n      \"connectorVersion\": \"1.4.2\",\n      \"level\": \"ERROR\",\n      \"code\": \"PAYMENTS_ERROR\",\n      \"message\": \"Failed to post payment: missing accounting account\"\n    }\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Not Found",
+              "code": 404,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": \"0021 companyId not found\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "24b37a2d-a644-4803-a06d-e71162e572d4",
+              "name": "Validation Error",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "logs",
+                    ":companyId",
+                    "bulk"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"data\": [\n    {\n      \"erp\": \"netsuite\",\n      \"erpVersion\": \"2024.1\",\n      \"connectorVersion\": \"1.4.2\",\n      \"level\": \"ERROR\",\n      \"code\": \"PAYMENTS_ERROR\",\n      \"message\": \"Failed to post payment: missing accounting account\"\n    },\n    {\n      \"erp\": \"netsuite\",\n      \"erpVersion\": \"2024.1\",\n      \"connectorVersion\": \"1.4.2\",\n      \"level\": \"ERROR\",\n      \"code\": \"PAYMENTS_ERROR\",\n      \"message\": \"Failed to post payment: missing accounting account\"\n    }\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Unprocessable Entity (WebDAV) (RFC 4918)",
+              "code": 422,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": [\n    {\n      \"loc\": [\n        \"string\",\n        \"string\"\n      ],\n      \"msg\": \"string\",\n      \"type\": \"string\",\n      \"input\": {},\n      \"ctx\": {}\n    },\n    {\n      \"loc\": [\n        \"string\",\n        \"string\"\n      ],\n      \"msg\": \"string\",\n      \"type\": \"string\",\n      \"input\": {},\n      \"ctx\": {}\n    }\n  ]\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        }
+      ],
+      "event": []
+    }
+  ],
+  "event": [],
+  "variable": [
+    {
+      "type": "string",
+      "value": "/",
+      "key": "baseUrl"
+    }
+  ],
+  "info": {
+    "_postman_id": "f767bb28-7ac0-41b9-94ae-ccc10c585b1f",
+    "name": "Embat AccountingAccounts Logs API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": {
+      "content": "Embat API enables connections between any third party application and Embat. Is organized around REST principles, using HTTP responses code and returning data in JSON format. While testing the API, you have to request **sandbox credentials**.\n\nContact Support:\n Name: API Support\n Email: tech@embat.io",
+      "type": "text/plain"
+    }
+  }
+}

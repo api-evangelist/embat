@@ -1,0 +1,685 @@
+{
+  "item": [
+    {
+      "id": "c64fadc4-57ed-4ae9-b7b2-40733d31b0a1",
+      "name": "DebtScheduleConfigs",
+      "description": {
+        "content": "<div style=\"background-color:#fff3cd; color:#856404; padding: 10px; border-left: 6px solid #ffeeba;\">\n<strong>⚠️ Warning:</strong> This API section is in BETA. It might undergo significant changes and may not be stable.\n</div>\n\n<code>Debt Schedule Config</code> represents the amortization schedule configured for a debt product: payment frequency, interest rate, outstanding and granted balances, and the full calendar of scheduled payments broken down into principal, interest and tax components.\n\nA debt schedule config is linked to the `Bank` relationship the debt is held with (`bankId`) and to two `Products`: the `debtProductId` being amortized and the product used to pay each installment (`settlementAccountId`, returned as `settlementProductId`).\n\n**Typical flow:** debt schedule configurations are read-only from this API — they are set up in Embat and exposed here for consumption.\n\n1. **List configurations** with `GET /debtscheduleconfigs/{companyId}`, optionally filtering by `startUpdatedAt`/`endUpdatedAt` to read only what changed since your last poll.\n2. **Retrieve a single configuration** with `GET /debtscheduleconfigs/{companyId}/{id}` to get its full payment calendar (`debtSchedulePaymentsCalendar`).\n",
+        "type": "text/plain"
+      },
+      "item": [
+        {
+          "id": "7cf1cc11-c164-463b-9257-f40b8ce3bbfb",
+          "name": "List debt schedule configs",
+          "request": {
+            "name": "List debt schedule configs",
+            "description": {
+              "content": "Returns the debt schedule configurations of a company. Results are ordered by last modification time, most recent first, and paginated: use `limit` to control page size and pass the returned `nextPageToken` to fetch the next page. `startUpdatedAt` (inclusive) and `endUpdatedAt` (exclusive) filter by last modification time, which is useful for incremental synchronization.",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "debtscheduleconfigs",
+                ":companyId"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [
+                {
+                  "disabled": false,
+                  "key": "startUpdatedAt",
+                  "value": "<dateTime>",
+                  "description": "Only return configurations last modified on or after this timestamp (inclusive)."
+                },
+                {
+                  "disabled": false,
+                  "key": "endUpdatedAt",
+                  "value": "<dateTime>",
+                  "description": "Only return configurations last modified before this timestamp (exclusive)."
+                },
+                {
+                  "disabled": false,
+                  "key": "limit",
+                  "value": "10",
+                  "description": "Maximum number of objects to return in the response. Default 10, maximum 50."
+                },
+                {
+                  "disabled": false,
+                  "key": "nextPageToken",
+                  "value": "<string>",
+                  "description": "Token to fetch the next page of results, taken from the `nextPageToken` returned by the previous request with the same filters. Omit it to fetch the first page. An invalid or malformed token is rejected with `404`."
+                }
+              ],
+              "variable": [
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "<string>",
+                  "key": "companyId",
+                  "description": "(Required) "
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{bearerToken}}"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "id": "24a758c3-ddf4-4518-b92c-fc61633219ae",
+              "name": "Successful Response",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "debtscheduleconfigs",
+                    ":companyId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "startUpdatedAt",
+                      "value": "<dateTime>"
+                    },
+                    {
+                      "key": "endUpdatedAt",
+                      "value": "<dateTime>"
+                    },
+                    {
+                      "key": "limit",
+                      "value": "10"
+                    },
+                    {
+                      "key": "nextPageToken",
+                      "value": "<string>"
+                    }
+                  ],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"data\": [\n    {\n      \"id\": \"string\",\n      \"companyId\": \"string\",\n      \"currency\": \"EUR\",\n      \"bankId\": \"string\",\n      \"debtProductId\": \"string\",\n      \"settlementProductId\": \"string\",\n      \"config\": {\n        \"amortisingFrequency\": \"yearly\",\n        \"outstandingBalance\": 100000,\n        \"grantedBalance\": 120000,\n        \"totalPeriods\": 12,\n        \"nextPaymentDate\": \"2004-08-05T17:05:57.573Z\",\n        \"lastPaymentDate\": \"1982-10-22T15:00:20.723Z\",\n        \"annualInterestRateOrSpread\": 0.045,\n        \"interestType\": \"variable\",\n        \"taxRate\": 9092.726426105712\n      },\n      \"debtSchedulePaymentsCalendar\": [\n        {\n          \"period\": 1,\n          \"date\": \"1958-05-04T00:25:53.697Z\",\n          \"principalPayment\": 8333.33,\n          \"interestPayment\": 416.67,\n          \"taxPayment\": 0,\n          \"totalPayment\": 8750\n        },\n        {\n          \"period\": 1,\n          \"date\": \"1961-03-11T23:12:19.617Z\",\n          \"principalPayment\": 8333.33,\n          \"interestPayment\": 416.67,\n          \"taxPayment\": 0,\n          \"totalPayment\": 8750\n        }\n      ]\n    },\n    {\n      \"id\": \"string\",\n      \"companyId\": \"string\",\n      \"currency\": \"EUR\",\n      \"bankId\": \"string\",\n      \"debtProductId\": \"string\",\n      \"settlementProductId\": \"string\",\n      \"config\": {\n        \"amortisingFrequency\": \"semiannually\",\n        \"outstandingBalance\": 100000,\n        \"grantedBalance\": 120000,\n        \"totalPeriods\": 12,\n        \"nextPaymentDate\": \"1965-06-13T17:46:21.303Z\",\n        \"lastPaymentDate\": \"1977-03-10T04:13:06.837Z\",\n        \"annualInterestRateOrSpread\": 0.045,\n        \"interestType\": \"variable\",\n        \"taxRate\": 7828.6091884351135\n      },\n      \"debtSchedulePaymentsCalendar\": [\n        {\n          \"period\": 1,\n          \"date\": \"1969-05-09T19:34:24.826Z\",\n          \"principalPayment\": 8333.33,\n          \"interestPayment\": 416.67,\n          \"taxPayment\": 0,\n          \"totalPayment\": 8750\n        },\n        {\n          \"period\": 1,\n          \"date\": \"1953-10-12T02:17:09.875Z\",\n          \"principalPayment\": 8333.33,\n          \"interestPayment\": 416.67,\n          \"taxPayment\": 0,\n          \"totalPayment\": 8750\n        }\n      ]\n    }\n  ],\n  \"nextPageToken\": \"string\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "bcde310e-df56-4498-be7f-db2a10bcad46",
+              "name": "Unauthorized. The bearer token is missing, invalid or expired.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "debtscheduleconfigs",
+                    ":companyId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "startUpdatedAt",
+                      "value": "<dateTime>"
+                    },
+                    {
+                      "key": "endUpdatedAt",
+                      "value": "<dateTime>"
+                    },
+                    {
+                      "key": "limit",
+                      "value": "10"
+                    },
+                    {
+                      "key": "nextPageToken",
+                      "value": "<string>"
+                    }
+                  ],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": \"user not authorized\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "5bd197ec-b643-47b1-af95-b7f27f36dc1a",
+              "name": "Company not found, or invalid `nextPageToken`.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "debtscheduleconfigs",
+                    ":companyId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "startUpdatedAt",
+                      "value": "<dateTime>"
+                    },
+                    {
+                      "key": "endUpdatedAt",
+                      "value": "<dateTime>"
+                    },
+                    {
+                      "key": "limit",
+                      "value": "10"
+                    },
+                    {
+                      "key": "nextPageToken",
+                      "value": "<string>"
+                    }
+                  ],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "Not Found",
+              "code": 404,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": \"0021 companyId not found\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "a477a584-bd1c-4e24-b6b7-96439d4b7b46",
+              "name": "Validation Error",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "debtscheduleconfigs",
+                    ":companyId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "startUpdatedAt",
+                      "value": "<dateTime>"
+                    },
+                    {
+                      "key": "endUpdatedAt",
+                      "value": "<dateTime>"
+                    },
+                    {
+                      "key": "limit",
+                      "value": "10"
+                    },
+                    {
+                      "key": "nextPageToken",
+                      "value": "<string>"
+                    }
+                  ],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "Unprocessable Entity (WebDAV) (RFC 4918)",
+              "code": 422,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": [\n    {\n      \"loc\": [\n        \"string\",\n        \"string\"\n      ],\n      \"msg\": \"string\",\n      \"type\": \"string\",\n      \"input\": {},\n      \"ctx\": {}\n    },\n    {\n      \"loc\": [\n        \"string\",\n        \"string\"\n      ],\n      \"msg\": \"string\",\n      \"type\": \"string\",\n      \"input\": {},\n      \"ctx\": {}\n    }\n  ]\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "bc8e4356-e320-4dad-9b64-d4158a0d01e8",
+          "name": "Retrieve debt schedule config",
+          "request": {
+            "name": "Retrieve debt schedule config",
+            "description": {
+              "content": "Returns a single debt schedule configuration by its Embat `id`.",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "debtscheduleconfigs",
+                ":companyId",
+                ":id"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "<string>",
+                  "key": "id",
+                  "description": "(Required) "
+                },
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "<string>",
+                  "key": "companyId",
+                  "description": "(Required) "
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{bearerToken}}"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "id": "ee8db613-7fe1-47a3-9d9c-40fbb48a1d03",
+              "name": "Successful Response",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "debtscheduleconfigs",
+                    ":companyId",
+                    ":id"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "id",
+                      "description": "(Required) "
+                    },
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"id\": \"string\",\n  \"companyId\": \"string\",\n  \"currency\": \"EUR\",\n  \"bankId\": \"string\",\n  \"debtProductId\": \"string\",\n  \"settlementProductId\": \"string\",\n  \"config\": {\n    \"amortisingFrequency\": \"yearly\",\n    \"outstandingBalance\": 100000,\n    \"grantedBalance\": 120000,\n    \"totalPeriods\": 12,\n    \"nextPaymentDate\": \"1959-05-09T19:05:52.051Z\",\n    \"lastPaymentDate\": \"1965-03-04T16:00:32.885Z\",\n    \"annualInterestRateOrSpread\": 0.045,\n    \"interestType\": \"fixed\",\n    \"taxRate\": 3310.242663945777\n  },\n  \"debtSchedulePaymentsCalendar\": [\n    {\n      \"period\": 1,\n      \"date\": \"1973-05-12T18:59:18.733Z\",\n      \"principalPayment\": 8333.33,\n      \"interestPayment\": 416.67,\n      \"taxPayment\": 0,\n      \"totalPayment\": 8750\n    },\n    {\n      \"period\": 1,\n      \"date\": \"1990-03-05T11:33:06.160Z\",\n      \"principalPayment\": 8333.33,\n      \"interestPayment\": 416.67,\n      \"taxPayment\": 0,\n      \"totalPayment\": 8750\n    }\n  ]\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "517a516d-625f-4b0e-b404-74dd44361cab",
+              "name": "Unauthorized. The bearer token is missing, invalid or expired.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "debtscheduleconfigs",
+                    ":companyId",
+                    ":id"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "id",
+                      "description": "(Required) "
+                    },
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": \"user not authorized\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "b3e0132c-c507-4291-afb3-3d8aa05944ae",
+              "name": "Company not found, or no debt schedule configuration matches the given `id`.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "debtscheduleconfigs",
+                    ":companyId",
+                    ":id"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "id",
+                      "description": "(Required) "
+                    },
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "Not Found",
+              "code": 404,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": \"0021 companyId not found\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "7408ea7b-cdef-48ab-8c66-e067bb36c62b",
+              "name": "Validation Error",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "debtscheduleconfigs",
+                    ":companyId",
+                    ":id"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "id",
+                      "description": "(Required) "
+                    },
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "Unprocessable Entity (WebDAV) (RFC 4918)",
+              "code": 422,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": [\n    {\n      \"loc\": [\n        \"string\",\n        \"string\"\n      ],\n      \"msg\": \"string\",\n      \"type\": \"string\",\n      \"input\": {},\n      \"ctx\": {}\n    },\n    {\n      \"loc\": [\n        \"string\",\n        \"string\"\n      ],\n      \"msg\": \"string\",\n      \"type\": \"string\",\n      \"input\": {},\n      \"ctx\": {}\n    }\n  ]\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        }
+      ],
+      "event": []
+    }
+  ],
+  "event": [],
+  "variable": [
+    {
+      "type": "string",
+      "value": "/",
+      "key": "baseUrl"
+    }
+  ],
+  "info": {
+    "_postman_id": "488aab90-4123-46ab-979c-19446c9796e7",
+    "name": "Embat AccountingAccounts DebtScheduleConfigs API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": {
+      "content": "Embat API enables connections between any third party application and Embat. Is organized around REST principles, using HTTP responses code and returning data in JSON format. While testing the API, you have to request **sandbox credentials**.\n\nContact Support:\n Name: API Support\n Email: tech@embat.io",
+      "type": "text/plain"
+    }
+  }
+}

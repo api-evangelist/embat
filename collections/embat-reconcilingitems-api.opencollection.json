@@ -1,0 +1,265 @@
+{
+  "opencollection": "1.0.0",
+  "info": {
+    "name": "Embat AccountingAccounts ReconcilingItems API",
+    "version": "2.120.3"
+  },
+  "items": [
+    {
+      "info": {
+        "name": "ReconcilingItems",
+        "type": "folder"
+      },
+      "items": [
+        {
+          "info": {
+            "name": "List reconciling items",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "{{baseUrl}}/reconcilingitems/:companyId",
+            "params": [
+              {
+                "name": "companyId",
+                "value": "",
+                "type": "path"
+              },
+              {
+                "name": "reconcilingSourceCustomId",
+                "value": "",
+                "type": "query",
+                "description": "Filter items belonging to a given reconciling source (`reconcilingSourceCustomId`)."
+              },
+              {
+                "name": "reconciled",
+                "value": "",
+                "type": "query",
+                "description": "Filter by reconciliation status. `false` also matches items where the value is not set."
+              },
+              {
+                "name": "startDate",
+                "value": "",
+                "type": "query",
+                "description": "Only return items dated on or after this date (inclusive)."
+              },
+              {
+                "name": "endDate",
+                "value": "",
+                "type": "query",
+                "description": "Only return items dated before this date (exclusive)."
+              },
+              {
+                "name": "limit",
+                "value": "",
+                "type": "query",
+                "description": "Maximum number of objects to return in the response. Default 500, maximum 2000."
+              },
+              {
+                "name": "nextPageToken",
+                "value": "",
+                "type": "query",
+                "description": "Token to fetch the next page of results, taken from the `nextPageToken` returned by the previous request with the same filters. Omit it to fetch the first page. An invalid or malformed token is rejected with `404`."
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Returns the reconciling items of a company, ordered by `date` (most recent first). Results are paginated: use `limit` to control page size and pass the returned `nextPageToken` to fetch the next page."
+        },
+        {
+          "info": {
+            "name": "Create reconciling item",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "{{baseUrl}}/reconcilingitems/:companyId",
+            "params": [
+              {
+                "name": "companyId",
+                "value": "",
+                "type": "path"
+              }
+            ],
+            "body": {
+              "type": "json",
+              "data": "{}"
+            },
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Creates a reconciling item under the given `reconcilingSourceCustomId`. Calling this again with the same `customId` updates the existing item instead of creating a duplicate — except once the item has been matched to a transaction, in which case the call still returns `200` and the item is not modified by this request."
+        },
+        {
+          "info": {
+            "name": "Update reconciling items in bulk",
+            "type": "http"
+          },
+          "http": {
+            "method": "PATCH",
+            "url": "{{baseUrl}}/reconcilingitems/:companyId",
+            "params": [
+              {
+                "name": "companyId",
+                "value": "",
+                "type": "path"
+              }
+            ],
+            "body": {
+              "type": "json",
+              "data": "{}"
+            },
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Updates several reconciling items in a single call, identified by `customId`, following the same rules as the single item update endpoint. Entries whose `customId` does not match any existing item, or whose item has already been matched to a transaction, are silently skipped — the call returns `200` for the whole batch."
+        },
+        {
+          "info": {
+            "name": "Delete reconciling items in bulk",
+            "type": "http"
+          },
+          "http": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/reconcilingitems/:companyId",
+            "params": [
+              {
+                "name": "companyId",
+                "value": "",
+                "type": "path"
+              }
+            ],
+            "body": {
+              "type": "json",
+              "data": "{}"
+            },
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Deletes several reconciling items in a single call, identified by `customId`. The call returns `200` listing every requested `customId` even if some (or all) do not match an existing item — deletion is idempotent and the response does not indicate which items were actually removed."
+        },
+        {
+          "info": {
+            "name": "Retrieve reconciling item",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "{{baseUrl}}/reconcilingitems/:companyId/:customId",
+            "params": [
+              {
+                "name": "customId",
+                "value": "",
+                "type": "path"
+              },
+              {
+                "name": "companyId",
+                "value": "",
+                "type": "path"
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Returns a single reconciling item by `customId`."
+        },
+        {
+          "info": {
+            "name": "Update reconciling item",
+            "type": "http"
+          },
+          "http": {
+            "method": "PATCH",
+            "url": "{{baseUrl}}/reconcilingitems/:companyId/:customId",
+            "params": [
+              {
+                "name": "customId",
+                "value": "",
+                "type": "path"
+              },
+              {
+                "name": "companyId",
+                "value": "",
+                "type": "path"
+              }
+            ],
+            "body": {
+              "type": "json",
+              "data": "{}"
+            },
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Updates the amount, currency, date, description, metadata or additional info of a reconciling item identified by `customId`. Only the fields sent are changed; omitted or `null` fields keep their current value. If `customId` does not match any existing item, or the item has already been matched to a transaction, the call still returns `200` without applying any change."
+        },
+        {
+          "info": {
+            "name": "Delete reconciling item",
+            "type": "http"
+          },
+          "http": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/reconcilingitems/:companyId/:customId",
+            "params": [
+              {
+                "name": "customId",
+                "value": "",
+                "type": "path"
+              },
+              {
+                "name": "companyId",
+                "value": "",
+                "type": "path"
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Deletes a reconciling item by `customId`. The call returns `200` even if no item matches the given `customId` — deletion is idempotent and the response does not indicate whether an item was actually removed."
+        },
+        {
+          "info": {
+            "name": "Create reconciling items in bulk",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "{{baseUrl}}/reconcilingitems/:companyId/bulk",
+            "params": [
+              {
+                "name": "companyId",
+                "value": "",
+                "type": "path"
+              }
+            ],
+            "body": {
+              "type": "json",
+              "data": "{}"
+            },
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Creates several reconciling items in a single call, following the same rules as the single item creation endpoint. Items sharing the same `customId` within the request are deduplicated and only the first occurrence is processed."
+        }
+      ]
+    }
+  ],
+  "bundled": true
+}

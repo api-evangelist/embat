@@ -1,0 +1,686 @@
+{
+  "item": [
+    {
+      "id": "261d148d-94b3-4b6c-83d3-17492fd1a542",
+      "name": "Companies",
+      "description": {
+        "content": "A `Company` represents a legal entity configured in your Embat workspace. Its `id` is the `companyId` used throughout this API: almost every other endpoint is scoped by `companyId` and requires it as a path parameter.\n\n`Company` is the parent entity of the API: it has no dependency on any other entity, while every other entity (Payments, Operations, Transactions, Contacts, Accounting Accounts, etc.) belongs to one. A company also has `Users` with access to it, retrievable with `GET /companies/{companyId}/users`.\n\n**Typical flow:**\n\n1. **Resolve the `companyId`.** Call `GET /companies` to list the companies your credentials have access to and pick the `id` of the one you want to work with.\n2. **Use it everywhere.** Pass that `id` as `companyId` in the path of any other endpoint in this API.\n3. **Optionally inspect the company.** `GET /companies/{companyId}` returns its legal name, administrative contact, tags and configuration (e.g. accounting currency).\n",
+        "type": "text/plain"
+      },
+      "item": [
+        {
+          "id": "15262dfa-020e-4c06-9e73-ec6eb12af93c",
+          "name": "List user companies",
+          "request": {
+            "name": "List user companies",
+            "description": {
+              "content": "Returns the companies your credentials have access to. Use the returned `id` as the `companyId` path parameter required by every other endpoint in this API.",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "companies"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{bearerToken}}"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "id": "d8d956ee-8dbb-4e38-953d-aebaec038b7c",
+              "name": "Successful Response",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "companies"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"data\": [\n    {\n      \"id\": \"company_5f2c1a\",\n      \"legalName\": \"Acme Corporation S.L.\",\n      \"updatedAt\": \"1988-07-12T12:05:12.079Z\",\n      \"createdAt\": \"2001-02-20T04:06:41.718Z\",\n      \"contact\": {\n        \"phone\": \"string\",\n        \"name\": \"string\",\n        \"surname\": \"string\",\n        \"email\": \"string\"\n      },\n      \"tags\": [\n        {\n          \"updatedAt\": \"1983-10-24T03:43:41.450Z\",\n          \"createdAt\": \"1973-12-15T08:29:43.659Z\",\n          \"id\": \"string\",\n          \"name\": \"string\"\n        },\n        {\n          \"updatedAt\": \"1998-09-18T03:10:02.249Z\",\n          \"createdAt\": \"2008-05-24T14:15:54.707Z\",\n          \"id\": \"string\",\n          \"name\": \"string\"\n        }\n      ],\n      \"config\": {\n        \"currency\": \"EUR\"\n      }\n    },\n    {\n      \"id\": \"company_5f2c1a\",\n      \"legalName\": \"Acme Corporation S.L.\",\n      \"updatedAt\": \"1973-07-27T08:00:12.020Z\",\n      \"createdAt\": \"1992-12-25T16:50:34.558Z\",\n      \"contact\": {\n        \"phone\": \"string\",\n        \"name\": \"string\",\n        \"surname\": \"string\",\n        \"email\": \"string\"\n      },\n      \"tags\": [\n        {\n          \"updatedAt\": \"2009-11-01T20:42:55.607Z\",\n          \"createdAt\": \"1993-04-28T23:43:15.653Z\",\n          \"id\": \"string\",\n          \"name\": \"string\"\n        },\n        {\n          \"updatedAt\": \"2026-01-22T07:12:56.262Z\",\n          \"createdAt\": \"1956-02-28T23:15:46.485Z\",\n          \"id\": \"string\",\n          \"name\": \"string\"\n        }\n      ],\n      \"config\": {\n        \"currency\": \"EUR\"\n      }\n    }\n  ]\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "46075bd5-f7f2-44de-8e52-84fbbc64b48b",
+              "name": "Unauthorized. The bearer token is missing, invalid or expired.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "companies"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": \"user not authorized\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "1f2da502-b65c-42a8-a7fa-df8a007c91a3",
+          "name": "Retrieve company",
+          "request": {
+            "name": "Retrieve company",
+            "description": {
+              "content": "Returns the detail of a company: legal name, administrative contact, tags and configuration (e.g. accounting currency).",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "companies",
+                ":companyId"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "<string>",
+                  "key": "companyId",
+                  "description": "(Required) "
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{bearerToken}}"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "id": "0c3f108e-93a4-4865-96a3-259e88e160dc",
+              "name": "Successful Response",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "companies",
+                    ":companyId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"id\": \"company_5f2c1a\",\n  \"legalName\": \"Acme Corporation S.L.\",\n  \"updatedAt\": \"1987-02-09T07:25:45.239Z\",\n  \"createdAt\": \"1989-04-03T11:41:31.328Z\",\n  \"contact\": {\n    \"phone\": \"string\",\n    \"name\": \"string\",\n    \"surname\": \"string\",\n    \"email\": \"string\"\n  },\n  \"tags\": [\n    {\n      \"updatedAt\": \"1953-05-18T16:41:13.827Z\",\n      \"createdAt\": \"2000-09-01T07:39:54.860Z\",\n      \"id\": \"string\",\n      \"name\": \"string\"\n    },\n    {\n      \"updatedAt\": \"2005-08-13T01:39:09.814Z\",\n      \"createdAt\": \"1962-12-15T22:12:59.911Z\",\n      \"id\": \"string\",\n      \"name\": \"string\"\n    }\n  ],\n  \"config\": {\n    \"currency\": \"EUR\"\n  }\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "8e71fc84-a901-4758-86c6-b896cbe9b00e",
+              "name": "Unauthorized. The bearer token is missing, invalid or expired.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "companies",
+                    ":companyId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": \"user not authorized\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "b6a4dac3-1470-4b41-8436-23a419c85f71",
+              "name": "Not found. The requested resource or `companyId` does not exist.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "companies",
+                    ":companyId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "Not Found",
+              "code": 404,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": \"0021 companyId not found\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "943be851-0793-411b-8161-f3a4efb9748f",
+              "name": "Validation Error",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "companies",
+                    ":companyId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "Unprocessable Entity (WebDAV) (RFC 4918)",
+              "code": 422,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": [\n    {\n      \"loc\": [\n        \"string\",\n        \"string\"\n      ],\n      \"msg\": \"string\",\n      \"type\": \"string\",\n      \"input\": {},\n      \"ctx\": {}\n    },\n    {\n      \"loc\": [\n        \"string\",\n        \"string\"\n      ],\n      \"msg\": \"string\",\n      \"type\": \"string\",\n      \"input\": {},\n      \"ctx\": {}\n    }\n  ]\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "50b09174-bef3-49f8-a7bb-70daeb65cec0",
+          "name": "List company users",
+          "request": {
+            "name": "List company users",
+            "description": {
+              "content": "Returns the users with access to the company identified by `companyId`. The returned `id` matches the `userId` recorded on entities created manually in Embat (e.g. payments).",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "companies",
+                ":companyId",
+                "users"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "<string>",
+                  "key": "companyId",
+                  "description": "(Required) "
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{bearerToken}}"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "id": "ad796949-429a-4c69-96eb-4b487d50d275",
+              "name": "Successful Response",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "companies",
+                    ":companyId",
+                    "users"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"data\": [\n    {\n      \"id\": \"user_8f3a1c\",\n      \"email\": \"laura.fernandez@acme.com\",\n      \"updatedAt\": \"1971-06-26T02:16:45.848Z\",\n      \"createdAt\": \"1951-06-01T04:54:45.732Z\",\n      \"name\": \"string\",\n      \"surname\": \"string\"\n    },\n    {\n      \"id\": \"user_8f3a1c\",\n      \"email\": \"laura.fernandez@acme.com\",\n      \"updatedAt\": \"2012-12-15T15:20:59.132Z\",\n      \"createdAt\": \"1983-07-28T07:30:15.633Z\",\n      \"name\": \"string\",\n      \"surname\": \"string\"\n    }\n  ]\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "556869bd-2473-4ffe-829c-3008926be041",
+              "name": "Unauthorized. The bearer token is missing, invalid or expired.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "companies",
+                    ":companyId",
+                    "users"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": \"user not authorized\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "e0773479-761d-4975-b1cc-cac4f3e836ad",
+              "name": "Not found. The requested resource or `companyId` does not exist.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "companies",
+                    ":companyId",
+                    "users"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "Not Found",
+              "code": 404,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": \"0021 companyId not found\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "0e0426e1-f566-4526-80f2-25e9e7fb7f68",
+              "name": "Validation Error",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "companies",
+                    ":companyId",
+                    "users"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "Unprocessable Entity (WebDAV) (RFC 4918)",
+              "code": 422,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": [\n    {\n      \"loc\": [\n        \"string\",\n        \"string\"\n      ],\n      \"msg\": \"string\",\n      \"type\": \"string\",\n      \"input\": {},\n      \"ctx\": {}\n    },\n    {\n      \"loc\": [\n        \"string\",\n        \"string\"\n      ],\n      \"msg\": \"string\",\n      \"type\": \"string\",\n      \"input\": {},\n      \"ctx\": {}\n    }\n  ]\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        }
+      ],
+      "event": []
+    }
+  ],
+  "event": [],
+  "variable": [
+    {
+      "type": "string",
+      "value": "/",
+      "key": "baseUrl"
+    }
+  ],
+  "info": {
+    "_postman_id": "475bba65-d847-46b3-b0fb-96119753ab29",
+    "name": "Embat AccountingAccounts Companies API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": {
+      "content": "Embat API enables connections between any third party application and Embat. Is organized around REST principles, using HTTP responses code and returning data in JSON format. While testing the API, you have to request **sandbox credentials**.\n\nContact Support:\n Name: API Support\n Email: tech@embat.io",
+      "type": "text/plain"
+    }
+  }
+}

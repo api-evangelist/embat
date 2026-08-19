@@ -1,0 +1,241 @@
+{
+  "opencollection": "1.0.0",
+  "info": {
+    "name": "Embat AccountingAccounts API",
+    "version": "2.120.3"
+  },
+  "items": [
+    {
+      "info": {
+        "name": "AccountingAccounts",
+        "type": "folder"
+      },
+      "items": [
+        {
+          "info": {
+            "name": "List accounting accounts",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "{{baseUrl}}/accountingaccounts/:companyId",
+            "params": [
+              {
+                "name": "companyId",
+                "value": "",
+                "type": "path"
+              },
+              {
+                "name": "limit",
+                "value": "",
+                "type": "query",
+                "description": "Maximum number of objects to return in the response. Default 500, maximum 2000."
+              },
+              {
+                "name": "nextPageToken",
+                "value": "",
+                "type": "query",
+                "description": "Token to fetch the next page of results, taken from the `nextPageToken` returned by the previous request with the same filters. Omit it to fetch the first page. An invalid or malformed token is rejected with `404`."
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Returns the accounting accounts (chart of accounts) of a company, including deactivated ones. Results are paginated: use `limit` to control page size and pass the returned `nextPageToken` to fetch the next page."
+        },
+        {
+          "info": {
+            "name": "Create accounting account",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "{{baseUrl}}/accountingaccounts/:companyId",
+            "params": [
+              {
+                "name": "companyId",
+                "value": "",
+                "type": "path"
+              }
+            ],
+            "body": {
+              "type": "json",
+              "data": "{}"
+            },
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Creates an accounting account identified by `accountingCode`. If an account with the same `accountingCode` already exists, this call updates it instead of failing; if the submitted data is identical to the existing account, the call is a no-op. `accountingName` defaults to `accountingCode` when omitted. `type` is inferred from `accountingCode` when not sent, and an `accountingCode` starting with `572` is always classified as `banks` on creation regardless of the `type` sent — see the `type` fiel"
+        },
+        {
+          "info": {
+            "name": "Update accounting accounts in bulk",
+            "type": "http"
+          },
+          "http": {
+            "method": "PATCH",
+            "url": "{{baseUrl}}/accountingaccounts/:companyId",
+            "params": [
+              {
+                "name": "companyId",
+                "value": "",
+                "type": "path"
+              }
+            ],
+            "body": {
+              "type": "json",
+              "data": "{}"
+            },
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Updates several accounting accounts in a single call, identified by `accountingCode`, following the same rules as the single update endpoint. Entries whose `accountingCode` does not match any existing account are silently skipped — the call returns `200` for the whole batch."
+        },
+        {
+          "info": {
+            "name": "Delete accounting accounts in bulk",
+            "type": "http"
+          },
+          "http": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/accountingaccounts/:companyId",
+            "params": [
+              {
+                "name": "companyId",
+                "value": "",
+                "type": "path"
+              }
+            ],
+            "body": {
+              "type": "json",
+              "data": "{}"
+            },
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Deletes several accounting accounts in a single call, identified by `accountingCode`. Accounts are deactivated (`active` set to `false`) rather than permanently removed, and continue to appear in `GET`/list responses. The response includes an entry for every requested `accountingCode`, even ones that do not match an existing account — those are silently skipped with no error."
+        },
+        {
+          "info": {
+            "name": "Retrieve accounting account",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "{{baseUrl}}/accountingaccounts/:companyId/:accountingCode",
+            "params": [
+              {
+                "name": "accountingCode",
+                "value": "",
+                "type": "path"
+              },
+              {
+                "name": "companyId",
+                "value": "",
+                "type": "path"
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Returns a single accounting account by `accountingCode`, including deactivated accounts."
+        },
+        {
+          "info": {
+            "name": "Update accounting account",
+            "type": "http"
+          },
+          "http": {
+            "method": "PATCH",
+            "url": "{{baseUrl}}/accountingaccounts/:companyId/:accountingCode",
+            "params": [
+              {
+                "name": "accountingCode",
+                "value": "",
+                "type": "path"
+              },
+              {
+                "name": "companyId",
+                "value": "",
+                "type": "path"
+              }
+            ],
+            "body": {
+              "type": "json",
+              "data": "{}"
+            },
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Updates the active status, type, name, collective flag, additional info or attributes of an accounting account identified by `accountingCode`. Updating an `accountingCode` that does not match any existing account returns `200` without creating or changing anything — no `404` is raised. Sending an empty `additionalInfo` object leaves any previously stored metadata unchanged. Entries in `attributes` with an empty or missing `customId` or `value` are silently discarded."
+        },
+        {
+          "info": {
+            "name": "Delete accounting account",
+            "type": "http"
+          },
+          "http": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/accountingaccounts/:companyId/:accountingCode",
+            "params": [
+              {
+                "name": "accountingCode",
+                "value": "",
+                "type": "path"
+              },
+              {
+                "name": "companyId",
+                "value": "",
+                "type": "path"
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Deletes an accounting account by `accountingCode`. The account is deactivated (`active` set to `false`) rather than permanently removed, and continues to appear in `GET`/list responses. Deleting an `accountingCode` that does not match any existing account still returns `200` without error."
+        },
+        {
+          "info": {
+            "name": "Create accounting accounts in bulk",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "{{baseUrl}}/accountingaccounts/:companyId/bulk",
+            "params": [
+              {
+                "name": "companyId",
+                "value": "",
+                "type": "path"
+              }
+            ],
+            "body": {
+              "type": "json",
+              "data": "{}"
+            },
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Creates several accounting accounts in a single call, following the same rules as the single account creation endpoint. Entries sharing the same `accountingCode` within the request are deduplicated and only the first occurrence is processed."
+        }
+      ]
+    }
+  ],
+  "bundled": true
+}

@@ -1,0 +1,1220 @@
+{
+  "item": [
+    {
+      "id": "fbf7362e-0562-42ca-b176-33c3bfee86c2",
+      "name": "Files",
+      "description": {
+        "content": "`File` represents a banking file exchanged between Embat and a bank: either a file **received** from a bank (a reception, e.g. an account statement or a confirmation file) or a file **submitted** to a bank (an emission, e.g. a payment order file). Files are identified by an Embat-generated `id` and, when the bank could be identified, carry the related `Bank`.\n\nFiles list endpoints are not scoped by `companyId`: they return the files across every company accessible to the authenticated user. `companyId` is only used when creating a file emission.\n\n**Typical flow:**\n\n1. **Discover new receptions.** Poll `GET /files/receptions` periodically; each entry reports whether it has already been `downloaded`. Use `nextPageToken` to page through results.\n2. **Download a reception's content.** Once you have identified a file of interest, fetch its raw content with `GET /files/receptions/{fileId}`.\n3. **Submit a file to a bank.** To send a file to a bank on behalf of a company (e.g. a payment order), call `POST /files/{companyId}/{bankId}` with the file content and its format.\n4. **Track emissions.** List the files you have submitted, and any submitted on your behalf, with `GET /files/emissions`.\n",
+        "type": "text/plain"
+      },
+      "item": [
+        {
+          "id": "12b1af11-8bdc-4af5-8f07-a269db050037",
+          "name": "List file receptions",
+          "request": {
+            "name": "List file receptions",
+            "description": {
+              "content": "Returns the banking files received across every company accessible to the authenticated user (e.g. account statements or confirmation files sent by a bank). Results are paginated: use `limit` to control page size and pass the returned `nextPageToken` to fetch the next page. Download the content of a specific file with `GET /files/receptions/{fileId}`. Errors from the file service are reported with their original status code and message, so responses may include statuses other than the ones listed here.",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "files",
+                "receptions"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [
+                {
+                  "disabled": false,
+                  "key": "limit",
+                  "value": "500",
+                  "description": "Maximum number of file receptions to return. Defaults to 500, up to 2000."
+                },
+                {
+                  "disabled": false,
+                  "key": "nextPageToken",
+                  "value": "<string>",
+                  "description": "Token to fetch the next page of results, returned by a previous call to this endpoint."
+                }
+              ],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{bearerToken}}"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "id": "ca484a10-e4b1-4516-a381-773cdde21190",
+              "name": "Successful Response",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "files",
+                    "receptions"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "limit",
+                      "value": "500"
+                    },
+                    {
+                      "key": "nextPageToken",
+                      "value": "<string>"
+                    }
+                  ],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"data\": [\n    {\n      \"id\": \"string\",\n      \"groupId\": \"string\",\n      \"fileName\": \"statement.xml\",\n      \"downloaded\": true,\n      \"provider\": \"bank\",\n      \"receptionDate\": \"2016-05-09T15:49:57.340Z\",\n      \"createdAt\": \"1962-09-25T03:16:48.050Z\",\n      \"updatedAt\": \"2025-11-21T13:56:04.692Z\",\n      \"companyId\": \"string\",\n      \"bank\": {\n        \"id\": \"string\",\n        \"fullName\": \"string\",\n        \"service\": \"string\",\n        \"countryCode\": \"string\"\n      }\n    },\n    {\n      \"id\": \"string\",\n      \"groupId\": \"string\",\n      \"fileName\": \"statement.xml\",\n      \"downloaded\": true,\n      \"provider\": \"bank\",\n      \"receptionDate\": \"2000-01-12T00:45:32.098Z\",\n      \"createdAt\": \"1962-08-18T14:28:59.985Z\",\n      \"updatedAt\": \"1970-09-16T11:03:41.749Z\",\n      \"companyId\": \"string\",\n      \"bank\": {\n        \"id\": \"string\",\n        \"fullName\": \"string\",\n        \"service\": \"string\",\n        \"countryCode\": \"string\"\n      }\n    }\n  ],\n  \"nextPageToken\": \"string\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "a5e7915b-593b-4aca-aae1-da45b693abfd",
+              "name": "Unauthorized. The bearer token is missing, invalid or expired.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "files",
+                    "receptions"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "limit",
+                      "value": "500"
+                    },
+                    {
+                      "key": "nextPageToken",
+                      "value": "<string>"
+                    }
+                  ],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": \"user not authorized\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "01955240-33d3-4377-8e0d-3ec7f101175f",
+              "name": "Validation Error",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "files",
+                    "receptions"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "limit",
+                      "value": "500"
+                    },
+                    {
+                      "key": "nextPageToken",
+                      "value": "<string>"
+                    }
+                  ],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "Unprocessable Entity (WebDAV) (RFC 4918)",
+              "code": 422,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": [\n    {\n      \"loc\": [\n        \"string\",\n        \"string\"\n      ],\n      \"msg\": \"string\",\n      \"type\": \"string\",\n      \"input\": {},\n      \"ctx\": {}\n    },\n    {\n      \"loc\": [\n        \"string\",\n        \"string\"\n      ],\n      \"msg\": \"string\",\n      \"type\": \"string\",\n      \"input\": {},\n      \"ctx\": {}\n    }\n  ]\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "da84b5fb-5ec9-417d-97e5-96f59eba4620",
+          "name": "Download file reception",
+          "request": {
+            "name": "Download file reception",
+            "description": {
+              "content": "Downloads the raw content of a file reception by `fileId`. The response content type matches the original file (e.g. XML, TXT, PDF). The `Content-Disposition` header names the file after `fileId`, not its original file name; use `fileName` from `GET /files/receptions` if you need the original name. Errors are reported with the same status code and message that occurred while retrieving the file, which may include statuses other than the ones listed here.",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "files",
+                "receptions",
+                ":fileId"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "<string>",
+                  "key": "fileId",
+                  "description": "(Required) "
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/octet-stream"
+              }
+            ],
+            "method": "GET",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{bearerToken}}"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "id": "7db97615-03c8-4750-a240-94127032efe4",
+              "name": "Binary file downloaded (content-type may vary: XML, TXT, PDF, etc.)",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "files",
+                    "receptions",
+                    ":fileId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "fileId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/octet-stream"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/octet-stream"
+                }
+              ],
+              "body": "",
+              "cookie": [],
+              "_postman_previewlanguage": "text"
+            },
+            {
+              "id": "b261a08d-0bd5-4b6b-8604-421e5eb26e84",
+              "name": "Unauthorized. The bearer token is missing, invalid or expired.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "files",
+                    "receptions",
+                    ":fileId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "fileId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": \"user not authorized\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "2cc45567-87de-43bb-818f-7653249ec9ef",
+              "name": "No file matches the given `fileId`.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "files",
+                    "receptions",
+                    ":fileId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "fileId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "Not Found",
+              "code": 404,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": \"0021 companyId not found\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "d9d8a307-0845-4a4c-adbb-b48a28e00b4c",
+              "name": "Validation Error",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "files",
+                    "receptions",
+                    ":fileId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "fileId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "Unprocessable Entity (WebDAV) (RFC 4918)",
+              "code": 422,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": [\n    {\n      \"loc\": [\n        \"string\",\n        \"string\"\n      ],\n      \"msg\": \"string\",\n      \"type\": \"string\",\n      \"input\": {},\n      \"ctx\": {}\n    },\n    {\n      \"loc\": [\n        \"string\",\n        \"string\"\n      ],\n      \"msg\": \"string\",\n      \"type\": \"string\",\n      \"input\": {},\n      \"ctx\": {}\n    }\n  ]\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "9bbf042e-da23-4681-b11e-f487d35206e8",
+          "name": "List file emissions",
+          "request": {
+            "name": "List file emissions",
+            "description": {
+              "content": "Returns the banking files submitted to banks (e.g. payment order files) across every company accessible to the authenticated user. Results are paginated: use `limit` to control page size and pass the returned `nextPageToken` to fetch the next page. Errors from the file service are reported with their original status code and message, so responses may include statuses other than the ones listed here.",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "files",
+                "emissions"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [
+                {
+                  "disabled": false,
+                  "key": "limit",
+                  "value": "500",
+                  "description": "Maximum number of file emissions to return. Defaults to 500, up to 2000."
+                },
+                {
+                  "disabled": false,
+                  "key": "nextPageToken",
+                  "value": "<string>",
+                  "description": "Token to fetch the next page of results, returned by a previous call to this endpoint."
+                }
+              ],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{bearerToken}}"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "id": "d680a05f-c448-46ff-b8cc-d10c1aa899db",
+              "name": "Successful Response",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "files",
+                    "emissions"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "limit",
+                      "value": "500"
+                    },
+                    {
+                      "key": "nextPageToken",
+                      "value": "<string>"
+                    }
+                  ],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"data\": [\n    {\n      \"id\": \"string\",\n      \"groupId\": \"string\",\n      \"fileName\": \"payment-order.xml\",\n      \"provider\": \"bank\",\n      \"emissionDate\": \"1969-09-17T21:25:25.535Z\",\n      \"createdAt\": \"2012-12-08T23:41:30.539Z\",\n      \"updatedAt\": \"1993-01-10T07:17:58.239Z\",\n      \"companyId\": \"string\",\n      \"bank\": {\n        \"id\": \"string\",\n        \"fullName\": \"string\",\n        \"service\": \"string\",\n        \"countryCode\": \"string\"\n      },\n      \"user\": {\n        \"id\": \"string\",\n        \"name\": \"Maria\",\n        \"surname\": \"string\"\n      },\n      \"format\": \"string\"\n    },\n    {\n      \"id\": \"string\",\n      \"groupId\": \"string\",\n      \"fileName\": \"payment-order.xml\",\n      \"provider\": \"bank\",\n      \"emissionDate\": \"1959-09-28T04:44:13.283Z\",\n      \"createdAt\": \"2021-06-24T03:19:25.554Z\",\n      \"updatedAt\": \"2020-01-29T19:41:20.732Z\",\n      \"companyId\": \"string\",\n      \"bank\": {\n        \"id\": \"string\",\n        \"fullName\": \"string\",\n        \"service\": \"string\",\n        \"countryCode\": \"string\"\n      },\n      \"user\": {\n        \"id\": \"string\",\n        \"name\": \"Maria\",\n        \"surname\": \"string\"\n      },\n      \"format\": \"string\"\n    }\n  ],\n  \"nextPageToken\": \"string\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "9bb6d1f4-fac2-454e-bd96-5e1ebd3cf821",
+              "name": "Unauthorized. The bearer token is missing, invalid or expired.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "files",
+                    "emissions"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "limit",
+                      "value": "500"
+                    },
+                    {
+                      "key": "nextPageToken",
+                      "value": "<string>"
+                    }
+                  ],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": \"user not authorized\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "c23b8d10-c258-4d80-a0a2-cd495ae1771d",
+              "name": "Validation Error",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "files",
+                    "emissions"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "limit",
+                      "value": "500"
+                    },
+                    {
+                      "key": "nextPageToken",
+                      "value": "<string>"
+                    }
+                  ],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "Unprocessable Entity (WebDAV) (RFC 4918)",
+              "code": 422,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": [\n    {\n      \"loc\": [\n        \"string\",\n        \"string\"\n      ],\n      \"msg\": \"string\",\n      \"type\": \"string\",\n      \"input\": {},\n      \"ctx\": {}\n    },\n    {\n      \"loc\": [\n        \"string\",\n        \"string\"\n      ],\n      \"msg\": \"string\",\n      \"type\": \"string\",\n      \"input\": {},\n      \"ctx\": {}\n    }\n  ]\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "b5a61b20-bbdf-4ff4-a929-4c03826c5fbb",
+          "name": "Create file emission",
+          "request": {
+            "name": "Create file emission",
+            "description": {
+              "content": "Submits a file to a bank (`bankId`) on behalf of a company, e.g. a payment order file. Returns the Embat ID of the created file emission; retrieve its status later with `GET /files/emissions`.",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "files",
+                ":companyId",
+                ":bankId"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "<string>",
+                  "key": "companyId",
+                  "description": "(Required) "
+                },
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "<string>",
+                  "key": "bankId",
+                  "description": "(Required) "
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "multipart/form-data"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "POST",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{bearerToken}}"
+                }
+              ]
+            },
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "value": "<string>",
+                  "type": "text",
+                  "description": "(Required) Binary content of the file to submit to the bank."
+                },
+                {
+                  "key": "format",
+                  "value": "<string>",
+                  "type": "text",
+                  "description": "(Required) Format of the submitted file."
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "id": "6e5a7e3f-f57f-4720-945f-e13eab03a4b3",
+              "name": "Successful Response",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "files",
+                    ":companyId",
+                    ":bankId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    },
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "bankId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "formdata",
+                  "formdata": [
+                    {
+                      "description": {
+                        "content": "(Required) Binary content of the file to submit to the bank.",
+                        "type": "text/plain"
+                      },
+                      "key": "file",
+                      "value": "<string>",
+                      "type": "text"
+                    },
+                    {
+                      "description": {
+                        "content": "(Required) Format of the submitted file.",
+                        "type": "text/plain"
+                      },
+                      "key": "format",
+                      "value": "omfpag",
+                      "type": "text"
+                    }
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"id\": \"string\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "104c5d0b-d497-4fc1-b22e-7f61bc31ec0f",
+              "name": "Unauthorized. The bearer token is missing, invalid or expired.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "files",
+                    ":companyId",
+                    ":bankId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    },
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "bankId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "formdata",
+                  "formdata": [
+                    {
+                      "description": {
+                        "content": "(Required) Binary content of the file to submit to the bank.",
+                        "type": "text/plain"
+                      },
+                      "key": "file",
+                      "value": "<string>",
+                      "type": "text"
+                    },
+                    {
+                      "description": {
+                        "content": "(Required) Format of the submitted file.",
+                        "type": "text/plain"
+                      },
+                      "key": "format",
+                      "value": "omfpag",
+                      "type": "text"
+                    }
+                  ]
+                }
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": \"user not authorized\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "e3b1d77f-3368-45da-93b0-35068a03fc26",
+              "name": "Not found. The requested resource or `companyId` does not exist.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "files",
+                    ":companyId",
+                    ":bankId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    },
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "bankId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "formdata",
+                  "formdata": [
+                    {
+                      "description": {
+                        "content": "(Required) Binary content of the file to submit to the bank.",
+                        "type": "text/plain"
+                      },
+                      "key": "file",
+                      "value": "<string>",
+                      "type": "text"
+                    },
+                    {
+                      "description": {
+                        "content": "(Required) Format of the submitted file.",
+                        "type": "text/plain"
+                      },
+                      "key": "format",
+                      "value": "omfpag",
+                      "type": "text"
+                    }
+                  ]
+                }
+              },
+              "status": "Not Found",
+              "code": 404,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": \"0021 companyId not found\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "6b50eef5-087d-4e82-bb22-8580f8ae8e0a",
+              "name": "Validation Error",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "files",
+                    ":companyId",
+                    ":bankId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    },
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "bankId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "formdata",
+                  "formdata": [
+                    {
+                      "description": {
+                        "content": "(Required) Binary content of the file to submit to the bank.",
+                        "type": "text/plain"
+                      },
+                      "key": "file",
+                      "value": "<string>",
+                      "type": "text"
+                    },
+                    {
+                      "description": {
+                        "content": "(Required) Format of the submitted file.",
+                        "type": "text/plain"
+                      },
+                      "key": "format",
+                      "value": "omfpag",
+                      "type": "text"
+                    }
+                  ]
+                }
+              },
+              "status": "Unprocessable Entity (WebDAV) (RFC 4918)",
+              "code": 422,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": [\n    {\n      \"loc\": [\n        \"string\",\n        \"string\"\n      ],\n      \"msg\": \"string\",\n      \"type\": \"string\",\n      \"input\": {},\n      \"ctx\": {}\n    },\n    {\n      \"loc\": [\n        \"string\",\n        \"string\"\n      ],\n      \"msg\": \"string\",\n      \"type\": \"string\",\n      \"input\": {},\n      \"ctx\": {}\n    }\n  ]\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "b64ec23e-ae8c-48fa-8dd8-5c3ce1e27c89",
+              "name": "Unexpected error. Contact support if it persists.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "files",
+                    ":companyId",
+                    ":bankId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    },
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "bankId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "formdata",
+                  "formdata": [
+                    {
+                      "description": {
+                        "content": "(Required) Binary content of the file to submit to the bank.",
+                        "type": "text/plain"
+                      },
+                      "key": "file",
+                      "value": "<string>",
+                      "type": "text"
+                    },
+                    {
+                      "description": {
+                        "content": "(Required) Format of the submitted file.",
+                        "type": "text/plain"
+                      },
+                      "key": "format",
+                      "value": "omfpag",
+                      "type": "text"
+                    }
+                  ]
+                }
+              },
+              "status": "Internal Server Error",
+              "code": 500,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": \"Internal server error\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        }
+      ],
+      "event": []
+    }
+  ],
+  "event": [],
+  "variable": [
+    {
+      "type": "string",
+      "value": "/",
+      "key": "baseUrl"
+    }
+  ],
+  "info": {
+    "_postman_id": "e9894ab0-46b3-432a-a6c6-1475b6e48d2c",
+    "name": "Embat AccountingAccounts Files API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": {
+      "content": "Embat API enables connections between any third party application and Embat. Is organized around REST principles, using HTTP responses code and returning data in JSON format. While testing the API, you have to request **sandbox credentials**.\n\nContact Support:\n Name: API Support\n Email: tech@embat.io",
+      "type": "text/plain"
+    }
+  }
+}

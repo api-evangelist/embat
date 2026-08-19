@@ -1,0 +1,2880 @@
+{
+  "item": [
+    {
+      "id": "824b7f1b-ded2-493b-876f-ac63dbfe65ec",
+      "name": "AccountingAccounts",
+      "description": {
+        "content": "`AccountingAccount` represents an account in the company's chart of accounts. `accountingCode` is the unique identifier of an account and is used as its ID; it also determines the account's default classification (`type`) when none is sent.\n\nAccounting accounts are the backbone Embat uses to classify money movements: `Payments` and accounting entries reference an account by `accountingCode` to record where a transaction is posted, and `Transactions` are reconciled against the account's `balance`.\n\n**Typical flow:** notify Embat of the accounts that exist in your ERP so that payments and reconciliations can reference them.\n\n1. **Create or update accounts.** Send each account from your chart of accounts with `POST /accountingaccounts/{companyId}` (or the bulk variant `POST /accountingaccounts/{companyId}/bulk`). Sending an `accountingCode` that already exists updates that account instead of creating a duplicate.\n2. **Keep accounts in sync.** As accounts change in your ERP (renamed, deactivated, reclassified), reflect those changes with `PATCH /accountingaccounts/{companyId}/{accountingCode}` (or the bulk variant `PATCH /accountingaccounts/{companyId}`), or simply resend the account with `POST` — creation is an upsert, so an existing `accountingCode` is updated instead of duplicated. Note that `type` can only be changed via `PATCH`.\n3. **Read accounts.** Use `GET /accountingaccounts/{companyId}` to list all accounts, or `GET /accountingaccounts/{companyId}/{accountingCode}` to retrieve a single one, including its current `balance`.\n4. **Delete accounts.** `DELETE /accountingaccounts/{companyId}/{accountingCode}` (or the bulk variant) deactivates an account rather than permanently removing it; deactivated accounts still appear in list/retrieve responses with `active: false`.\n",
+        "type": "text/plain"
+      },
+      "item": [
+        {
+          "id": "13ad1027-3bc3-4ee1-9a32-606d7cdfa3d8",
+          "name": "List accounting accounts",
+          "request": {
+            "name": "List accounting accounts",
+            "description": {
+              "content": "Returns the accounting accounts (chart of accounts) of a company, including deactivated ones. Results are paginated: use `limit` to control page size and pass the returned `nextPageToken` to fetch the next page.",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "accountingaccounts",
+                ":companyId"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [
+                {
+                  "disabled": false,
+                  "key": "limit",
+                  "value": "500",
+                  "description": "Maximum number of objects to return in the response. Default 500, maximum 2000."
+                },
+                {
+                  "disabled": false,
+                  "key": "nextPageToken",
+                  "value": "<string>",
+                  "description": "Token to fetch the next page of results, taken from the `nextPageToken` returned by the previous request with the same filters. Omit it to fetch the first page. An invalid or malformed token is rejected with `404`."
+                }
+              ],
+              "variable": [
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "<string>",
+                  "key": "companyId",
+                  "description": "(Required) "
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{bearerToken}}"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "id": "9ee3912b-1a2b-4b85-a307-b5f82d8a3b2f",
+              "name": "Successful Response",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "accountingaccounts",
+                    ":companyId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "limit",
+                      "value": "500"
+                    },
+                    {
+                      "key": "nextPageToken",
+                      "value": "<string>"
+                    }
+                  ],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"data\": [\n    {\n      \"accountingCode\": \"430001\",\n      \"companyId\": \"string\",\n      \"updatedAt\": \"1962-03-12T02:59:17.659Z\",\n      \"createdAt\": \"1987-01-22T13:28:35.583Z\",\n      \"active\": false,\n      \"type\": \"accountings\",\n      \"accountingName\": \"string\",\n      \"collective\": false,\n      \"additionalInfo\": {\n        \"key_0\": \"string\",\n        \"key_1\": false\n      },\n      \"attributes\": [\n        {\n          \"customId\": \"string\",\n          \"value\": \"string\",\n          \"valueCustomId\": \"string\"\n        },\n        {\n          \"customId\": \"string\",\n          \"value\": \"string\",\n          \"valueCustomId\": \"string\"\n        }\n      ],\n      \"balance\": 7961.555389316974,\n      \"balanceDate\": \"1948-02-02T17:29:31.263Z\"\n    },\n    {\n      \"accountingCode\": \"430001\",\n      \"companyId\": \"string\",\n      \"updatedAt\": \"1968-11-27T03:19:50.356Z\",\n      \"createdAt\": \"1953-09-23T17:52:29.813Z\",\n      \"active\": true,\n      \"type\": \"accountings\",\n      \"accountingName\": \"string\",\n      \"collective\": false,\n      \"additionalInfo\": {\n        \"key_0\": \"string\",\n        \"key_1\": false\n      },\n      \"attributes\": [\n        {\n          \"customId\": \"string\",\n          \"value\": \"string\",\n          \"valueCustomId\": \"string\"\n        },\n        {\n          \"customId\": \"string\",\n          \"value\": \"string\",\n          \"valueCustomId\": \"string\"\n        }\n      ],\n      \"balance\": 5402.284663925447,\n      \"balanceDate\": \"1972-01-10T05:45:17.582Z\"\n    }\n  ],\n  \"nextPageToken\": \"string\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "f40dd9c5-ffa5-4a67-a565-5b8e299e24b0",
+              "name": "Unauthorized. The bearer token is missing, invalid or expired.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "accountingaccounts",
+                    ":companyId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "limit",
+                      "value": "500"
+                    },
+                    {
+                      "key": "nextPageToken",
+                      "value": "<string>"
+                    }
+                  ],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": \"user not authorized\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "990560fb-1066-40d5-b758-8630ab55eb5a",
+              "name": "Company not found, or invalid `nextPageToken`.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "accountingaccounts",
+                    ":companyId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "limit",
+                      "value": "500"
+                    },
+                    {
+                      "key": "nextPageToken",
+                      "value": "<string>"
+                    }
+                  ],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "Not Found",
+              "code": 404,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": \"0021 companyId not found\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "6ed59772-cd3e-4c40-9594-abfb7cb05dc5",
+              "name": "Validation Error",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "accountingaccounts",
+                    ":companyId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "limit",
+                      "value": "500"
+                    },
+                    {
+                      "key": "nextPageToken",
+                      "value": "<string>"
+                    }
+                  ],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "Unprocessable Entity (WebDAV) (RFC 4918)",
+              "code": 422,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": [\n    {\n      \"loc\": [\n        \"string\",\n        \"string\"\n      ],\n      \"msg\": \"string\",\n      \"type\": \"string\",\n      \"input\": {},\n      \"ctx\": {}\n    },\n    {\n      \"loc\": [\n        \"string\",\n        \"string\"\n      ],\n      \"msg\": \"string\",\n      \"type\": \"string\",\n      \"input\": {},\n      \"ctx\": {}\n    }\n  ]\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "c28a4801-c6cd-4f23-900d-b4b074805b8c",
+          "name": "Create accounting account",
+          "request": {
+            "name": "Create accounting account",
+            "description": {
+              "content": "Creates an accounting account identified by `accountingCode`. If an account with the same `accountingCode` already exists, this call updates it instead of failing; if the submitted data is identical to the existing account, the call is a no-op. `accountingName` defaults to `accountingCode` when omitted. `type` is inferred from `accountingCode` when not sent, and an `accountingCode` starting with `572` is always classified as `banks` on creation regardless of the `type` sent — see the `type` field description. Once an account exists, `type` cannot be changed through this endpoint: any `type` sent for an existing account (including the `572` override) is silently ignored and only applies when the account is first created — use the update endpoints to change it. Recreating a previously deleted (deactivated) account does not reactivate it unless `active: true` is explicitly sent. Entries in `attributes` with an empty or missing `customId` or `value` are silently discarded.",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "accountingaccounts",
+                ":companyId"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "<string>",
+                  "key": "companyId",
+                  "description": "(Required) "
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "POST",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{bearerToken}}"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"accountingCode\": \"<string>\",\n  \"active\": \"<boolean>\",\n  \"type\": \"<string>\",\n  \"accountingName\": \"<string>\",\n  \"collective\": \"<boolean>\",\n  \"additionalInfo\": {\n    \"key_0\": \"string\",\n    \"key_1\": \"string\",\n    \"key_2\": true\n  },\n  \"attributes\": [\n    {\n      \"customId\": \"<string>\",\n      \"value\": \"<string>\",\n      \"valueCustomId\": \"<string>\"\n    },\n    {\n      \"customId\": \"<string>\",\n      \"value\": \"<string>\",\n      \"valueCustomId\": \"<string>\"\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "id": "a9384573-2097-4076-a25f-675c719010a0",
+              "name": "Successful Response",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "accountingaccounts",
+                    ":companyId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"accountingCode\": \"430001\",\n  \"active\": \"<boolean>\",\n  \"type\": \"banks\",\n  \"accountingName\": \"<string>\",\n  \"collective\": \"<boolean>\",\n  \"additionalInfo\": {\n    \"key_0\": 3982.7758434622583,\n    \"key_1\": false\n  },\n  \"attributes\": [\n    {\n      \"customId\": \"string\",\n      \"value\": \"string\",\n      \"valueCustomId\": \"string\"\n    },\n    {\n      \"customId\": \"string\",\n      \"value\": \"string\",\n      \"valueCustomId\": \"string\"\n    }\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"id\": \"string\",\n  \"accountingCode\": \"430001\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "5e0c04fb-7d0d-4566-99ed-72ee41ee46ed",
+              "name": "Unauthorized. The bearer token is missing, invalid or expired.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "accountingaccounts",
+                    ":companyId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"accountingCode\": \"430001\",\n  \"active\": \"<boolean>\",\n  \"type\": \"banks\",\n  \"accountingName\": \"<string>\",\n  \"collective\": \"<boolean>\",\n  \"additionalInfo\": {\n    \"key_0\": 3982.7758434622583,\n    \"key_1\": false\n  },\n  \"attributes\": [\n    {\n      \"customId\": \"string\",\n      \"value\": \"string\",\n      \"valueCustomId\": \"string\"\n    },\n    {\n      \"customId\": \"string\",\n      \"value\": \"string\",\n      \"valueCustomId\": \"string\"\n    }\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": \"user not authorized\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "72acfdeb-047d-4fef-a6d8-b3e949f9e3c6",
+              "name": "Not found. The requested resource or `companyId` does not exist.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "accountingaccounts",
+                    ":companyId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"accountingCode\": \"430001\",\n  \"active\": \"<boolean>\",\n  \"type\": \"banks\",\n  \"accountingName\": \"<string>\",\n  \"collective\": \"<boolean>\",\n  \"additionalInfo\": {\n    \"key_0\": 3982.7758434622583,\n    \"key_1\": false\n  },\n  \"attributes\": [\n    {\n      \"customId\": \"string\",\n      \"value\": \"string\",\n      \"valueCustomId\": \"string\"\n    },\n    {\n      \"customId\": \"string\",\n      \"value\": \"string\",\n      \"valueCustomId\": \"string\"\n    }\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Not Found",
+              "code": 404,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": \"0021 companyId not found\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "fe6c5e14-e87a-468b-97a5-414be9c40a44",
+              "name": "Validation Error",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "accountingaccounts",
+                    ":companyId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"accountingCode\": \"430001\",\n  \"active\": \"<boolean>\",\n  \"type\": \"banks\",\n  \"accountingName\": \"<string>\",\n  \"collective\": \"<boolean>\",\n  \"additionalInfo\": {\n    \"key_0\": 3982.7758434622583,\n    \"key_1\": false\n  },\n  \"attributes\": [\n    {\n      \"customId\": \"string\",\n      \"value\": \"string\",\n      \"valueCustomId\": \"string\"\n    },\n    {\n      \"customId\": \"string\",\n      \"value\": \"string\",\n      \"valueCustomId\": \"string\"\n    }\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Unprocessable Entity (WebDAV) (RFC 4918)",
+              "code": 422,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": [\n    {\n      \"loc\": [\n        \"string\",\n        \"string\"\n      ],\n      \"msg\": \"string\",\n      \"type\": \"string\",\n      \"input\": {},\n      \"ctx\": {}\n    },\n    {\n      \"loc\": [\n        \"string\",\n        \"string\"\n      ],\n      \"msg\": \"string\",\n      \"type\": \"string\",\n      \"input\": {},\n      \"ctx\": {}\n    }\n  ]\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "1e6552bf-7361-41d8-b8ba-f4e0d37c1760",
+              "name": "Unexpected error. Contact support if it persists.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "accountingaccounts",
+                    ":companyId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"accountingCode\": \"430001\",\n  \"active\": \"<boolean>\",\n  \"type\": \"banks\",\n  \"accountingName\": \"<string>\",\n  \"collective\": \"<boolean>\",\n  \"additionalInfo\": {\n    \"key_0\": 3982.7758434622583,\n    \"key_1\": false\n  },\n  \"attributes\": [\n    {\n      \"customId\": \"string\",\n      \"value\": \"string\",\n      \"valueCustomId\": \"string\"\n    },\n    {\n      \"customId\": \"string\",\n      \"value\": \"string\",\n      \"valueCustomId\": \"string\"\n    }\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Internal Server Error",
+              "code": 500,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": \"Internal server error\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "7e4e2447-2058-4287-a06c-ace2bd40ee00",
+          "name": "Update accounting accounts in bulk",
+          "request": {
+            "name": "Update accounting accounts in bulk",
+            "description": {
+              "content": "Updates several accounting accounts in a single call, identified by `accountingCode`, following the same rules as the single update endpoint. Entries whose `accountingCode` does not match any existing account are silently skipped — the call returns `200` for the whole batch.",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "accountingaccounts",
+                ":companyId"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "<string>",
+                  "key": "companyId",
+                  "description": "(Required) "
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "PATCH",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{bearerToken}}"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"data\": [\n    {\n      \"accountingCode\": \"<string>\",\n      \"active\": \"<boolean>\",\n      \"type\": \"<string>\",\n      \"accountingName\": \"<string>\",\n      \"collective\": \"<boolean>\",\n      \"additionalInfo\": {\n        \"key_0\": 17,\n        \"key_1\": true\n      },\n      \"attributes\": [\n        {\n          \"customId\": \"<string>\",\n          \"value\": \"<string>\",\n          \"valueCustomId\": \"<string>\"\n        },\n        {\n          \"customId\": \"<string>\",\n          \"value\": \"<string>\",\n          \"valueCustomId\": \"<string>\"\n        }\n      ]\n    },\n    {\n      \"accountingCode\": \"<string>\",\n      \"active\": \"<boolean>\",\n      \"type\": \"<string>\",\n      \"accountingName\": \"<string>\",\n      \"collective\": \"<boolean>\",\n      \"additionalInfo\": {\n        \"key_0\": \"string\"\n      },\n      \"attributes\": [\n        {\n          \"customId\": \"<string>\",\n          \"value\": \"<string>\",\n          \"valueCustomId\": \"<string>\"\n        },\n        {\n          \"customId\": \"<string>\",\n          \"value\": \"<string>\",\n          \"valueCustomId\": \"<string>\"\n        }\n      ]\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "id": "f8fb8678-1d68-457b-ba89-149d8d9b3556",
+              "name": "Successful Response",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "accountingaccounts",
+                    ":companyId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "PATCH",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"data\": [\n    {\n      \"accountingCode\": \"430001\",\n      \"active\": true,\n      \"type\": \"analytics\",\n      \"accountingName\": \"string\",\n      \"collective\": true,\n      \"additionalInfo\": {\n        \"key_0\": \"string\",\n        \"key_1\": 8059\n      },\n      \"attributes\": [\n        {\n          \"customId\": \"string\",\n          \"value\": \"string\",\n          \"valueCustomId\": \"string\"\n        },\n        {\n          \"customId\": \"string\",\n          \"value\": \"string\",\n          \"valueCustomId\": \"string\"\n        }\n      ]\n    },\n    {\n      \"accountingCode\": \"430001\",\n      \"active\": false,\n      \"type\": \"banks\",\n      \"accountingName\": \"string\",\n      \"collective\": true,\n      \"additionalInfo\": {\n        \"key_0\": 8385,\n        \"key_1\": false\n      },\n      \"attributes\": [\n        {\n          \"customId\": \"string\",\n          \"value\": \"string\",\n          \"valueCustomId\": \"string\"\n        },\n        {\n          \"customId\": \"string\",\n          \"value\": \"string\",\n          \"valueCustomId\": \"string\"\n        }\n      ]\n    }\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"data\": [\n    {\n      \"id\": \"string\",\n      \"accountingCode\": \"430001\"\n    },\n    {\n      \"id\": \"string\",\n      \"accountingCode\": \"430001\"\n    }\n  ]\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "eeeb1a35-84b2-477b-812c-f7f2640e5273",
+              "name": "Unauthorized. The bearer token is missing, invalid or expired.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "accountingaccounts",
+                    ":companyId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "PATCH",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"data\": [\n    {\n      \"accountingCode\": \"430001\",\n      \"active\": true,\n      \"type\": \"analytics\",\n      \"accountingName\": \"string\",\n      \"collective\": true,\n      \"additionalInfo\": {\n        \"key_0\": \"string\",\n        \"key_1\": 8059\n      },\n      \"attributes\": [\n        {\n          \"customId\": \"string\",\n          \"value\": \"string\",\n          \"valueCustomId\": \"string\"\n        },\n        {\n          \"customId\": \"string\",\n          \"value\": \"string\",\n          \"valueCustomId\": \"string\"\n        }\n      ]\n    },\n    {\n      \"accountingCode\": \"430001\",\n      \"active\": false,\n      \"type\": \"banks\",\n      \"accountingName\": \"string\",\n      \"collective\": true,\n      \"additionalInfo\": {\n        \"key_0\": 8385,\n        \"key_1\": false\n      },\n      \"attributes\": [\n        {\n          \"customId\": \"string\",\n          \"value\": \"string\",\n          \"valueCustomId\": \"string\"\n        },\n        {\n          \"customId\": \"string\",\n          \"value\": \"string\",\n          \"valueCustomId\": \"string\"\n        }\n      ]\n    }\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": \"user not authorized\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "79f2ea81-89b5-4b85-b809-11b31de79fda",
+              "name": "Not found. The requested resource or `companyId` does not exist.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "accountingaccounts",
+                    ":companyId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "PATCH",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"data\": [\n    {\n      \"accountingCode\": \"430001\",\n      \"active\": true,\n      \"type\": \"analytics\",\n      \"accountingName\": \"string\",\n      \"collective\": true,\n      \"additionalInfo\": {\n        \"key_0\": \"string\",\n        \"key_1\": 8059\n      },\n      \"attributes\": [\n        {\n          \"customId\": \"string\",\n          \"value\": \"string\",\n          \"valueCustomId\": \"string\"\n        },\n        {\n          \"customId\": \"string\",\n          \"value\": \"string\",\n          \"valueCustomId\": \"string\"\n        }\n      ]\n    },\n    {\n      \"accountingCode\": \"430001\",\n      \"active\": false,\n      \"type\": \"banks\",\n      \"accountingName\": \"string\",\n      \"collective\": true,\n      \"additionalInfo\": {\n        \"key_0\": 8385,\n        \"key_1\": false\n      },\n      \"attributes\": [\n        {\n          \"customId\": \"string\",\n          \"value\": \"string\",\n          \"valueCustomId\": \"string\"\n        },\n        {\n          \"customId\": \"string\",\n          \"value\": \"string\",\n          \"valueCustomId\": \"string\"\n        }\n      ]\n    }\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Not Found",
+              "code": 404,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": \"0021 companyId not found\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "377f1eaf-13fa-4765-8ba1-5e70630cafe3",
+              "name": "Validation Error",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "accountingaccounts",
+                    ":companyId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "PATCH",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"data\": [\n    {\n      \"accountingCode\": \"430001\",\n      \"active\": true,\n      \"type\": \"analytics\",\n      \"accountingName\": \"string\",\n      \"collective\": true,\n      \"additionalInfo\": {\n        \"key_0\": \"string\",\n        \"key_1\": 8059\n      },\n      \"attributes\": [\n        {\n          \"customId\": \"string\",\n          \"value\": \"string\",\n          \"valueCustomId\": \"string\"\n        },\n        {\n          \"customId\": \"string\",\n          \"value\": \"string\",\n          \"valueCustomId\": \"string\"\n        }\n      ]\n    },\n    {\n      \"accountingCode\": \"430001\",\n      \"active\": false,\n      \"type\": \"banks\",\n      \"accountingName\": \"string\",\n      \"collective\": true,\n      \"additionalInfo\": {\n        \"key_0\": 8385,\n        \"key_1\": false\n      },\n      \"attributes\": [\n        {\n          \"customId\": \"string\",\n          \"value\": \"string\",\n          \"valueCustomId\": \"string\"\n        },\n        {\n          \"customId\": \"string\",\n          \"value\": \"string\",\n          \"valueCustomId\": \"string\"\n        }\n      ]\n    }\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Unprocessable Entity (WebDAV) (RFC 4918)",
+              "code": 422,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": [\n    {\n      \"loc\": [\n        \"string\",\n        \"string\"\n      ],\n      \"msg\": \"string\",\n      \"type\": \"string\",\n      \"input\": {},\n      \"ctx\": {}\n    },\n    {\n      \"loc\": [\n        \"string\",\n        \"string\"\n      ],\n      \"msg\": \"string\",\n      \"type\": \"string\",\n      \"input\": {},\n      \"ctx\": {}\n    }\n  ]\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "81f41dd2-b379-447f-9e43-4a8dfb0ad56d",
+              "name": "Unexpected error. Contact support if it persists.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "accountingaccounts",
+                    ":companyId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "PATCH",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"data\": [\n    {\n      \"accountingCode\": \"430001\",\n      \"active\": true,\n      \"type\": \"analytics\",\n      \"accountingName\": \"string\",\n      \"collective\": true,\n      \"additionalInfo\": {\n        \"key_0\": \"string\",\n        \"key_1\": 8059\n      },\n      \"attributes\": [\n        {\n          \"customId\": \"string\",\n          \"value\": \"string\",\n          \"valueCustomId\": \"string\"\n        },\n        {\n          \"customId\": \"string\",\n          \"value\": \"string\",\n          \"valueCustomId\": \"string\"\n        }\n      ]\n    },\n    {\n      \"accountingCode\": \"430001\",\n      \"active\": false,\n      \"type\": \"banks\",\n      \"accountingName\": \"string\",\n      \"collective\": true,\n      \"additionalInfo\": {\n        \"key_0\": 8385,\n        \"key_1\": false\n      },\n      \"attributes\": [\n        {\n          \"customId\": \"string\",\n          \"value\": \"string\",\n          \"valueCustomId\": \"string\"\n        },\n        {\n          \"customId\": \"string\",\n          \"value\": \"string\",\n          \"valueCustomId\": \"string\"\n        }\n      ]\n    }\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Internal Server Error",
+              "code": 500,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": \"Internal server error\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "f8127066-d1f4-467a-9948-2bae95484c56",
+          "name": "Delete accounting accounts in bulk",
+          "request": {
+            "name": "Delete accounting accounts in bulk",
+            "description": {
+              "content": "Deletes several accounting accounts in a single call, identified by `accountingCode`. Accounts are deactivated (`active` set to `false`) rather than permanently removed, and continue to appear in `GET`/list responses. The response includes an entry for every requested `accountingCode`, even ones that do not match an existing account — those are silently skipped with no error.",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "accountingaccounts",
+                ":companyId"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "<string>",
+                  "key": "companyId",
+                  "description": "(Required) "
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "DELETE",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{bearerToken}}"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"data\": [\n    {\n      \"accountingCode\": \"<string>\"\n    },\n    {\n      \"accountingCode\": \"<string>\"\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "id": "cbcaef46-04b5-46f5-8fb2-e984661eaa11",
+              "name": "Successful Response",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "accountingaccounts",
+                    ":companyId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "DELETE",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"data\": [\n    {\n      \"accountingCode\": \"430001\"\n    },\n    {\n      \"accountingCode\": \"430001\"\n    }\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"data\": [\n    {\n      \"id\": \"string\"\n    },\n    {\n      \"id\": \"string\"\n    }\n  ]\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "77faed57-9431-409b-8721-932c3f808ef8",
+              "name": "Unauthorized. The bearer token is missing, invalid or expired.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "accountingaccounts",
+                    ":companyId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "DELETE",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"data\": [\n    {\n      \"accountingCode\": \"430001\"\n    },\n    {\n      \"accountingCode\": \"430001\"\n    }\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": \"user not authorized\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "4d585b9f-b058-45e9-a2df-2141716f2e7e",
+              "name": "Not found. The requested resource or `companyId` does not exist.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "accountingaccounts",
+                    ":companyId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "DELETE",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"data\": [\n    {\n      \"accountingCode\": \"430001\"\n    },\n    {\n      \"accountingCode\": \"430001\"\n    }\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Not Found",
+              "code": 404,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": \"0021 companyId not found\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "acf84d9e-b866-4a51-beeb-54b08971ce68",
+              "name": "Validation Error",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "accountingaccounts",
+                    ":companyId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "DELETE",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"data\": [\n    {\n      \"accountingCode\": \"430001\"\n    },\n    {\n      \"accountingCode\": \"430001\"\n    }\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Unprocessable Entity (WebDAV) (RFC 4918)",
+              "code": 422,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": [\n    {\n      \"loc\": [\n        \"string\",\n        \"string\"\n      ],\n      \"msg\": \"string\",\n      \"type\": \"string\",\n      \"input\": {},\n      \"ctx\": {}\n    },\n    {\n      \"loc\": [\n        \"string\",\n        \"string\"\n      ],\n      \"msg\": \"string\",\n      \"type\": \"string\",\n      \"input\": {},\n      \"ctx\": {}\n    }\n  ]\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "0cad466d-f5e5-4663-b4a8-a8708d0c4379",
+              "name": "Unexpected error. Contact support if it persists.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "accountingaccounts",
+                    ":companyId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "DELETE",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"data\": [\n    {\n      \"accountingCode\": \"430001\"\n    },\n    {\n      \"accountingCode\": \"430001\"\n    }\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Internal Server Error",
+              "code": 500,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": \"Internal server error\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "7d325ca8-e26e-4636-a1ea-2ce4f2bd99de",
+          "name": "Retrieve accounting account",
+          "request": {
+            "name": "Retrieve accounting account",
+            "description": {
+              "content": "Returns a single accounting account by `accountingCode`, including deactivated accounts.",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "accountingaccounts",
+                ":companyId",
+                ":accountingCode"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "<string>",
+                  "key": "accountingCode",
+                  "description": "(Required) "
+                },
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "<string>",
+                  "key": "companyId",
+                  "description": "(Required) "
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{bearerToken}}"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "id": "19528925-94c3-4c0a-9ffd-e25f9d210681",
+              "name": "Successful Response",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "accountingaccounts",
+                    ":companyId",
+                    ":accountingCode"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "accountingCode",
+                      "description": "(Required) "
+                    },
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"accountingCode\": \"430001\",\n  \"companyId\": \"string\",\n  \"updatedAt\": \"2023-12-17T10:54:24.049Z\",\n  \"createdAt\": \"1958-05-17T04:36:34.840Z\",\n  \"active\": false,\n  \"type\": \"analytics\",\n  \"accountingName\": \"string\",\n  \"collective\": false,\n  \"additionalInfo\": {\n    \"key_0\": false,\n    \"key_1\": 4708,\n    \"key_2\": false\n  },\n  \"attributes\": [\n    {\n      \"customId\": \"string\",\n      \"value\": \"string\",\n      \"valueCustomId\": \"string\"\n    },\n    {\n      \"customId\": \"string\",\n      \"value\": \"string\",\n      \"valueCustomId\": \"string\"\n    }\n  ],\n  \"balance\": 6193.774721867939,\n  \"balanceDate\": \"2026-02-01T21:00:24.244Z\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "0c625c46-0e43-4be6-aa38-d08e84e1543c",
+              "name": "Unauthorized. The bearer token is missing, invalid or expired.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "accountingaccounts",
+                    ":companyId",
+                    ":accountingCode"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "accountingCode",
+                      "description": "(Required) "
+                    },
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": \"user not authorized\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "dea4753c-37c8-4c91-b33e-1b8ac17824d6",
+              "name": "Company not found, or no accounting account matches the given `accountingCode`.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "accountingaccounts",
+                    ":companyId",
+                    ":accountingCode"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "accountingCode",
+                      "description": "(Required) "
+                    },
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "Not Found",
+              "code": 404,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": \"0021 companyId not found\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "4c99779e-6f63-4ffd-8073-a43cbe9d90b3",
+              "name": "Validation Error",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "accountingaccounts",
+                    ":companyId",
+                    ":accountingCode"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "accountingCode",
+                      "description": "(Required) "
+                    },
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "Unprocessable Entity (WebDAV) (RFC 4918)",
+              "code": 422,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": [\n    {\n      \"loc\": [\n        \"string\",\n        \"string\"\n      ],\n      \"msg\": \"string\",\n      \"type\": \"string\",\n      \"input\": {},\n      \"ctx\": {}\n    },\n    {\n      \"loc\": [\n        \"string\",\n        \"string\"\n      ],\n      \"msg\": \"string\",\n      \"type\": \"string\",\n      \"input\": {},\n      \"ctx\": {}\n    }\n  ]\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "d78ddd0e-2974-4e31-a59b-311d2caf3643",
+          "name": "Update accounting account",
+          "request": {
+            "name": "Update accounting account",
+            "description": {
+              "content": "Updates the active status, type, name, collective flag, additional info or attributes of an accounting account identified by `accountingCode`. Updating an `accountingCode` that does not match any existing account returns `200` without creating or changing anything — no `404` is raised. Sending an empty `additionalInfo` object leaves any previously stored metadata unchanged. Entries in `attributes` with an empty or missing `customId` or `value` are silently discarded.",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "accountingaccounts",
+                ":companyId",
+                ":accountingCode"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "<string>",
+                  "key": "accountingCode",
+                  "description": "(Required) "
+                },
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "<string>",
+                  "key": "companyId",
+                  "description": "(Required) "
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "PATCH",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{bearerToken}}"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"active\": \"<boolean>\",\n  \"type\": \"<string>\",\n  \"accountingName\": \"<string>\",\n  \"collective\": \"<boolean>\",\n  \"additionalInfo\": {\n    \"key_0\": false,\n    \"key_1\": true,\n    \"key_2\": 1560.289164399017\n  },\n  \"attributes\": [\n    {\n      \"customId\": \"<string>\",\n      \"value\": \"<string>\",\n      \"valueCustomId\": \"<string>\"\n    },\n    {\n      \"customId\": \"<string>\",\n      \"value\": \"<string>\",\n      \"valueCustomId\": \"<string>\"\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "id": "4ed36c69-407d-40a8-ae48-e64662531f70",
+              "name": "Successful Response",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "accountingaccounts",
+                    ":companyId",
+                    ":accountingCode"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "accountingCode",
+                      "description": "(Required) "
+                    },
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "PATCH",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"active\": \"<boolean>\",\n  \"type\": \"accountings\",\n  \"accountingName\": \"<string>\",\n  \"collective\": \"<boolean>\",\n  \"additionalInfo\": {\n    \"key_0\": 6529.21890989081\n  },\n  \"attributes\": [\n    {\n      \"customId\": \"string\",\n      \"value\": \"string\",\n      \"valueCustomId\": \"string\"\n    },\n    {\n      \"customId\": \"string\",\n      \"value\": \"string\",\n      \"valueCustomId\": \"string\"\n    }\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"id\": \"string\",\n  \"accountingCode\": \"430001\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "5da24be3-f340-4366-b4b0-5410ec0eecda",
+              "name": "Unauthorized. The bearer token is missing, invalid or expired.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "accountingaccounts",
+                    ":companyId",
+                    ":accountingCode"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "accountingCode",
+                      "description": "(Required) "
+                    },
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "PATCH",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"active\": \"<boolean>\",\n  \"type\": \"accountings\",\n  \"accountingName\": \"<string>\",\n  \"collective\": \"<boolean>\",\n  \"additionalInfo\": {\n    \"key_0\": 6529.21890989081\n  },\n  \"attributes\": [\n    {\n      \"customId\": \"string\",\n      \"value\": \"string\",\n      \"valueCustomId\": \"string\"\n    },\n    {\n      \"customId\": \"string\",\n      \"value\": \"string\",\n      \"valueCustomId\": \"string\"\n    }\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": \"user not authorized\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "6fb4803b-0db7-452a-a88c-55c81a8b5d15",
+              "name": "Not found. The requested resource or `companyId` does not exist.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "accountingaccounts",
+                    ":companyId",
+                    ":accountingCode"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "accountingCode",
+                      "description": "(Required) "
+                    },
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "PATCH",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"active\": \"<boolean>\",\n  \"type\": \"accountings\",\n  \"accountingName\": \"<string>\",\n  \"collective\": \"<boolean>\",\n  \"additionalInfo\": {\n    \"key_0\": 6529.21890989081\n  },\n  \"attributes\": [\n    {\n      \"customId\": \"string\",\n      \"value\": \"string\",\n      \"valueCustomId\": \"string\"\n    },\n    {\n      \"customId\": \"string\",\n      \"value\": \"string\",\n      \"valueCustomId\": \"string\"\n    }\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Not Found",
+              "code": 404,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": \"0021 companyId not found\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "05391e8c-30d1-468f-8afd-f45067d94c46",
+              "name": "Validation Error",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "accountingaccounts",
+                    ":companyId",
+                    ":accountingCode"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "accountingCode",
+                      "description": "(Required) "
+                    },
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "PATCH",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"active\": \"<boolean>\",\n  \"type\": \"accountings\",\n  \"accountingName\": \"<string>\",\n  \"collective\": \"<boolean>\",\n  \"additionalInfo\": {\n    \"key_0\": 6529.21890989081\n  },\n  \"attributes\": [\n    {\n      \"customId\": \"string\",\n      \"value\": \"string\",\n      \"valueCustomId\": \"string\"\n    },\n    {\n      \"customId\": \"string\",\n      \"value\": \"string\",\n      \"valueCustomId\": \"string\"\n    }\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Unprocessable Entity (WebDAV) (RFC 4918)",
+              "code": 422,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": [\n    {\n      \"loc\": [\n        \"string\",\n        \"string\"\n      ],\n      \"msg\": \"string\",\n      \"type\": \"string\",\n      \"input\": {},\n      \"ctx\": {}\n    },\n    {\n      \"loc\": [\n        \"string\",\n        \"string\"\n      ],\n      \"msg\": \"string\",\n      \"type\": \"string\",\n      \"input\": {},\n      \"ctx\": {}\n    }\n  ]\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "170d3fb2-a5c4-41af-becc-5f83bbcf2054",
+              "name": "Unexpected error. Contact support if it persists.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "accountingaccounts",
+                    ":companyId",
+                    ":accountingCode"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "accountingCode",
+                      "description": "(Required) "
+                    },
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "PATCH",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"active\": \"<boolean>\",\n  \"type\": \"accountings\",\n  \"accountingName\": \"<string>\",\n  \"collective\": \"<boolean>\",\n  \"additionalInfo\": {\n    \"key_0\": 6529.21890989081\n  },\n  \"attributes\": [\n    {\n      \"customId\": \"string\",\n      \"value\": \"string\",\n      \"valueCustomId\": \"string\"\n    },\n    {\n      \"customId\": \"string\",\n      \"value\": \"string\",\n      \"valueCustomId\": \"string\"\n    }\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Internal Server Error",
+              "code": 500,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": \"Internal server error\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "299c7d52-20a2-4246-8e7d-2e9d08e71c52",
+          "name": "Delete accounting account",
+          "request": {
+            "name": "Delete accounting account",
+            "description": {
+              "content": "Deletes an accounting account by `accountingCode`. The account is deactivated (`active` set to `false`) rather than permanently removed, and continues to appear in `GET`/list responses. Deleting an `accountingCode` that does not match any existing account still returns `200` without error.",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "accountingaccounts",
+                ":companyId",
+                ":accountingCode"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "<string>",
+                  "key": "accountingCode",
+                  "description": "(Required) "
+                },
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "<string>",
+                  "key": "companyId",
+                  "description": "(Required) "
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "DELETE",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{bearerToken}}"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "id": "57cf6405-9777-4bc3-be25-9c24fe49d7c4",
+              "name": "Successful Response",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "accountingaccounts",
+                    ":companyId",
+                    ":accountingCode"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "accountingCode",
+                      "description": "(Required) "
+                    },
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "DELETE",
+                "body": {}
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"id\": \"string\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "2daecf31-954f-4e11-81f5-d3112d7b9005",
+              "name": "Unauthorized. The bearer token is missing, invalid or expired.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "accountingaccounts",
+                    ":companyId",
+                    ":accountingCode"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "accountingCode",
+                      "description": "(Required) "
+                    },
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "DELETE",
+                "body": {}
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": \"user not authorized\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "b2b90941-1a55-4c37-af12-0a299476c630",
+              "name": "Not found. The requested resource or `companyId` does not exist.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "accountingaccounts",
+                    ":companyId",
+                    ":accountingCode"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "accountingCode",
+                      "description": "(Required) "
+                    },
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "DELETE",
+                "body": {}
+              },
+              "status": "Not Found",
+              "code": 404,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": \"0021 companyId not found\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "97a91b0e-3a39-4624-9867-8ea7082ebbc7",
+              "name": "Validation Error",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "accountingaccounts",
+                    ":companyId",
+                    ":accountingCode"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "accountingCode",
+                      "description": "(Required) "
+                    },
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "DELETE",
+                "body": {}
+              },
+              "status": "Unprocessable Entity (WebDAV) (RFC 4918)",
+              "code": 422,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": [\n    {\n      \"loc\": [\n        \"string\",\n        \"string\"\n      ],\n      \"msg\": \"string\",\n      \"type\": \"string\",\n      \"input\": {},\n      \"ctx\": {}\n    },\n    {\n      \"loc\": [\n        \"string\",\n        \"string\"\n      ],\n      \"msg\": \"string\",\n      \"type\": \"string\",\n      \"input\": {},\n      \"ctx\": {}\n    }\n  ]\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "a8bde38f-f353-4bd8-a771-6ce7d7d81918",
+              "name": "Unexpected error. Contact support if it persists.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "accountingaccounts",
+                    ":companyId",
+                    ":accountingCode"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "accountingCode",
+                      "description": "(Required) "
+                    },
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "DELETE",
+                "body": {}
+              },
+              "status": "Internal Server Error",
+              "code": 500,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": \"Internal server error\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "311a3957-f027-48d3-9aaa-f908954e79f8",
+          "name": "Create accounting accounts in bulk",
+          "request": {
+            "name": "Create accounting accounts in bulk",
+            "description": {
+              "content": "Creates several accounting accounts in a single call, following the same rules as the single account creation endpoint. Entries sharing the same `accountingCode` within the request are deduplicated and only the first occurrence is processed.",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "accountingaccounts",
+                ":companyId",
+                "bulk"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "<string>",
+                  "key": "companyId",
+                  "description": "(Required) "
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "POST",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{bearerToken}}"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"data\": [\n    {\n      \"accountingCode\": \"<string>\",\n      \"active\": \"<boolean>\",\n      \"type\": \"<string>\",\n      \"accountingName\": \"<string>\",\n      \"collective\": \"<boolean>\",\n      \"additionalInfo\": {\n        \"key_0\": 6528\n      },\n      \"attributes\": [\n        {\n          \"customId\": \"<string>\",\n          \"value\": \"<string>\",\n          \"valueCustomId\": \"<string>\"\n        },\n        {\n          \"customId\": \"<string>\",\n          \"value\": \"<string>\",\n          \"valueCustomId\": \"<string>\"\n        }\n      ]\n    },\n    {\n      \"accountingCode\": \"<string>\",\n      \"active\": \"<boolean>\",\n      \"type\": \"<string>\",\n      \"accountingName\": \"<string>\",\n      \"collective\": \"<boolean>\",\n      \"additionalInfo\": {\n        \"key_0\": false,\n        \"key_1\": 4150,\n        \"key_2\": 6900\n      },\n      \"attributes\": [\n        {\n          \"customId\": \"<string>\",\n          \"value\": \"<string>\",\n          \"valueCustomId\": \"<string>\"\n        },\n        {\n          \"customId\": \"<string>\",\n          \"value\": \"<string>\",\n          \"valueCustomId\": \"<string>\"\n        }\n      ]\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "id": "38abbc32-3210-43e1-8291-095f270d10e0",
+              "name": "Successful Response",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "accountingaccounts",
+                    ":companyId",
+                    "bulk"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"data\": [\n    {\n      \"accountingCode\": \"430001\",\n      \"active\": false,\n      \"type\": \"analytics\",\n      \"accountingName\": \"string\",\n      \"collective\": true,\n      \"additionalInfo\": {\n        \"key_0\": 4236.836349175513\n      },\n      \"attributes\": [\n        {\n          \"customId\": \"string\",\n          \"value\": \"string\",\n          \"valueCustomId\": \"string\"\n        },\n        {\n          \"customId\": \"string\",\n          \"value\": \"string\",\n          \"valueCustomId\": \"string\"\n        }\n      ]\n    },\n    {\n      \"accountingCode\": \"430001\",\n      \"active\": true,\n      \"type\": \"accountings\",\n      \"accountingName\": \"string\",\n      \"collective\": false,\n      \"additionalInfo\": {\n        \"key_0\": true\n      },\n      \"attributes\": [\n        {\n          \"customId\": \"string\",\n          \"value\": \"string\",\n          \"valueCustomId\": \"string\"\n        },\n        {\n          \"customId\": \"string\",\n          \"value\": \"string\",\n          \"valueCustomId\": \"string\"\n        }\n      ]\n    }\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"data\": [\n    {\n      \"id\": \"string\",\n      \"accountingCode\": \"430001\"\n    },\n    {\n      \"id\": \"string\",\n      \"accountingCode\": \"430001\"\n    }\n  ]\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "9897ff98-4744-44f7-a18c-36c6f488ab04",
+              "name": "Unauthorized. The bearer token is missing, invalid or expired.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "accountingaccounts",
+                    ":companyId",
+                    "bulk"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"data\": [\n    {\n      \"accountingCode\": \"430001\",\n      \"active\": false,\n      \"type\": \"analytics\",\n      \"accountingName\": \"string\",\n      \"collective\": true,\n      \"additionalInfo\": {\n        \"key_0\": 4236.836349175513\n      },\n      \"attributes\": [\n        {\n          \"customId\": \"string\",\n          \"value\": \"string\",\n          \"valueCustomId\": \"string\"\n        },\n        {\n          \"customId\": \"string\",\n          \"value\": \"string\",\n          \"valueCustomId\": \"string\"\n        }\n      ]\n    },\n    {\n      \"accountingCode\": \"430001\",\n      \"active\": true,\n      \"type\": \"accountings\",\n      \"accountingName\": \"string\",\n      \"collective\": false,\n      \"additionalInfo\": {\n        \"key_0\": true\n      },\n      \"attributes\": [\n        {\n          \"customId\": \"string\",\n          \"value\": \"string\",\n          \"valueCustomId\": \"string\"\n        },\n        {\n          \"customId\": \"string\",\n          \"value\": \"string\",\n          \"valueCustomId\": \"string\"\n        }\n      ]\n    }\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": \"user not authorized\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "48fecf9d-917c-4725-9a78-d6d11342efb2",
+              "name": "Not found. The requested resource or `companyId` does not exist.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "accountingaccounts",
+                    ":companyId",
+                    "bulk"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"data\": [\n    {\n      \"accountingCode\": \"430001\",\n      \"active\": false,\n      \"type\": \"analytics\",\n      \"accountingName\": \"string\",\n      \"collective\": true,\n      \"additionalInfo\": {\n        \"key_0\": 4236.836349175513\n      },\n      \"attributes\": [\n        {\n          \"customId\": \"string\",\n          \"value\": \"string\",\n          \"valueCustomId\": \"string\"\n        },\n        {\n          \"customId\": \"string\",\n          \"value\": \"string\",\n          \"valueCustomId\": \"string\"\n        }\n      ]\n    },\n    {\n      \"accountingCode\": \"430001\",\n      \"active\": true,\n      \"type\": \"accountings\",\n      \"accountingName\": \"string\",\n      \"collective\": false,\n      \"additionalInfo\": {\n        \"key_0\": true\n      },\n      \"attributes\": [\n        {\n          \"customId\": \"string\",\n          \"value\": \"string\",\n          \"valueCustomId\": \"string\"\n        },\n        {\n          \"customId\": \"string\",\n          \"value\": \"string\",\n          \"valueCustomId\": \"string\"\n        }\n      ]\n    }\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Not Found",
+              "code": 404,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": \"0021 companyId not found\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "1be16ede-c383-4b4b-b207-812908b59992",
+              "name": "Validation Error",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "accountingaccounts",
+                    ":companyId",
+                    "bulk"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"data\": [\n    {\n      \"accountingCode\": \"430001\",\n      \"active\": false,\n      \"type\": \"analytics\",\n      \"accountingName\": \"string\",\n      \"collective\": true,\n      \"additionalInfo\": {\n        \"key_0\": 4236.836349175513\n      },\n      \"attributes\": [\n        {\n          \"customId\": \"string\",\n          \"value\": \"string\",\n          \"valueCustomId\": \"string\"\n        },\n        {\n          \"customId\": \"string\",\n          \"value\": \"string\",\n          \"valueCustomId\": \"string\"\n        }\n      ]\n    },\n    {\n      \"accountingCode\": \"430001\",\n      \"active\": true,\n      \"type\": \"accountings\",\n      \"accountingName\": \"string\",\n      \"collective\": false,\n      \"additionalInfo\": {\n        \"key_0\": true\n      },\n      \"attributes\": [\n        {\n          \"customId\": \"string\",\n          \"value\": \"string\",\n          \"valueCustomId\": \"string\"\n        },\n        {\n          \"customId\": \"string\",\n          \"value\": \"string\",\n          \"valueCustomId\": \"string\"\n        }\n      ]\n    }\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Unprocessable Entity (WebDAV) (RFC 4918)",
+              "code": 422,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": [\n    {\n      \"loc\": [\n        \"string\",\n        \"string\"\n      ],\n      \"msg\": \"string\",\n      \"type\": \"string\",\n      \"input\": {},\n      \"ctx\": {}\n    },\n    {\n      \"loc\": [\n        \"string\",\n        \"string\"\n      ],\n      \"msg\": \"string\",\n      \"type\": \"string\",\n      \"input\": {},\n      \"ctx\": {}\n    }\n  ]\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "61a1185b-a4e6-4729-8d54-c5868a79480d",
+              "name": "Unexpected error. Contact support if it persists.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "accountingaccounts",
+                    ":companyId",
+                    "bulk"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"data\": [\n    {\n      \"accountingCode\": \"430001\",\n      \"active\": false,\n      \"type\": \"analytics\",\n      \"accountingName\": \"string\",\n      \"collective\": true,\n      \"additionalInfo\": {\n        \"key_0\": 4236.836349175513\n      },\n      \"attributes\": [\n        {\n          \"customId\": \"string\",\n          \"value\": \"string\",\n          \"valueCustomId\": \"string\"\n        },\n        {\n          \"customId\": \"string\",\n          \"value\": \"string\",\n          \"valueCustomId\": \"string\"\n        }\n      ]\n    },\n    {\n      \"accountingCode\": \"430001\",\n      \"active\": true,\n      \"type\": \"accountings\",\n      \"accountingName\": \"string\",\n      \"collective\": false,\n      \"additionalInfo\": {\n        \"key_0\": true\n      },\n      \"attributes\": [\n        {\n          \"customId\": \"string\",\n          \"value\": \"string\",\n          \"valueCustomId\": \"string\"\n        },\n        {\n          \"customId\": \"string\",\n          \"value\": \"string\",\n          \"valueCustomId\": \"string\"\n        }\n      ]\n    }\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Internal Server Error",
+              "code": 500,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": \"Internal server error\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        }
+      ],
+      "event": []
+    }
+  ],
+  "event": [],
+  "variable": [
+    {
+      "type": "string",
+      "value": "/",
+      "key": "baseUrl"
+    }
+  ],
+  "info": {
+    "_postman_id": "286f7fb7-0e8f-4920-9076-d7ddb1b9af2b",
+    "name": "Embat AccountingAccounts API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": {
+      "content": "Embat API enables connections between any third party application and Embat. Is organized around REST principles, using HTTP responses code and returning data in JSON format. While testing the API, you have to request **sandbox credentials**.\n\nContact Support:\n Name: API Support\n Email: tech@embat.io",
+      "type": "text/plain"
+    }
+  }
+}

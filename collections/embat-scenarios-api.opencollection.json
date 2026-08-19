@@ -1,0 +1,67 @@
+{
+  "opencollection": "1.0.0",
+  "info": {
+    "name": "Embat AccountingAccounts Scenarios API",
+    "version": "2.120.3"
+  },
+  "items": [
+    {
+      "info": {
+        "name": "Scenarios",
+        "type": "folder"
+      },
+      "items": [
+        {
+          "info": {
+            "name": "List scenarios",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "{{baseUrl}}/scenarios/:companyId",
+            "params": [
+              {
+                "name": "companyId",
+                "value": "",
+                "type": "path"
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Returns the published forecasting scenarios of a company. Scenarios that have not been published are not included. Results are not paginated."
+        },
+        {
+          "info": {
+            "name": "Retrieve scenario",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "{{baseUrl}}/scenarios/:companyId/:id",
+            "params": [
+              {
+                "name": "id",
+                "value": "",
+                "type": "path"
+              },
+              {
+                "name": "companyId",
+                "value": "",
+                "type": "path"
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Returns a single forecasting scenario by its Embat ID."
+        }
+      ]
+    }
+  ],
+  "bundled": true
+}

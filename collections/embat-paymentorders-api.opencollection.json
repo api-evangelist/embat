@@ -1,0 +1,104 @@
+{
+  "opencollection": "1.0.0",
+  "info": {
+    "name": "Embat AccountingAccounts PaymentOrders API",
+    "version": "2.120.3"
+  },
+  "items": [
+    {
+      "info": {
+        "name": "PaymentOrders",
+        "type": "folder"
+      },
+      "items": [
+        {
+          "info": {
+            "name": "List payment orders",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "{{baseUrl}}/paymentorders/:companyId",
+            "params": [
+              {
+                "name": "companyId",
+                "value": "",
+                "type": "path"
+              },
+              {
+                "name": "startPaymentDate",
+                "value": "",
+                "type": "query",
+                "description": "Only return payment orders executed on or after this date. If given without `endPaymentDate`, `endPaymentDate` defaults to now."
+              },
+              {
+                "name": "endPaymentDate",
+                "value": "",
+                "type": "query",
+                "description": "Only return payment orders executed up to this date. If given without `startPaymentDate`, `startPaymentDate` defaults to 6 months before `endPaymentDate`."
+              },
+              {
+                "name": "status",
+                "value": "",
+                "type": "query",
+                "description": "Filter by payment order execution status."
+              },
+              {
+                "name": "beneficiaryLegalNameContains",
+                "value": "",
+                "type": "query",
+                "description": "Filter payment orders whose beneficiary legal name contains this text."
+              },
+              {
+                "name": "documentIdContains",
+                "value": "",
+                "type": "query",
+                "description": "Filter payment orders whose `documentId` contains this text."
+              },
+              {
+                "name": "limit",
+                "value": "",
+                "type": "query",
+                "description": "Maximum number of payment orders to return per page. Defaults to 200, which is also the maximum allowed value."
+              },
+              {
+                "name": "nextPageToken",
+                "value": "",
+                "type": "query",
+                "description": "Token to fetch the next page of results, returned by a previous call to this endpoint. An invalid token returns a `404` error."
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Returns the payment orders of a company, ordered by execution date (most recent first). Results are paginated: use `limit` to control page size and pass the returned `nextPageToken` to fetch the next page; `nextPageToken` is `null` once the last page has been reached. `startPaymentDate`/`endPaymentDate` filter by execution date. If only one of the two is given, the other defaults: `endPaymentDate` defaults to now, and `startPaymentDate` defaults to 6 months before `endPaymentDate`. If neither is"
+        },
+        {
+          "info": {
+            "name": "Download payment order receipt",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "{{baseUrl}}/paymentorders/:id/receipt",
+            "params": [
+              {
+                "name": "id",
+                "value": "",
+                "type": "path"
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Downloads the PDF receipt of a payment order by its Embat `id`. This endpoint is not scoped by `companyId`: authorization is checked per payment order, and callers without access to it receive a `403`. Errors are reported with the same status code and message returned while retrieving the receipt, which may include statuses other than the ones listed here."
+        }
+      ]
+    }
+  ],
+  "bundled": true
+}

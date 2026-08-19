@@ -1,0 +1,33 @@
+{
+  "opencollection": "1.0.0",
+  "info": {
+    "name": "Embat AccountingAccounts Authentication API",
+    "version": "2.120.3"
+  },
+  "items": [
+    {
+      "info": {
+        "name": "Authentication",
+        "type": "folder"
+      },
+      "items": [
+        {
+          "info": {
+            "name": "Generate access token",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "{{baseUrl}}/authentication/token",
+            "body": {
+              "type": "json",
+              "data": "{}"
+            }
+          },
+          "docs": "Authenticates with `email`/`password` and returns a JWT `idToken` to use as a Bearer token in the `Authorization` header for every other request. The token expires 60 minutes after issuance; call this endpoint again with the same credentials to obtain a new one — there is no separate refresh endpoint. If `email` or `password` is missing or malformed, the validation error response never echoes back the submitted values."
+        }
+      ]
+    }
+  ],
+  "bundled": true
+}

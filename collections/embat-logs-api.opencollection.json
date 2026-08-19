@@ -1,0 +1,70 @@
+{
+  "opencollection": "1.0.0",
+  "info": {
+    "name": "Embat AccountingAccounts Logs API",
+    "version": "2.120.3"
+  },
+  "items": [
+    {
+      "info": {
+        "name": "Logs",
+        "type": "folder"
+      },
+      "items": [
+        {
+          "info": {
+            "name": "Create log",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "{{baseUrl}}/logs/:companyId",
+            "params": [
+              {
+                "name": "companyId",
+                "value": "",
+                "type": "path"
+              }
+            ],
+            "body": {
+              "type": "json",
+              "data": "{}"
+            },
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Reports a single execution event, warning or error observed by your integration while interacting with the Embat API, so Embat's support team can diagnose integration issues. Log delivery is best-effort: the endpoint returns `204` as soon as the request is accepted, and any failure while recording the log afterwards is not reported back to the caller."
+        },
+        {
+          "info": {
+            "name": "Create logs in bulk",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "{{baseUrl}}/logs/:companyId/bulk",
+            "params": [
+              {
+                "name": "companyId",
+                "value": "",
+                "type": "path"
+              }
+            ],
+            "body": {
+              "type": "json",
+              "data": "{}"
+            },
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Reports several log entries in a single call, following the same rules as the single log creation endpoint. Each entry is processed independently, so a failure recording one log does not affect the others. Log delivery is best-effort: the endpoint returns `204` as soon as the request is accepted, regardless of the outcome of recording any individual entry."
+        }
+      ]
+    }
+  ],
+  "bundled": true
+}

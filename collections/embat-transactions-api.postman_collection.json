@@ -1,0 +1,2083 @@
+{
+  "item": [
+    {
+      "id": "b5306647-1214-400b-8871-23056ad6dfad",
+      "name": "Transactions",
+      "description": {
+        "content": "`Transaction` represents a movement recorded on one of your bank accounts (`Product`). Each transaction reports the balance of its product immediately after the movement, and can carry a classification (`type`), a breakdown across `Categories` for reporting, custom `Attributes`, and the IDs of any reconciliations it is part of.\n\nTransactions are the bank side of the money movements Embat tracks: `Payments` link a transaction to the `Operations` (invoices/bills) it settles, and accounting entries reconcile it against your ledger. Transactions are generated automatically as your bank accounts (`Products`) are connected to Embat; the only way to create transactions through this API is for products classified as \"Manual\" (accounts with no bank connection), via the bulk creation endpoint below.\n\n**Typical flow:** transactions synchronize in one direction, from Embat to your ERP.\n\n1. **Read transactions generated in Embat.** Periodically pull the transactions pending on your side with `GET /transactions/{companyId}`, using the `sync` filter (transactions not yet synchronized) and `startUpdatedAt`/`endUpdatedAt` for incremental reads since your last poll.\n2. **Confirm them back.** Once a transaction has been recorded in your ERP, mark it as synchronized with `PATCH /transactions/{companyId}/{id}` (or the bulk variant `PATCH /transactions/{companyId}`).\n3. **Manual accounts only.** For products classified as Manual, record their transactions yourself with `POST /transactions/{companyId}/{productId}/bulk`. See that endpoint's description for how it replaces same-day transactions.\n",
+        "type": "text/plain"
+      },
+      "item": [
+        {
+          "id": "0d5deb14-41f0-4667-b51a-1018786edd29",
+          "name": "List transactions",
+          "request": {
+            "name": "List transactions",
+            "description": {
+              "content": "Returns the bank transactions of a company. Results are paginated: use `limit` to control page size and pass the returned `nextPageToken` to fetch the next page. `startValueDate`/`endValueDate` filter by value date, `startOperationDate`/`endOperationDate` filter by the date the transaction was booked, and `startUpdatedAt`/`endUpdatedAt` filter by last modification time, which is useful for incremental synchronization. Each start bound is inclusive and each end bound is exclusive. Transactions marked as hidden, or whose product no longer exists, are excluded from the results.",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "transactions",
+                ":companyId"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [
+                {
+                  "disabled": false,
+                  "key": "productId",
+                  "value": "<string>",
+                  "description": "Filter transactions belonging to a given product (`productId`)."
+                },
+                {
+                  "disabled": false,
+                  "key": "sync",
+                  "value": "<boolean>",
+                  "description": "Filter by synchronization status with your ERP. `false` also matches transactions where the value is not set."
+                },
+                {
+                  "disabled": false,
+                  "key": "startValueDate",
+                  "value": "<date>",
+                  "description": "Only return transactions whose value date is on or after this date (inclusive). Cannot be later than `endValueDate`, and cannot be in the future when used without `endValueDate`."
+                },
+                {
+                  "disabled": false,
+                  "key": "endValueDate",
+                  "value": "<date>",
+                  "description": "Only return transactions whose value date is before this date (exclusive)."
+                },
+                {
+                  "disabled": false,
+                  "key": "startOperationDate",
+                  "value": "<date>",
+                  "description": "Only return transactions booked on or after this date (inclusive). Cannot be later than `endOperationDate`, and cannot be in the future when used without `endOperationDate`."
+                },
+                {
+                  "disabled": false,
+                  "key": "endOperationDate",
+                  "value": "<date>",
+                  "description": "Only return transactions booked before this date (exclusive)."
+                },
+                {
+                  "disabled": false,
+                  "key": "startUpdatedAt",
+                  "value": "<dateTime>",
+                  "description": "Only return transactions last modified on or after this timestamp (inclusive). Cannot be later than `endUpdatedAt`, and cannot be in the future when used without `endUpdatedAt`."
+                },
+                {
+                  "disabled": false,
+                  "key": "endUpdatedAt",
+                  "value": "<dateTime>",
+                  "description": "Only return transactions last modified before this timestamp (exclusive)."
+                },
+                {
+                  "disabled": false,
+                  "key": "limit",
+                  "value": "500",
+                  "description": "Maximum number of objects to return in the response. Default 500, maximum 2000."
+                },
+                {
+                  "disabled": false,
+                  "key": "nextPageToken",
+                  "value": "<string>",
+                  "description": "Token to fetch the next page of results, taken from the `nextPageToken` returned by the previous request with the same filters. Omit it to fetch the first page. An invalid or malformed token is rejected with `404`."
+                }
+              ],
+              "variable": [
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "<string>",
+                  "key": "companyId",
+                  "description": "(Required) "
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{bearerToken}}"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "id": "027b64d3-4833-44cc-8847-4603558be7e5",
+              "name": "Successful Response",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "transactions",
+                    ":companyId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "productId",
+                      "value": "<string>"
+                    },
+                    {
+                      "key": "sync",
+                      "value": "<boolean>"
+                    },
+                    {
+                      "key": "startValueDate",
+                      "value": "<date>"
+                    },
+                    {
+                      "key": "endValueDate",
+                      "value": "<date>"
+                    },
+                    {
+                      "key": "startOperationDate",
+                      "value": "<date>"
+                    },
+                    {
+                      "key": "endOperationDate",
+                      "value": "<date>"
+                    },
+                    {
+                      "key": "startUpdatedAt",
+                      "value": "<dateTime>"
+                    },
+                    {
+                      "key": "endUpdatedAt",
+                      "value": "<dateTime>"
+                    },
+                    {
+                      "key": "limit",
+                      "value": "500"
+                    },
+                    {
+                      "key": "nextPageToken",
+                      "value": "<string>"
+                    }
+                  ],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"data\": [\n    {\n      \"id\": \"string\",\n      \"balance\": 8439.36774623597,\n      \"operationDate\": \"1972-07-28T12:57:12.794Z\",\n      \"valueDate\": \"2007-07-31T15:22:02.228Z\",\n      \"updatedAt\": \"2014-05-21T00:20:38.893Z\",\n      \"createdAt\": \"1996-09-20T02:02:23.503Z\",\n      \"companyId\": \"string\",\n      \"additionalInfo\": {},\n      \"bank\": \"string\",\n      \"concept\": \"string\",\n      \"amount\": 218.97470139815135,\n      \"accountingAmount\": 8118.081243553941,\n      \"exchangeRate\": 629.914260822716,\n      \"accountingCurrency\": \"DOP\",\n      \"reconciled\": false,\n      \"status\": \"BOOKED\",\n      \"product\": {\n        \"id\": \"prod_8f3a1c\",\n        \"currency\": \"EUR\",\n        \"product\": \"Cuenta Corriente\",\n        \"bankFullName\": \"string\",\n        \"alias\": \"string\"\n      },\n      \"sync\": false,\n      \"attributes\": [\n        {\n          \"customId\": \"cost-center\",\n          \"value\": \"Marketing\",\n          \"valueCustomId\": \"string\",\n          \"parentCustomId\": \"string\"\n        },\n        {\n          \"customId\": \"cost-center\",\n          \"value\": \"Marketing\",\n          \"valueCustomId\": \"string\",\n          \"parentCustomId\": \"string\"\n        }\n      ],\n      \"categories\": [\n        {\n          \"categoryId\": \"string\",\n          \"value\": 8846.551223105891\n        },\n        {\n          \"categoryId\": \"string\",\n          \"value\": 9562.900106039528\n        }\n      ],\n      \"tags\": [\n        \"string\",\n        \"string\"\n      ],\n      \"groupAmount\": 4139.036695777869,\n      \"groupExchangeRate\": 3489.795702009573,\n      \"groupCurrency\": \"MDL\",\n      \"currencyExchangeData\": {\n        \"originalAmount\": 2771.1840924484277,\n        \"originalCurrency\": \"TWD\",\n        \"grossAmount\": 4353.276977900581,\n        \"fees\": 9406.63268501817\n      },\n      \"comment\": \"string\",\n      \"reconciliationsIds\": [\n        \"string\",\n        \"string\"\n      ],\n      \"type\": \"tax\"\n    },\n    {\n      \"id\": \"string\",\n      \"balance\": 1732.497034285716,\n      \"operationDate\": \"2013-11-15T03:03:21.620Z\",\n      \"valueDate\": \"1948-01-21T20:58:09.684Z\",\n      \"updatedAt\": \"2010-03-05T01:18:44.980Z\",\n      \"createdAt\": \"1988-11-09T03:02:14.225Z\",\n      \"companyId\": \"string\",\n      \"additionalInfo\": {},\n      \"bank\": \"string\",\n      \"concept\": \"string\",\n      \"amount\": 7992.6453195059785,\n      \"accountingAmount\": 9964.169493257998,\n      \"exchangeRate\": 6651.198121384166,\n      \"accountingCurrency\": \"XSU\",\n      \"reconciled\": false,\n      \"status\": \"PENDING\",\n      \"product\": {\n        \"id\": \"prod_8f3a1c\",\n        \"currency\": \"EUR\",\n        \"product\": \"Cuenta Corriente\",\n        \"bankFullName\": \"string\",\n        \"alias\": \"string\"\n      },\n      \"sync\": false,\n      \"attributes\": [\n        {\n          \"customId\": \"cost-center\",\n          \"value\": \"Marketing\",\n          \"valueCustomId\": \"string\",\n          \"parentCustomId\": \"string\"\n        },\n        {\n          \"customId\": \"cost-center\",\n          \"value\": \"Marketing\",\n          \"valueCustomId\": \"string\",\n          \"parentCustomId\": \"string\"\n        }\n      ],\n      \"categories\": [\n        {\n          \"categoryId\": \"string\",\n          \"value\": 8911.693481124703\n        },\n        {\n          \"categoryId\": \"string\",\n          \"value\": 867.4246127992102\n        }\n      ],\n      \"tags\": [\n        \"string\",\n        \"string\"\n      ],\n      \"groupAmount\": 4372.586858719743,\n      \"groupExchangeRate\": 3423.4706111972023,\n      \"groupCurrency\": \"SYP\",\n      \"currencyExchangeData\": {\n        \"originalAmount\": 7020.1955535253455,\n        \"originalCurrency\": \"TTD\",\n        \"grossAmount\": 2846.820776826141,\n        \"fees\": 1264.0598947320436\n      },\n      \"comment\": \"string\",\n      \"reconciliationsIds\": [\n        \"string\",\n        \"string\"\n      ],\n      \"type\": \"pos_withdrawal\"\n    }\n  ],\n  \"nextPageToken\": \"string\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "efee9862-b253-498a-9ac3-a966ba04fda6",
+              "name": "Unauthorized. The bearer token is missing, invalid or expired.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "transactions",
+                    ":companyId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "productId",
+                      "value": "<string>"
+                    },
+                    {
+                      "key": "sync",
+                      "value": "<boolean>"
+                    },
+                    {
+                      "key": "startValueDate",
+                      "value": "<date>"
+                    },
+                    {
+                      "key": "endValueDate",
+                      "value": "<date>"
+                    },
+                    {
+                      "key": "startOperationDate",
+                      "value": "<date>"
+                    },
+                    {
+                      "key": "endOperationDate",
+                      "value": "<date>"
+                    },
+                    {
+                      "key": "startUpdatedAt",
+                      "value": "<dateTime>"
+                    },
+                    {
+                      "key": "endUpdatedAt",
+                      "value": "<dateTime>"
+                    },
+                    {
+                      "key": "limit",
+                      "value": "500"
+                    },
+                    {
+                      "key": "nextPageToken",
+                      "value": "<string>"
+                    }
+                  ],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": \"user not authorized\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "15d7598c-2a1b-4517-ac0f-270fb7680820",
+              "name": "Company not found, `nextPageToken` is not valid, or a start bound (`startValueDate`, `startOperationDate` or `startUpdatedAt`) is later than its paired end bound or, when used alone, later than today.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "transactions",
+                    ":companyId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "productId",
+                      "value": "<string>"
+                    },
+                    {
+                      "key": "sync",
+                      "value": "<boolean>"
+                    },
+                    {
+                      "key": "startValueDate",
+                      "value": "<date>"
+                    },
+                    {
+                      "key": "endValueDate",
+                      "value": "<date>"
+                    },
+                    {
+                      "key": "startOperationDate",
+                      "value": "<date>"
+                    },
+                    {
+                      "key": "endOperationDate",
+                      "value": "<date>"
+                    },
+                    {
+                      "key": "startUpdatedAt",
+                      "value": "<dateTime>"
+                    },
+                    {
+                      "key": "endUpdatedAt",
+                      "value": "<dateTime>"
+                    },
+                    {
+                      "key": "limit",
+                      "value": "500"
+                    },
+                    {
+                      "key": "nextPageToken",
+                      "value": "<string>"
+                    }
+                  ],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "Not Found",
+              "code": 404,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": \"0021 companyId not found\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "cc5e2303-7ac0-4ef7-8829-afdcbca43dfc",
+              "name": "Validation Error",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "transactions",
+                    ":companyId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "productId",
+                      "value": "<string>"
+                    },
+                    {
+                      "key": "sync",
+                      "value": "<boolean>"
+                    },
+                    {
+                      "key": "startValueDate",
+                      "value": "<date>"
+                    },
+                    {
+                      "key": "endValueDate",
+                      "value": "<date>"
+                    },
+                    {
+                      "key": "startOperationDate",
+                      "value": "<date>"
+                    },
+                    {
+                      "key": "endOperationDate",
+                      "value": "<date>"
+                    },
+                    {
+                      "key": "startUpdatedAt",
+                      "value": "<dateTime>"
+                    },
+                    {
+                      "key": "endUpdatedAt",
+                      "value": "<dateTime>"
+                    },
+                    {
+                      "key": "limit",
+                      "value": "500"
+                    },
+                    {
+                      "key": "nextPageToken",
+                      "value": "<string>"
+                    }
+                  ],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "Unprocessable Entity (WebDAV) (RFC 4918)",
+              "code": 422,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": [\n    {\n      \"loc\": [\n        \"string\",\n        \"string\"\n      ],\n      \"msg\": \"string\",\n      \"type\": \"string\",\n      \"input\": {},\n      \"ctx\": {}\n    },\n    {\n      \"loc\": [\n        \"string\",\n        \"string\"\n      ],\n      \"msg\": \"string\",\n      \"type\": \"string\",\n      \"input\": {},\n      \"ctx\": {}\n    }\n  ]\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "25f268b6-723f-4f78-b9c9-30a2e81bb717",
+          "name": "Update transactions in bulk",
+          "request": {
+            "name": "Update transactions in bulk",
+            "description": {
+              "content": "Updates the synchronization status, additional info or custom attribute values of several transactions in a single call, identified by `id`. Only the fields you send are changed. Entries whose `id` does not match any transaction are silently skipped — the call still returns `200` for the whole batch.",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "transactions",
+                ":companyId"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "<string>",
+                  "key": "companyId",
+                  "description": "(Required) "
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "PATCH",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{bearerToken}}"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"data\": [\n    {\n      \"id\": \"<string>\",\n      \"additionalInfo\": {},\n      \"attributes\": [\n        {\n          \"customId\": \"<string>\",\n          \"value\": \"<string>\",\n          \"valueCustomId\": \"<string>\",\n          \"parentCustomId\": \"<string>\"\n        },\n        {\n          \"customId\": \"<string>\",\n          \"value\": \"<string>\",\n          \"valueCustomId\": \"<string>\",\n          \"parentCustomId\": \"<string>\"\n        }\n      ],\n      \"sync\": \"<boolean>\"\n    },\n    {\n      \"id\": \"<string>\",\n      \"additionalInfo\": {},\n      \"attributes\": [\n        {\n          \"customId\": \"<string>\",\n          \"value\": \"<string>\",\n          \"valueCustomId\": \"<string>\",\n          \"parentCustomId\": \"<string>\"\n        },\n        {\n          \"customId\": \"<string>\",\n          \"value\": \"<string>\",\n          \"valueCustomId\": \"<string>\",\n          \"parentCustomId\": \"<string>\"\n        }\n      ],\n      \"sync\": \"<boolean>\"\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "id": "8a5f9f7d-4b69-4241-a1ca-15cb907a4d2a",
+              "name": "Successful Response",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "transactions",
+                    ":companyId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "PATCH",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"data\": [\n    {\n      \"id\": \"string\",\n      \"additionalInfo\": {},\n      \"attributes\": [\n        {\n          \"customId\": \"cost-center\",\n          \"value\": \"Marketing\",\n          \"valueCustomId\": \"string\",\n          \"parentCustomId\": \"string\"\n        },\n        {\n          \"customId\": \"cost-center\",\n          \"value\": \"Marketing\",\n          \"valueCustomId\": \"string\",\n          \"parentCustomId\": \"string\"\n        }\n      ],\n      \"sync\": true\n    },\n    {\n      \"id\": \"string\",\n      \"additionalInfo\": {},\n      \"attributes\": [\n        {\n          \"customId\": \"cost-center\",\n          \"value\": \"Marketing\",\n          \"valueCustomId\": \"string\",\n          \"parentCustomId\": \"string\"\n        },\n        {\n          \"customId\": \"cost-center\",\n          \"value\": \"Marketing\",\n          \"valueCustomId\": \"string\",\n          \"parentCustomId\": \"string\"\n        }\n      ],\n      \"sync\": false\n    }\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"data\": [\n    {\n      \"id\": \"string\"\n    },\n    {\n      \"id\": \"string\"\n    }\n  ]\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "39bc0b01-f9e1-4025-8717-f343ba663dc2",
+              "name": "Unauthorized. The bearer token is missing, invalid or expired.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "transactions",
+                    ":companyId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "PATCH",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"data\": [\n    {\n      \"id\": \"string\",\n      \"additionalInfo\": {},\n      \"attributes\": [\n        {\n          \"customId\": \"cost-center\",\n          \"value\": \"Marketing\",\n          \"valueCustomId\": \"string\",\n          \"parentCustomId\": \"string\"\n        },\n        {\n          \"customId\": \"cost-center\",\n          \"value\": \"Marketing\",\n          \"valueCustomId\": \"string\",\n          \"parentCustomId\": \"string\"\n        }\n      ],\n      \"sync\": true\n    },\n    {\n      \"id\": \"string\",\n      \"additionalInfo\": {},\n      \"attributes\": [\n        {\n          \"customId\": \"cost-center\",\n          \"value\": \"Marketing\",\n          \"valueCustomId\": \"string\",\n          \"parentCustomId\": \"string\"\n        },\n        {\n          \"customId\": \"cost-center\",\n          \"value\": \"Marketing\",\n          \"valueCustomId\": \"string\",\n          \"parentCustomId\": \"string\"\n        }\n      ],\n      \"sync\": false\n    }\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": \"user not authorized\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "41cee983-a2bb-47d4-bcd4-a2995643eefc",
+              "name": "Not found. The requested resource or `companyId` does not exist.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "transactions",
+                    ":companyId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "PATCH",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"data\": [\n    {\n      \"id\": \"string\",\n      \"additionalInfo\": {},\n      \"attributes\": [\n        {\n          \"customId\": \"cost-center\",\n          \"value\": \"Marketing\",\n          \"valueCustomId\": \"string\",\n          \"parentCustomId\": \"string\"\n        },\n        {\n          \"customId\": \"cost-center\",\n          \"value\": \"Marketing\",\n          \"valueCustomId\": \"string\",\n          \"parentCustomId\": \"string\"\n        }\n      ],\n      \"sync\": true\n    },\n    {\n      \"id\": \"string\",\n      \"additionalInfo\": {},\n      \"attributes\": [\n        {\n          \"customId\": \"cost-center\",\n          \"value\": \"Marketing\",\n          \"valueCustomId\": \"string\",\n          \"parentCustomId\": \"string\"\n        },\n        {\n          \"customId\": \"cost-center\",\n          \"value\": \"Marketing\",\n          \"valueCustomId\": \"string\",\n          \"parentCustomId\": \"string\"\n        }\n      ],\n      \"sync\": false\n    }\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Not Found",
+              "code": 404,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": \"0021 companyId not found\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "7d92299f-f90a-460f-8412-35ff3a92a91c",
+              "name": "Validation Error",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "transactions",
+                    ":companyId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "PATCH",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"data\": [\n    {\n      \"id\": \"string\",\n      \"additionalInfo\": {},\n      \"attributes\": [\n        {\n          \"customId\": \"cost-center\",\n          \"value\": \"Marketing\",\n          \"valueCustomId\": \"string\",\n          \"parentCustomId\": \"string\"\n        },\n        {\n          \"customId\": \"cost-center\",\n          \"value\": \"Marketing\",\n          \"valueCustomId\": \"string\",\n          \"parentCustomId\": \"string\"\n        }\n      ],\n      \"sync\": true\n    },\n    {\n      \"id\": \"string\",\n      \"additionalInfo\": {},\n      \"attributes\": [\n        {\n          \"customId\": \"cost-center\",\n          \"value\": \"Marketing\",\n          \"valueCustomId\": \"string\",\n          \"parentCustomId\": \"string\"\n        },\n        {\n          \"customId\": \"cost-center\",\n          \"value\": \"Marketing\",\n          \"valueCustomId\": \"string\",\n          \"parentCustomId\": \"string\"\n        }\n      ],\n      \"sync\": false\n    }\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Unprocessable Entity (WebDAV) (RFC 4918)",
+              "code": 422,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": [\n    {\n      \"loc\": [\n        \"string\",\n        \"string\"\n      ],\n      \"msg\": \"string\",\n      \"type\": \"string\",\n      \"input\": {},\n      \"ctx\": {}\n    },\n    {\n      \"loc\": [\n        \"string\",\n        \"string\"\n      ],\n      \"msg\": \"string\",\n      \"type\": \"string\",\n      \"input\": {},\n      \"ctx\": {}\n    }\n  ]\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "f9c36c89-2931-4e29-9ca4-3c3ec21199b3",
+              "name": "Unexpected error. Contact support if it persists.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "transactions",
+                    ":companyId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "PATCH",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"data\": [\n    {\n      \"id\": \"string\",\n      \"additionalInfo\": {},\n      \"attributes\": [\n        {\n          \"customId\": \"cost-center\",\n          \"value\": \"Marketing\",\n          \"valueCustomId\": \"string\",\n          \"parentCustomId\": \"string\"\n        },\n        {\n          \"customId\": \"cost-center\",\n          \"value\": \"Marketing\",\n          \"valueCustomId\": \"string\",\n          \"parentCustomId\": \"string\"\n        }\n      ],\n      \"sync\": true\n    },\n    {\n      \"id\": \"string\",\n      \"additionalInfo\": {},\n      \"attributes\": [\n        {\n          \"customId\": \"cost-center\",\n          \"value\": \"Marketing\",\n          \"valueCustomId\": \"string\",\n          \"parentCustomId\": \"string\"\n        },\n        {\n          \"customId\": \"cost-center\",\n          \"value\": \"Marketing\",\n          \"valueCustomId\": \"string\",\n          \"parentCustomId\": \"string\"\n        }\n      ],\n      \"sync\": false\n    }\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Internal Server Error",
+              "code": 500,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": \"Internal server error\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "a2f26081-0b54-467c-8881-4a642e78e15f",
+          "name": "Retrieve transaction",
+          "request": {
+            "name": "Retrieve transaction",
+            "description": {
+              "content": "Returns a single transaction by its Embat `id`. If the transaction's product no longer exists, this endpoint returns `404` even though the transaction record exists.",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "transactions",
+                ":companyId",
+                ":id"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "<string>",
+                  "key": "id",
+                  "description": "(Required) "
+                },
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "<string>",
+                  "key": "companyId",
+                  "description": "(Required) "
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{bearerToken}}"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "id": "0c04950c-689d-409c-a506-df697f69021f",
+              "name": "Successful Response",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "transactions",
+                    ":companyId",
+                    ":id"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "id",
+                      "description": "(Required) "
+                    },
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"id\": \"string\",\n  \"balance\": 203.09728866195863,\n  \"operationDate\": \"1985-06-09T17:56:12.090Z\",\n  \"valueDate\": \"1998-09-20T13:16:53.801Z\",\n  \"updatedAt\": \"1988-11-09T17:52:43.928Z\",\n  \"createdAt\": \"1991-05-16T08:01:06.391Z\",\n  \"companyId\": \"string\",\n  \"additionalInfo\": {},\n  \"bank\": \"string\",\n  \"concept\": \"string\",\n  \"amount\": 235.45884859260013,\n  \"accountingAmount\": 4657.1663731941535,\n  \"exchangeRate\": 7330.619061574343,\n  \"accountingCurrency\": \"ZMK\",\n  \"reconciled\": false,\n  \"status\": \"BOOKED\",\n  \"product\": {\n    \"id\": \"prod_8f3a1c\",\n    \"currency\": \"EUR\",\n    \"product\": \"Cuenta Corriente\",\n    \"bankFullName\": \"string\",\n    \"alias\": \"string\"\n  },\n  \"sync\": false,\n  \"attributes\": [\n    {\n      \"customId\": \"cost-center\",\n      \"value\": \"Marketing\",\n      \"valueCustomId\": \"string\",\n      \"parentCustomId\": \"string\"\n    },\n    {\n      \"customId\": \"cost-center\",\n      \"value\": \"Marketing\",\n      \"valueCustomId\": \"string\",\n      \"parentCustomId\": \"string\"\n    }\n  ],\n  \"categories\": [\n    {\n      \"categoryId\": \"string\",\n      \"value\": 5307.658484671225\n    },\n    {\n      \"categoryId\": \"string\",\n      \"value\": 655.5281030777683\n    }\n  ],\n  \"tags\": [\n    \"string\",\n    \"string\"\n  ],\n  \"groupAmount\": 2057.4490197947216,\n  \"groupExchangeRate\": 2009.6560649569283,\n  \"groupCurrency\": \"MWK\",\n  \"currencyExchangeData\": {\n    \"originalAmount\": 9129.884458577597,\n    \"originalCurrency\": \"HKD\",\n    \"grossAmount\": 7007.536705709454,\n    \"fees\": 9486.013811623201\n  },\n  \"comment\": \"string\",\n  \"reconciliationsIds\": [\n    \"string\",\n    \"string\"\n  ],\n  \"type\": \"social_security\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "5afd87b7-a964-4c60-a134-bfdb68625bcd",
+              "name": "Unauthorized. The bearer token is missing, invalid or expired.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "transactions",
+                    ":companyId",
+                    ":id"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "id",
+                      "description": "(Required) "
+                    },
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": \"user not authorized\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "644fd22c-2356-44df-b608-71da8fb87791",
+              "name": "Company not found, no transaction matches the given `id`, or the transaction's product no longer exists.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "transactions",
+                    ":companyId",
+                    ":id"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "id",
+                      "description": "(Required) "
+                    },
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "Not Found",
+              "code": 404,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": \"0021 companyId not found\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "e3c12930-a87a-49d0-a6dd-054208357eea",
+              "name": "Validation Error",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "transactions",
+                    ":companyId",
+                    ":id"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "id",
+                      "description": "(Required) "
+                    },
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "Unprocessable Entity (WebDAV) (RFC 4918)",
+              "code": 422,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": [\n    {\n      \"loc\": [\n        \"string\",\n        \"string\"\n      ],\n      \"msg\": \"string\",\n      \"type\": \"string\",\n      \"input\": {},\n      \"ctx\": {}\n    },\n    {\n      \"loc\": [\n        \"string\",\n        \"string\"\n      ],\n      \"msg\": \"string\",\n      \"type\": \"string\",\n      \"input\": {},\n      \"ctx\": {}\n    }\n  ]\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "b7028314-795d-48ee-8d79-bc9a08d4afdd",
+          "name": "Update transaction",
+          "request": {
+            "name": "Update transaction",
+            "description": {
+              "content": "Updates the synchronization status, additional info or custom attribute values of a transaction identified by `id`. Only the fields you send are changed. Note that updating an `id` that does not match any transaction also returns `200` without applying any change — no `404` is raised.",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "transactions",
+                ":companyId",
+                ":id"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "<string>",
+                  "key": "id",
+                  "description": "(Required) "
+                },
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "<string>",
+                  "key": "companyId",
+                  "description": "(Required) "
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "PATCH",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{bearerToken}}"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"additionalInfo\": {},\n  \"attributes\": [\n    {\n      \"customId\": \"<string>\",\n      \"value\": \"<string>\",\n      \"valueCustomId\": \"<string>\",\n      \"parentCustomId\": \"<string>\"\n    },\n    {\n      \"customId\": \"<string>\",\n      \"value\": \"<string>\",\n      \"valueCustomId\": \"<string>\",\n      \"parentCustomId\": \"<string>\"\n    }\n  ],\n  \"sync\": \"<boolean>\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "id": "5e8f0856-64f2-444f-85cf-9d1c2e2ce316",
+              "name": "Successful Response",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "transactions",
+                    ":companyId",
+                    ":id"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "id",
+                      "description": "(Required) "
+                    },
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "PATCH",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"additionalInfo\": {},\n  \"attributes\": [\n    {\n      \"customId\": \"cost-center\",\n      \"value\": \"Marketing\",\n      \"valueCustomId\": \"string\",\n      \"parentCustomId\": \"string\"\n    },\n    {\n      \"customId\": \"cost-center\",\n      \"value\": \"Marketing\",\n      \"valueCustomId\": \"string\",\n      \"parentCustomId\": \"string\"\n    }\n  ],\n  \"sync\": \"<boolean>\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"id\": \"string\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "44682450-971f-4280-b4d1-aecae44afe57",
+              "name": "Unauthorized. The bearer token is missing, invalid or expired.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "transactions",
+                    ":companyId",
+                    ":id"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "id",
+                      "description": "(Required) "
+                    },
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "PATCH",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"additionalInfo\": {},\n  \"attributes\": [\n    {\n      \"customId\": \"cost-center\",\n      \"value\": \"Marketing\",\n      \"valueCustomId\": \"string\",\n      \"parentCustomId\": \"string\"\n    },\n    {\n      \"customId\": \"cost-center\",\n      \"value\": \"Marketing\",\n      \"valueCustomId\": \"string\",\n      \"parentCustomId\": \"string\"\n    }\n  ],\n  \"sync\": \"<boolean>\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": \"user not authorized\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "107c515b-10b4-42f0-b597-c29c323b02f4",
+              "name": "Not found. The requested resource or `companyId` does not exist.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "transactions",
+                    ":companyId",
+                    ":id"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "id",
+                      "description": "(Required) "
+                    },
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "PATCH",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"additionalInfo\": {},\n  \"attributes\": [\n    {\n      \"customId\": \"cost-center\",\n      \"value\": \"Marketing\",\n      \"valueCustomId\": \"string\",\n      \"parentCustomId\": \"string\"\n    },\n    {\n      \"customId\": \"cost-center\",\n      \"value\": \"Marketing\",\n      \"valueCustomId\": \"string\",\n      \"parentCustomId\": \"string\"\n    }\n  ],\n  \"sync\": \"<boolean>\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Not Found",
+              "code": 404,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": \"0021 companyId not found\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "5b9b2a39-578a-4fe4-8154-90c4e400563d",
+              "name": "Validation Error",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "transactions",
+                    ":companyId",
+                    ":id"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "id",
+                      "description": "(Required) "
+                    },
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "PATCH",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"additionalInfo\": {},\n  \"attributes\": [\n    {\n      \"customId\": \"cost-center\",\n      \"value\": \"Marketing\",\n      \"valueCustomId\": \"string\",\n      \"parentCustomId\": \"string\"\n    },\n    {\n      \"customId\": \"cost-center\",\n      \"value\": \"Marketing\",\n      \"valueCustomId\": \"string\",\n      \"parentCustomId\": \"string\"\n    }\n  ],\n  \"sync\": \"<boolean>\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Unprocessable Entity (WebDAV) (RFC 4918)",
+              "code": 422,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": [\n    {\n      \"loc\": [\n        \"string\",\n        \"string\"\n      ],\n      \"msg\": \"string\",\n      \"type\": \"string\",\n      \"input\": {},\n      \"ctx\": {}\n    },\n    {\n      \"loc\": [\n        \"string\",\n        \"string\"\n      ],\n      \"msg\": \"string\",\n      \"type\": \"string\",\n      \"input\": {},\n      \"ctx\": {}\n    }\n  ]\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "184009cf-2cc2-4135-ba31-9cd0acc13ae7",
+              "name": "Unexpected error. Contact support if it persists.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "transactions",
+                    ":companyId",
+                    ":id"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "id",
+                      "description": "(Required) "
+                    },
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "PATCH",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"additionalInfo\": {},\n  \"attributes\": [\n    {\n      \"customId\": \"cost-center\",\n      \"value\": \"Marketing\",\n      \"valueCustomId\": \"string\",\n      \"parentCustomId\": \"string\"\n    },\n    {\n      \"customId\": \"cost-center\",\n      \"value\": \"Marketing\",\n      \"valueCustomId\": \"string\",\n      \"parentCustomId\": \"string\"\n    }\n  ],\n  \"sync\": \"<boolean>\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Internal Server Error",
+              "code": 500,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": \"Internal server error\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "1c83c93f-478f-4e03-9f8f-4c167aee1122",
+          "name": "Create manual transactions in bulk",
+          "request": {
+            "name": "Create manual transactions in bulk",
+            "description": {
+              "content": "Creates transactions for a company's product in a single call, grouped by day. Returns an empty response with status `201` on success.\n\n> **Manual products only.** This endpoint only works with products classified as \"Manual\". Using it with a `productId` that exists but is not classified as Manual returns a `400 Bad Request` error. If `productId` does not exist, or its associated bank record does not exist, a `404` is returned instead.\n\n> **Mirrors the Embat website.** This endpoint behaves like adding manual transactions from the Embat website: submitting transactions for a given day **permanently replaces** any transactions previously recorded for that same day on that product. Replaced transactions cannot be recovered.",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "transactions",
+                ":companyId",
+                ":productId",
+                "bulk"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "<string>",
+                  "key": "companyId",
+                  "description": "(Required) "
+                },
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "<string>",
+                  "key": "productId",
+                  "description": "(Required) "
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "POST",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{bearerToken}}"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"data\": [\n    {\n      \"operationDate\": \"<date>\",\n      \"valueDate\": \"<date>\",\n      \"concept\": \"<string>\",\n      \"amount\": \"<number>\"\n    },\n    {\n      \"operationDate\": \"<date>\",\n      \"valueDate\": \"<date>\",\n      \"concept\": \"<string>\",\n      \"amount\": \"<number>\"\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "id": "8ff261cb-c599-470c-a407-a913707b7d3a",
+              "name": "Successful Response",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "transactions",
+                    ":companyId",
+                    ":productId",
+                    "bulk"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    },
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "productId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"data\": [\n    {\n      \"operationDate\": \"1950-12-31\",\n      \"valueDate\": \"2006-11-03\",\n      \"concept\": \"Office supplies\",\n      \"amount\": -350\n    },\n    {\n      \"operationDate\": \"1994-01-24\",\n      \"valueDate\": \"1971-10-24\",\n      \"concept\": \"Office supplies\",\n      \"amount\": -350\n    }\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Created",
+              "code": 201,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "e5f8e093-220e-4f6c-a125-f1661f2d5706",
+              "name": "The product exists but is not classified as Manual.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "transactions",
+                    ":companyId",
+                    ":productId",
+                    "bulk"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    },
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "productId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"data\": [\n    {\n      \"operationDate\": \"1950-12-31\",\n      \"valueDate\": \"2006-11-03\",\n      \"concept\": \"Office supplies\",\n      \"amount\": -350\n    },\n    {\n      \"operationDate\": \"1994-01-24\",\n      \"valueDate\": \"1971-10-24\",\n      \"concept\": \"Office supplies\",\n      \"amount\": -350\n    }\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": \"startDate is a date after endDate\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "59ea3540-fad7-4d6b-ae37-b8356cd2f9cf",
+              "name": "Unauthorized. The bearer token is missing, invalid or expired.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "transactions",
+                    ":companyId",
+                    ":productId",
+                    "bulk"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    },
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "productId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"data\": [\n    {\n      \"operationDate\": \"1950-12-31\",\n      \"valueDate\": \"2006-11-03\",\n      \"concept\": \"Office supplies\",\n      \"amount\": -350\n    },\n    {\n      \"operationDate\": \"1994-01-24\",\n      \"valueDate\": \"1971-10-24\",\n      \"concept\": \"Office supplies\",\n      \"amount\": -350\n    }\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": \"user not authorized\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "f9566b99-b9a6-43f3-9914-0d528d2eeb4f",
+              "name": "Company not found, the given `productId` does not exist, or its associated bank record does not exist.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "transactions",
+                    ":companyId",
+                    ":productId",
+                    "bulk"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    },
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "productId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"data\": [\n    {\n      \"operationDate\": \"1950-12-31\",\n      \"valueDate\": \"2006-11-03\",\n      \"concept\": \"Office supplies\",\n      \"amount\": -350\n    },\n    {\n      \"operationDate\": \"1994-01-24\",\n      \"valueDate\": \"1971-10-24\",\n      \"concept\": \"Office supplies\",\n      \"amount\": -350\n    }\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Not Found",
+              "code": 404,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": \"0021 companyId not found\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "04d31caf-cf7f-4426-b18e-8458ceca0a01",
+              "name": "Validation Error",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "transactions",
+                    ":companyId",
+                    ":productId",
+                    "bulk"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    },
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "productId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"data\": [\n    {\n      \"operationDate\": \"1950-12-31\",\n      \"valueDate\": \"2006-11-03\",\n      \"concept\": \"Office supplies\",\n      \"amount\": -350\n    },\n    {\n      \"operationDate\": \"1994-01-24\",\n      \"valueDate\": \"1971-10-24\",\n      \"concept\": \"Office supplies\",\n      \"amount\": -350\n    }\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Unprocessable Entity (WebDAV) (RFC 4918)",
+              "code": 422,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": [\n    {\n      \"loc\": [\n        \"string\",\n        \"string\"\n      ],\n      \"msg\": \"string\",\n      \"type\": \"string\",\n      \"input\": {},\n      \"ctx\": {}\n    },\n    {\n      \"loc\": [\n        \"string\",\n        \"string\"\n      ],\n      \"msg\": \"string\",\n      \"type\": \"string\",\n      \"input\": {},\n      \"ctx\": {}\n    }\n  ]\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "9bacfe10-3556-4d9c-ab52-54ec2654cecc",
+              "name": "Unexpected error. Contact support if it persists.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "transactions",
+                    ":companyId",
+                    ":productId",
+                    "bulk"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    },
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "productId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"data\": [\n    {\n      \"operationDate\": \"1950-12-31\",\n      \"valueDate\": \"2006-11-03\",\n      \"concept\": \"Office supplies\",\n      \"amount\": -350\n    },\n    {\n      \"operationDate\": \"1994-01-24\",\n      \"valueDate\": \"1971-10-24\",\n      \"concept\": \"Office supplies\",\n      \"amount\": -350\n    }\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Internal Server Error",
+              "code": 500,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": \"Internal server error\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        }
+      ],
+      "event": []
+    }
+  ],
+  "event": [],
+  "variable": [
+    {
+      "type": "string",
+      "value": "/",
+      "key": "baseUrl"
+    }
+  ],
+  "info": {
+    "_postman_id": "17b5274c-21e2-4830-9c9c-29e1b07d9b10",
+    "name": "Embat AccountingAccounts Transactions API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": {
+      "content": "Embat API enables connections between any third party application and Embat. Is organized around REST principles, using HTTP responses code and returning data in JSON format. While testing the API, you have to request **sandbox credentials**.\n\nContact Support:\n Name: API Support\n Email: tech@embat.io",
+      "type": "text/plain"
+    }
+  }
+}

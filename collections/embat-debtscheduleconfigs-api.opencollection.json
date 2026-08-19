@@ -1,0 +1,91 @@
+{
+  "opencollection": "1.0.0",
+  "info": {
+    "name": "Embat AccountingAccounts DebtScheduleConfigs API",
+    "version": "2.120.3"
+  },
+  "items": [
+    {
+      "info": {
+        "name": "DebtScheduleConfigs",
+        "type": "folder"
+      },
+      "items": [
+        {
+          "info": {
+            "name": "List debt schedule configs",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "{{baseUrl}}/debtscheduleconfigs/:companyId",
+            "params": [
+              {
+                "name": "companyId",
+                "value": "",
+                "type": "path"
+              },
+              {
+                "name": "startUpdatedAt",
+                "value": "",
+                "type": "query",
+                "description": "Only return configurations last modified on or after this timestamp (inclusive)."
+              },
+              {
+                "name": "endUpdatedAt",
+                "value": "",
+                "type": "query",
+                "description": "Only return configurations last modified before this timestamp (exclusive)."
+              },
+              {
+                "name": "limit",
+                "value": "",
+                "type": "query",
+                "description": "Maximum number of objects to return in the response. Default 10, maximum 50."
+              },
+              {
+                "name": "nextPageToken",
+                "value": "",
+                "type": "query",
+                "description": "Token to fetch the next page of results, taken from the `nextPageToken` returned by the previous request with the same filters. Omit it to fetch the first page. An invalid or malformed token is rejected with `404`."
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Returns the debt schedule configurations of a company. Results are ordered by last modification time, most recent first, and paginated: use `limit` to control page size and pass the returned `nextPageToken` to fetch the next page. `startUpdatedAt` (inclusive) and `endUpdatedAt` (exclusive) filter by last modification time, which is useful for incremental synchronization."
+        },
+        {
+          "info": {
+            "name": "Retrieve debt schedule config",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "{{baseUrl}}/debtscheduleconfigs/:companyId/:id",
+            "params": [
+              {
+                "name": "id",
+                "value": "",
+                "type": "path"
+              },
+              {
+                "name": "companyId",
+                "value": "",
+                "type": "path"
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Returns a single debt schedule configuration by its Embat `id`."
+        }
+      ]
+    }
+  ],
+  "bundled": true
+}

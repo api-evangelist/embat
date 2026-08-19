@@ -1,0 +1,289 @@
+{
+  "opencollection": "1.0.0",
+  "info": {
+    "name": "Embat AccountingAccounts Payments API",
+    "version": "2.120.3"
+  },
+  "items": [
+    {
+      "info": {
+        "name": "Payments",
+        "type": "folder"
+      },
+      "items": [
+        {
+          "info": {
+            "name": "List payments",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "{{baseUrl}}/payments/:companyId",
+            "params": [
+              {
+                "name": "companyId",
+                "value": "",
+                "type": "path"
+              },
+              {
+                "name": "productId",
+                "value": "",
+                "type": "query",
+                "description": "Filter payments linked to a given product (`productId`)."
+              },
+              {
+                "name": "sync",
+                "value": "",
+                "type": "query",
+                "description": "Filter by synchronization status with the accounting system. `false` also matches payments where the value is not set."
+              },
+              {
+                "name": "registered",
+                "value": "",
+                "type": "query",
+                "description": "Filter by registration status in the accounting system. `false` also matches payments where the value is not set."
+              },
+              {
+                "name": "startDate",
+                "value": "",
+                "type": "query",
+                "description": "Only return payments dated on or after this date (inclusive). The range cannot exceed 90 days: if `endDate` is also given, the span between the two cannot exceed 90 days; if `endDate` is omitted, `startDate` cannot be more than 90 days in the past."
+              },
+              {
+                "name": "endDate",
+                "value": "",
+                "type": "query",
+                "description": "Only return payments dated before this date (exclusive). Combined with `startDate`, the range cannot exceed 90 days. If used without `startDate`, results start 90 days before this date."
+              },
+              {
+                "name": "startUpdatedAt",
+                "value": "",
+                "type": "query",
+                "description": "Only return payments last modified on or after this timestamp (inclusive). The range cannot exceed 90 days: if `endUpdatedAt` is also given, the span between the two cannot exceed 90 days; if `endUpdatedAt` is omitted, `startUpdatedAt` cannot be more than 90 days in the past."
+              },
+              {
+                "name": "endUpdatedAt",
+                "value": "",
+                "type": "query",
+                "description": "Only return payments last modified before this timestamp (exclusive). Combined with `startUpdatedAt`, the range cannot exceed 90 days. If used without `startUpdatedAt`, results start 90 days before this timestamp."
+              },
+              {
+                "name": "internalAttributes",
+                "value": "",
+                "type": "query",
+                "description": "Include attributes flagged as internal in the response."
+              },
+              {
+                "name": "limit",
+                "value": "",
+                "type": "query",
+                "description": "Maximum number of objects to return in the response. Default 500, maximum 2000."
+              },
+              {
+                "name": "nextPageToken",
+                "value": "",
+                "type": "query",
+                "description": "Token to fetch the next page of results, taken from the `nextPageToken` returned by the previous request with the same filters. Omit it to fetch the first page. An invalid or malformed token is rejected with `404`."
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Returns the payments generated in Embat for a company. Payments you created through `POST /payments/{companyId}` are not included here — retrieve them by `customId` with `GET /payments/{companyId}/{customId}` instead. Results are paginated: use `limit` to control page size and pass the returned `nextPageToken` to fetch the next page. `startDate`/`endDate` filter by payment date, and `startUpdatedAt`/`endUpdatedAt` filter by last modification time, which is useful for incremental synchronization."
+        },
+        {
+          "info": {
+            "name": "Create payment",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "{{baseUrl}}/payments/:companyId",
+            "params": [
+              {
+                "name": "companyId",
+                "value": "",
+                "type": "path"
+              }
+            ],
+            "body": {
+              "type": "json",
+              "data": "{}"
+            },
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Creates a payment against one or more operations, recording that those operations (invoices/bills) have been settled in your ERP; each settled amount reduces the operation's pending amount in Embat. If `customId` is omitted, Embat auto-generates one.\n\nEach entry in `operations` is validated independently and **silently discarded** when: the referenced operation does not exist, the operation is already paid or canceled, a payment with the same `customId` was already notified for that operation (d"
+        },
+        {
+          "info": {
+            "name": "Update payments in bulk",
+            "type": "http"
+          },
+          "http": {
+            "method": "PATCH",
+            "url": "{{baseUrl}}/payments/:companyId",
+            "params": [
+              {
+                "name": "companyId",
+                "value": "",
+                "type": "path"
+              }
+            ],
+            "body": {
+              "type": "json",
+              "data": "{}"
+            },
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Updates the synchronization status, error message, registration status or additional info of several payments, identified by `customId`. Entries whose `customId` does not match any payment are silently skipped — the call returns `200` for the whole batch."
+        },
+        {
+          "info": {
+            "name": "Delete payments in bulk",
+            "type": "http"
+          },
+          "http": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/payments/:companyId",
+            "params": [
+              {
+                "name": "companyId",
+                "value": "",
+                "type": "path"
+              }
+            ],
+            "body": {
+              "type": "json",
+              "data": "{}"
+            },
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Deletes several payments in a single call, identified by `customId`."
+        },
+        {
+          "info": {
+            "name": "Retrieve payment",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "{{baseUrl}}/payments/:companyId/:customId",
+            "params": [
+              {
+                "name": "customId",
+                "value": "",
+                "type": "path"
+              },
+              {
+                "name": "companyId",
+                "value": "",
+                "type": "path"
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Returns a single payment by `customId`. Payments missing required accounting, operation or contact information are not returned even if they exist."
+        },
+        {
+          "info": {
+            "name": "Update payment",
+            "type": "http"
+          },
+          "http": {
+            "method": "PATCH",
+            "url": "{{baseUrl}}/payments/:companyId/:customId",
+            "params": [
+              {
+                "name": "customId",
+                "value": "",
+                "type": "path"
+              },
+              {
+                "name": "companyId",
+                "value": "",
+                "type": "path"
+              }
+            ],
+            "body": {
+              "type": "json",
+              "data": "{}"
+            },
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Updates the synchronization status, error message, registration status or additional info of a payment identified by `customId`. If none of the provided fields change the existing payment, the update is a no-op. Note that updating a `customId` that does not match any payment also returns `200` without applying any change — no `404` is raised. Setting `error` without `sync` marks the payment as synchronized with the error recorded."
+        },
+        {
+          "info": {
+            "name": "Delete payment",
+            "type": "http"
+          },
+          "http": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/payments/:companyId/:customId",
+            "params": [
+              {
+                "name": "customId",
+                "value": "",
+                "type": "path"
+              },
+              {
+                "name": "companyId",
+                "value": "",
+                "type": "path"
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Deletes a payment by `customId`."
+        },
+        {
+          "info": {
+            "name": "Create payments in bulk",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "{{baseUrl}}/payments/:companyId/bulk",
+            "params": [
+              {
+                "name": "companyId",
+                "value": "",
+                "type": "path"
+              }
+            ],
+            "body": {
+              "type": "json",
+              "data": "{}"
+            },
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Creates several payments in a single call, following the same rules as the single payment creation endpoint. Payments sharing the same `customId` within the request are deduplicated and only the first occurrence is processed."
+        }
+      ]
+    }
+  ],
+  "bundled": true
+}

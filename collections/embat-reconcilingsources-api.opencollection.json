@@ -1,0 +1,151 @@
+{
+  "opencollection": "1.0.0",
+  "info": {
+    "name": "Embat AccountingAccounts ReconcilingSources API",
+    "version": "2.120.3"
+  },
+  "items": [
+    {
+      "info": {
+        "name": "ReconcilingSources",
+        "type": "folder"
+      },
+      "items": [
+        {
+          "info": {
+            "name": "List reconciling sources",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "{{baseUrl}}/reconcilingsources/:companyId",
+            "params": [
+              {
+                "name": "companyId",
+                "value": "",
+                "type": "path"
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Returns all reconciling sources configured for the company. This endpoint is not paginated."
+        },
+        {
+          "info": {
+            "name": "Create reconciling source",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "{{baseUrl}}/reconcilingsources/:companyId",
+            "params": [
+              {
+                "name": "companyId",
+                "value": "",
+                "type": "path"
+              }
+            ],
+            "body": {
+              "type": "json",
+              "data": "{}"
+            },
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Creates a reconciling source identified by `customId`. Calling this endpoint again with a `customId` that already exists **updates** the existing reconciling source instead of creating a duplicate or raising a conflict error; only the fields sent are applied, and any field previously stored is kept unless a new value is sent."
+        },
+        {
+          "info": {
+            "name": "Retrieve reconciling source",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "{{baseUrl}}/reconcilingsources/:companyId/:customId",
+            "params": [
+              {
+                "name": "customId",
+                "value": "",
+                "type": "path"
+              },
+              {
+                "name": "companyId",
+                "value": "",
+                "type": "path"
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Returns a single reconciling source by `customId`."
+        },
+        {
+          "info": {
+            "name": "Update reconciling source",
+            "type": "http"
+          },
+          "http": {
+            "method": "PATCH",
+            "url": "{{baseUrl}}/reconcilingsources/:companyId/:customId",
+            "params": [
+              {
+                "name": "customId",
+                "value": "",
+                "type": "path"
+              },
+              {
+                "name": "companyId",
+                "value": "",
+                "type": "path"
+              }
+            ],
+            "body": {
+              "type": "json",
+              "data": "{}"
+            },
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Updates a reconciling source identified by `customId`. Only the fields sent are changed. Note that updating a `customId` that does not match any reconciling source also returns `200` without applying any change — no `404` is raised."
+        },
+        {
+          "info": {
+            "name": "Delete reconciling source",
+            "type": "http"
+          },
+          "http": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/reconcilingsources/:companyId/:customId",
+            "params": [
+              {
+                "name": "customId",
+                "value": "",
+                "type": "path"
+              },
+              {
+                "name": "companyId",
+                "value": "",
+                "type": "path"
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Deletes a reconciling source by `customId`. If `customId` does not match any reconciling source, no error is raised — the call still returns `200`."
+        }
+      ]
+    }
+  ],
+  "bundled": true
+}

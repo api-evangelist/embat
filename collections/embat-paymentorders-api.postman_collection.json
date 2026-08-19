@@ -1,0 +1,769 @@
+{
+  "item": [
+    {
+      "id": "d3f362c1-1588-414f-8daa-d8e462cd2a57",
+      "name": "PaymentOrders",
+      "description": {
+        "content": "<div style=\"background-color:#fff3cd; color:#856404; padding: 10px; border-left: 6px solid #ffeeba;\">\n<strong>⚠️ Warning:</strong> This API section is in BETA. It might undergo significant changes and may not be stable.\n</div>\n\nA <code>PaymentOrder</code> represents a payment executed through Embat, such as a wire transfer or SEPA payment sent to a bank on behalf of a company. It can reference a `documentId` identifying the invoice or operation it settles, a <code>Product</code> used to fund it, and the <code>Bank</code> it was executed through.\n\n**Typical flow:** poll `GET /paymentorders/{companyId}` to track the payment orders created in Embat and their execution `status` (`IN_PROGRESS`, `COMPLETED`, `REJECTED`, `ON_HOLD`). Once a payment order is executed, download its signed receipt with `GET /paymentorders/{id}/receipt`.",
+        "type": "text/plain"
+      },
+      "item": [
+        {
+          "id": "2ab3ba7c-b8a3-4018-bc8f-f5c08eb6529b",
+          "name": "List payment orders",
+          "request": {
+            "name": "List payment orders",
+            "description": {
+              "content": "Returns the payment orders of a company, ordered by execution date (most recent first). Results are paginated: use `limit` to control page size and pass the returned `nextPageToken` to fetch the next page; `nextPageToken` is `null` once the last page has been reached. `startPaymentDate`/`endPaymentDate` filter by execution date. If only one of the two is given, the other defaults: `endPaymentDate` defaults to now, and `startPaymentDate` defaults to 6 months before `endPaymentDate`. If neither is given, no date filter is applied. Explicit date ranges are not capped: any span is accepted.",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "paymentorders",
+                ":companyId"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [
+                {
+                  "disabled": false,
+                  "key": "startPaymentDate",
+                  "value": "<dateTime>",
+                  "description": "Only return payment orders executed on or after this date. If given without `endPaymentDate`, `endPaymentDate` defaults to now."
+                },
+                {
+                  "disabled": false,
+                  "key": "endPaymentDate",
+                  "value": "<dateTime>",
+                  "description": "Only return payment orders executed up to this date. If given without `startPaymentDate`, `startPaymentDate` defaults to 6 months before `endPaymentDate`."
+                },
+                {
+                  "disabled": false,
+                  "key": "status",
+                  "value": "<string>",
+                  "description": "Filter by payment order execution status."
+                },
+                {
+                  "disabled": false,
+                  "key": "beneficiaryLegalNameContains",
+                  "value": "<string>",
+                  "description": "Filter payment orders whose beneficiary legal name contains this text."
+                },
+                {
+                  "disabled": false,
+                  "key": "documentIdContains",
+                  "value": "<string>",
+                  "description": "Filter payment orders whose `documentId` contains this text."
+                },
+                {
+                  "disabled": false,
+                  "key": "limit",
+                  "value": "200",
+                  "description": "Maximum number of payment orders to return per page. Defaults to 200, which is also the maximum allowed value."
+                },
+                {
+                  "disabled": false,
+                  "key": "nextPageToken",
+                  "value": "<string>",
+                  "description": "Token to fetch the next page of results, returned by a previous call to this endpoint. An invalid token returns a `404` error."
+                }
+              ],
+              "variable": [
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "<string>",
+                  "key": "companyId",
+                  "description": "(Required) "
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{bearerToken}}"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "id": "58cfb19c-01ba-4872-a3eb-9097cd3ad922",
+              "name": "Successful Response",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "paymentorders",
+                    ":companyId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "startPaymentDate",
+                      "value": "<dateTime>"
+                    },
+                    {
+                      "key": "endPaymentDate",
+                      "value": "<dateTime>"
+                    },
+                    {
+                      "key": "status",
+                      "value": "IN_PROGRESS"
+                    },
+                    {
+                      "key": "beneficiaryLegalNameContains",
+                      "value": "<string>"
+                    },
+                    {
+                      "key": "documentIdContains",
+                      "value": "<string>"
+                    },
+                    {
+                      "key": "limit",
+                      "value": "200"
+                    },
+                    {
+                      "key": "nextPageToken",
+                      "value": "<string>"
+                    }
+                  ],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"data\": [\n    {\n      \"id\": \"po_8f2a1c9e\",\n      \"companyId\": \"string\",\n      \"concept\": \"string\",\n      \"documentId\": \"string\",\n      \"status\": \"COMPLETED\",\n      \"amount\": 1688.2054814522874,\n      \"currency\": \"NZD\",\n      \"beneficiary\": {\n        \"legalName\": \"string\"\n      },\n      \"product\": {\n        \"id\": \"string\",\n        \"alias\": \"string\"\n      },\n      \"bank\": {\n        \"id\": \"string\",\n        \"fullName\": \"string\"\n      },\n      \"paymentDate\": \"1977-07-15T16:10:32.216Z\",\n      \"createdAt\": \"1998-08-21T06:56:49.998Z\",\n      \"updatedAt\": \"2023-01-09T18:18:11.396Z\"\n    },\n    {\n      \"id\": \"po_8f2a1c9e\",\n      \"companyId\": \"string\",\n      \"concept\": \"string\",\n      \"documentId\": \"string\",\n      \"status\": \"REJECTED\",\n      \"amount\": 3542.3137867476285,\n      \"currency\": \"BGN\",\n      \"beneficiary\": {\n        \"legalName\": \"string\"\n      },\n      \"product\": {\n        \"id\": \"string\",\n        \"alias\": \"string\"\n      },\n      \"bank\": {\n        \"id\": \"string\",\n        \"fullName\": \"string\"\n      },\n      \"paymentDate\": \"1994-09-27T03:50:02.556Z\",\n      \"createdAt\": \"1973-01-30T04:01:23.834Z\",\n      \"updatedAt\": \"1971-02-28T11:30:16.790Z\"\n    }\n  ],\n  \"nextPageToken\": \"string\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "f9cb9954-8e92-484c-aced-0a0191f4e177",
+              "name": "Unauthorized. The bearer token is missing, invalid or expired.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "paymentorders",
+                    ":companyId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "startPaymentDate",
+                      "value": "<dateTime>"
+                    },
+                    {
+                      "key": "endPaymentDate",
+                      "value": "<dateTime>"
+                    },
+                    {
+                      "key": "status",
+                      "value": "IN_PROGRESS"
+                    },
+                    {
+                      "key": "beneficiaryLegalNameContains",
+                      "value": "<string>"
+                    },
+                    {
+                      "key": "documentIdContains",
+                      "value": "<string>"
+                    },
+                    {
+                      "key": "limit",
+                      "value": "200"
+                    },
+                    {
+                      "key": "nextPageToken",
+                      "value": "<string>"
+                    }
+                  ],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": \"user not authorized\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "8213fa86-8964-4e7e-a246-5aa10655d233",
+              "name": "Company not found, or `nextPageToken` is not a valid pagination token.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "paymentorders",
+                    ":companyId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "startPaymentDate",
+                      "value": "<dateTime>"
+                    },
+                    {
+                      "key": "endPaymentDate",
+                      "value": "<dateTime>"
+                    },
+                    {
+                      "key": "status",
+                      "value": "IN_PROGRESS"
+                    },
+                    {
+                      "key": "beneficiaryLegalNameContains",
+                      "value": "<string>"
+                    },
+                    {
+                      "key": "documentIdContains",
+                      "value": "<string>"
+                    },
+                    {
+                      "key": "limit",
+                      "value": "200"
+                    },
+                    {
+                      "key": "nextPageToken",
+                      "value": "<string>"
+                    }
+                  ],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "Not Found",
+              "code": 404,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": \"0021 companyId not found\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "5cdd160f-a067-46cf-a61b-acab357a85d0",
+              "name": "Validation Error",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "paymentorders",
+                    ":companyId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "startPaymentDate",
+                      "value": "<dateTime>"
+                    },
+                    {
+                      "key": "endPaymentDate",
+                      "value": "<dateTime>"
+                    },
+                    {
+                      "key": "status",
+                      "value": "IN_PROGRESS"
+                    },
+                    {
+                      "key": "beneficiaryLegalNameContains",
+                      "value": "<string>"
+                    },
+                    {
+                      "key": "documentIdContains",
+                      "value": "<string>"
+                    },
+                    {
+                      "key": "limit",
+                      "value": "200"
+                    },
+                    {
+                      "key": "nextPageToken",
+                      "value": "<string>"
+                    }
+                  ],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "Unprocessable Entity (WebDAV) (RFC 4918)",
+              "code": 422,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": [\n    {\n      \"loc\": [\n        \"string\",\n        \"string\"\n      ],\n      \"msg\": \"string\",\n      \"type\": \"string\",\n      \"input\": {},\n      \"ctx\": {}\n    },\n    {\n      \"loc\": [\n        \"string\",\n        \"string\"\n      ],\n      \"msg\": \"string\",\n      \"type\": \"string\",\n      \"input\": {},\n      \"ctx\": {}\n    }\n  ]\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "a562b43e-f79f-45c8-a3c7-37f165526d1b",
+          "name": "Download payment order receipt",
+          "request": {
+            "name": "Download payment order receipt",
+            "description": {
+              "content": "Downloads the PDF receipt of a payment order by its Embat `id`. This endpoint is not scoped by `companyId`: authorization is checked per payment order, and callers without access to it receive a `403`. Errors are reported with the same status code and message returned while retrieving the receipt, which may include statuses other than the ones listed here.",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "paymentorders",
+                ":id",
+                "receipt"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "<string>",
+                  "key": "id",
+                  "description": "(Required) "
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/pdf"
+              }
+            ],
+            "method": "GET",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{bearerToken}}"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "id": "fc506a92-f618-4ab2-a07e-b063c52996fe",
+              "name": "Payment order receipt document",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "paymentorders",
+                    ":id",
+                    "receipt"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "id",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/pdf"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/pdf"
+                }
+              ],
+              "body": "string",
+              "cookie": [],
+              "_postman_previewlanguage": "text"
+            },
+            {
+              "id": "763c2489-9ac8-4946-8e3d-c6a7339394a3",
+              "name": "Unauthorized. The bearer token is missing, invalid or expired.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "paymentorders",
+                    ":id",
+                    "receipt"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "id",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": \"user not authorized\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "98921682-c1de-4124-8bd3-3edab74c17e9",
+              "name": "You are not authorized to download this receipt",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "paymentorders",
+                    ":id",
+                    "receipt"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "id",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "Forbidden",
+              "code": 403,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": \"Forbidden: you are not authorized to download this receipt.\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "aaa5e2f7-6048-41c5-9b83-8dbe71fd218b",
+              "name": "No payment order matches the given `id`.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "paymentorders",
+                    ":id",
+                    "receipt"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "id",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "Not Found",
+              "code": 404,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": \"0021 companyId not found\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "349b46a0-6d84-4888-9086-6eecb0738263",
+              "name": "Validation Error",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "paymentorders",
+                    ":id",
+                    "receipt"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "id",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "Unprocessable Entity (WebDAV) (RFC 4918)",
+              "code": 422,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": [\n    {\n      \"loc\": [\n        \"string\",\n        \"string\"\n      ],\n      \"msg\": \"string\",\n      \"type\": \"string\",\n      \"input\": {},\n      \"ctx\": {}\n    },\n    {\n      \"loc\": [\n        \"string\",\n        \"string\"\n      ],\n      \"msg\": \"string\",\n      \"type\": \"string\",\n      \"input\": {},\n      \"ctx\": {}\n    }\n  ]\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        }
+      ],
+      "event": []
+    }
+  ],
+  "event": [],
+  "variable": [
+    {
+      "type": "string",
+      "value": "/",
+      "key": "baseUrl"
+    }
+  ],
+  "info": {
+    "_postman_id": "700641af-f901-4cb4-83cf-dbfeeb93402e",
+    "name": "Embat AccountingAccounts PaymentOrders API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": {
+      "content": "Embat API enables connections between any third party application and Embat. Is organized around REST principles, using HTTP responses code and returning data in JSON format. While testing the API, you have to request **sandbox credentials**.\n\nContact Support:\n Name: API Support\n Email: tech@embat.io",
+      "type": "text/plain"
+    }
+  }
+}

@@ -1,0 +1,67 @@
+{
+  "opencollection": "1.0.0",
+  "info": {
+    "name": "Embat AccountingAccounts Banks API",
+    "version": "2.120.3"
+  },
+  "items": [
+    {
+      "info": {
+        "name": "Banks",
+        "type": "folder"
+      },
+      "items": [
+        {
+          "info": {
+            "name": "List banks",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "{{baseUrl}}/banks/:companyId",
+            "params": [
+              {
+                "name": "companyId",
+                "value": "",
+                "type": "path"
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Returns the company's bank relationships. A bank relationship with no products at all is silently excluded from the results. For each relationship, `bankProducts` only lists its active products — products marked inactive, or that Embat can no longer match to an account, are silently excluded from that array."
+        },
+        {
+          "info": {
+            "name": "Retrieve bank",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "{{baseUrl}}/banks/:companyId/:id",
+            "params": [
+              {
+                "name": "id",
+                "value": "",
+                "type": "path"
+              },
+              {
+                "name": "companyId",
+                "value": "",
+                "type": "path"
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Returns a single bank relationship by its Embat `id`. Unlike the list endpoint, this always returns the relationship even when it currently has no active products, in which case `bankProducts` is an empty list."
+        }
+      ]
+    }
+  ],
+  "bundled": true
+}

@@ -1,0 +1,317 @@
+{
+  "opencollection": "1.0.0",
+  "info": {
+    "name": "Embat AccountingAccounts Operations API",
+    "version": "2.120.3"
+  },
+  "items": [
+    {
+      "info": {
+        "name": "Operations",
+        "type": "folder"
+      },
+      "items": [
+        {
+          "info": {
+            "name": "List operations",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "{{baseUrl}}/operations/:companyId",
+            "params": [
+              {
+                "name": "companyId",
+                "value": "",
+                "type": "path"
+              },
+              {
+                "name": "status",
+                "value": "",
+                "type": "query",
+                "description": "Filter operations by their current status."
+              },
+              {
+                "name": "sync",
+                "value": "",
+                "type": "query",
+                "description": "Filter by your own synchronization flag. `false` also matches operations where the value is not set."
+              },
+              {
+                "name": "startIssuanceDate",
+                "value": "",
+                "type": "query",
+                "description": "Only return operations issued on or after this date (inclusive). The range cannot exceed 90 days: if `endIssuanceDate` is also given, the span between the two cannot exceed 90 days; if `endIssuanceDate` is omitted, `startIssuanceDate` cannot be more than 90 days in the past."
+              },
+              {
+                "name": "endIssuanceDate",
+                "value": "",
+                "type": "query",
+                "description": "Only return operations issued before this date (exclusive). Combined with `startIssuanceDate`, the range cannot exceed 90 days. If used without `startIssuanceDate`, results start 90 days before this date."
+              },
+              {
+                "name": "limit",
+                "value": "",
+                "type": "query",
+                "description": "Maximum number of objects to return in the response. Default 500, maximum 2000."
+              },
+              {
+                "name": "nextPageToken",
+                "value": "",
+                "type": "query",
+                "description": "Token to fetch the next page of results, taken from the `nextPageToken` returned by the previous request with the same filters. Omit it to fetch the first page. An invalid or malformed token is rejected with `404`."
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Returns the operations created through this API for a company (`POST /operations/{companyId}` or its bulk variant) — operations created directly in Embat or synchronized from other sources are not returned here. Results are paginated: use `limit` to control page size and pass the returned `nextPageToken` to fetch the next page. `startIssuanceDate`/`endIssuanceDate` filter by issuance date and are inclusive on the start bound and exclusive on the end bound; the range cannot exceed 90 days."
+        },
+        {
+          "info": {
+            "name": "Create operation",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "{{baseUrl}}/operations/:companyId",
+            "params": [
+              {
+                "name": "companyId",
+                "value": "",
+                "type": "path"
+              }
+            ],
+            "body": {
+              "type": "json",
+              "data": "{}"
+            },
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Creates an operation (invoice/bill) with an optional `customId`; if omitted, Embat auto-generates one. Sending an operation whose `customId` already exists updates it, except when the existing operation already has a payment recorded against it in Embat: in that case the request has **no effect** on most fields — only `dueDate` and/or `paymentDate` are applied, and only when the operation's current status is `pending` or `overdue`; any other field in the payload is silently discarded. An operati"
+        },
+        {
+          "info": {
+            "name": "Update operations in bulk",
+            "type": "http"
+          },
+          "http": {
+            "method": "PATCH",
+            "url": "{{baseUrl}}/operations/:companyId",
+            "params": [
+              {
+                "name": "companyId",
+                "value": "",
+                "type": "path"
+              }
+            ],
+            "body": {
+              "type": "json",
+              "data": "{}"
+            },
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Updates several operations in a single call, identified by `customId`. Entries whose `customId` does not match any existing operation are silently skipped — the call returns `200` for the whole batch. The same rules as the single update endpoint apply to operations that already have a payment recorded against them."
+        },
+        {
+          "info": {
+            "name": "Delete operations in bulk",
+            "type": "http"
+          },
+          "http": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/operations/:companyId",
+            "params": [
+              {
+                "name": "companyId",
+                "value": "",
+                "type": "path"
+              }
+            ],
+            "body": {
+              "type": "json",
+              "data": "{}"
+            },
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Cancels several operations in a single call, identified by `customId`, following the same rules as the single delete endpoint. Only the operations that exist and are in a deletable state are cancelled; the rest are silently skipped."
+        },
+        {
+          "info": {
+            "name": "Retrieve operation",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "{{baseUrl}}/operations/:companyId/:customId",
+            "params": [
+              {
+                "name": "customId",
+                "value": "",
+                "type": "path"
+              },
+              {
+                "name": "companyId",
+                "value": "",
+                "type": "path"
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Returns a single operation by `customId`."
+        },
+        {
+          "info": {
+            "name": "Update operation",
+            "type": "http"
+          },
+          "http": {
+            "method": "PATCH",
+            "url": "{{baseUrl}}/operations/:companyId/:customId",
+            "params": [
+              {
+                "name": "customId",
+                "value": "",
+                "type": "path"
+              },
+              {
+                "name": "companyId",
+                "value": "",
+                "type": "path"
+              }
+            ],
+            "body": {
+              "type": "json",
+              "data": "{}"
+            },
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Updates an operation identified by `customId`. If the operation already has a payment recorded against it in Embat, the request has **no effect** on most fields — only `dueDate` and/or `paymentDate` are applied, and only when the operation's current status is `pending` or `overdue`; any other field in the payload is silently discarded. Updates to an operation that belongs to an invoice group (remittance) are silently ignored (`200` is still returned): its status is managed by the remittance that"
+        },
+        {
+          "info": {
+            "name": "Delete operation",
+            "type": "http"
+          },
+          "http": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/operations/:companyId/:customId",
+            "params": [
+              {
+                "name": "customId",
+                "value": "",
+                "type": "path"
+              },
+              {
+                "name": "companyId",
+                "value": "",
+                "type": "path"
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Cancels an operation by `customId`: its `status` is set to `cancel` and its pending amounts to 0. Only operations whose current status is not `paid`, `cancel` or `payment_in_progress` can be deleted."
+        },
+        {
+          "info": {
+            "name": "Create operations in bulk",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "{{baseUrl}}/operations/:companyId/bulk",
+            "params": [
+              {
+                "name": "companyId",
+                "value": "",
+                "type": "path"
+              }
+            ],
+            "body": {
+              "type": "json",
+              "data": "{}"
+            },
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Creates several operations in a single call, following the same rules as the single operation creation endpoint. Operations sharing the same `customId` within the request are deduplicated and only the first occurrence is processed; operations with `amount` equal to `0` are silently discarded. If none of the submitted operations are eligible, the call still returns `200` with an empty `data` list."
+        },
+        {
+          "info": {
+            "name": "Add internal attributes to operations in bulk",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "{{baseUrl}}/operations/:companyId/attributes/bulk",
+            "params": [
+              {
+                "name": "companyId",
+                "value": "",
+                "type": "path"
+              }
+            ],
+            "body": {
+              "type": "json",
+              "data": "{}"
+            },
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Attaches internal attribute values to operations, identified by `customId`. These attributes are for internal use only and are not shared back with the ERP through the regular operation fields."
+        },
+        {
+          "info": {
+            "name": "Remove internal attributes from operations in bulk",
+            "type": "http"
+          },
+          "http": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/operations/:companyId/attributes/bulk",
+            "params": [
+              {
+                "name": "companyId",
+                "value": "",
+                "type": "path"
+              }
+            ],
+            "body": {
+              "type": "json",
+              "data": "{}"
+            },
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Removes internal attribute values from operations, identified by `customId`."
+        }
+      ]
+    }
+  ],
+  "bundled": true
+}

@@ -1,0 +1,3494 @@
+{
+  "item": [
+    {
+      "id": "fdf6b2f0-b7cb-429d-894a-3e58a6314d0e",
+      "name": "AccountingEntries",
+      "description": {
+        "content": "`AccountingEntry` represents a single line of a company's general accounting journal — an outflow (`assetAmount`) or inflow (`liabilityAmount`) movement posted to a ledger account (`accountingCode`). `customId` is the unique identifier of an entry: set your own value to use as your ERP accounting entry ID, or let Embat auto-generate one. Entries that belong to the same journal document (e.g. all the lines of one invoice posting) can share the same `accountingEntryCode`.\n\nAccounting entries are the accounting side of Embat's reconciliation process with `Transactions` (bank movements): Embat matches entries against transactions and exposes the outcome here through `reconciled` and `reconciliationsIds`. An entry can also reference a `Contact` (client/supplier, via `contactCustomId`, when `accountingCode` is a contacts account), a `Payment` it relates to (`paymentId`), or a source document (`documentId`).\n\n**Typical flow:** accounting entries synchronize your general ledger in both directions between your ERP and Embat.\n\n1. **Notify Embat of entries posted in your ERP.** When a journal line is recorded in your ERP, create it in Embat with `POST /accountingentries/{companyId}` (or the bulk variant):\n\n```json\nPOST /accountingentries/{companyId}\n{\n  \"customId\": \"erp-entry-2024-001\",\n  \"accountingEntryCode\": \"invoice-2024-001\",\n  \"accountingCode\": \"4300001\",\n  \"accountingName\": \"Trade debtors\",\n  \"date\": \"2024-01-15T00:00:00Z\",\n  \"assetAmount\": 1250.50,\n  \"liabilityAmount\": 0,\n  \"currency\": \"EUR\"\n}\n```\n\n2. **Read entries and their reconciliation status.** Use `GET /accountingentries/{companyId}` with the `reconciled` filter and `startUpdatedAt`/`endUpdatedAt` for incremental reads since your last poll, or `GET /accountingentries/{companyId}/{customId}` to retrieve a single entry.\n3. **Correct or remove entries as your ledger changes.** Use `PATCH /accountingentries/{companyId}/{customId}` (or the bulk variant) to update fields — resend the current `description` if you want to keep it, since omitting it resets it to an auto-generated value. You can also resend the full entry with `POST`: creation is an upsert, so an existing `customId` is updated instead of duplicated. Use `DELETE` to remove entries individually or in bulk, by `customId` or by `accountingEntryCode`/`accountingEntryCodeId`.\n",
+        "type": "text/plain"
+      },
+      "item": [
+        {
+          "id": "8ba9bff0-cc08-4059-a1ac-6700f01310e3",
+          "name": "List accounting entries",
+          "request": {
+            "name": "List accounting entries",
+            "description": {
+              "content": "Returns the accounting entries of a company, ordered by accounting date (most recent first). Results are paginated: use `limit` to control page size and pass the returned `nextPageToken` to fetch the next page. `startDate`/`endDate` filter by accounting date, and `startUpdatedAt`/`endUpdatedAt` filter by last modification time, useful for incremental synchronization. `startDate`/`startUpdatedAt` are inclusive, `endDate`/`endUpdatedAt` are exclusive, and each date range spans at most 90 days. If neither `startDate` nor `endDate` is given, only entries dated up to today are returned.",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "accountingentries",
+                ":companyId"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [
+                {
+                  "disabled": false,
+                  "key": "reconciled",
+                  "value": "<boolean>",
+                  "description": "Filter by reconciliation status. `false` also matches entries that are not yet reconciled or have no status set."
+                },
+                {
+                  "disabled": false,
+                  "key": "accountingCode",
+                  "value": "<string>",
+                  "description": "Filter by ledger account code (`accountingCode`)."
+                },
+                {
+                  "disabled": false,
+                  "key": "accountingEntryCode",
+                  "value": "<string>",
+                  "description": "Filter by `accountingEntryCode` (does not match `accountingEntryCodeId`)."
+                },
+                {
+                  "disabled": false,
+                  "key": "startDate",
+                  "value": "<date>",
+                  "description": "Only return entries dated on or after this date (inclusive). The range cannot exceed 90 days: if `endDate` is also given, the span between the two cannot exceed 90 days; if `endDate` is omitted, `startDate` cannot be more than 90 days in the past."
+                },
+                {
+                  "disabled": false,
+                  "key": "endDate",
+                  "value": "<date>",
+                  "description": "Only return entries dated before this date (exclusive). Combined with `startDate`, the range cannot exceed 90 days. If used without `startDate`, results start 90 days before this date."
+                },
+                {
+                  "disabled": false,
+                  "key": "startUpdatedAt",
+                  "value": "<dateTime>",
+                  "description": "Only return entries last modified on or after this timestamp (inclusive). The range cannot exceed 90 days: if `endUpdatedAt` is also given, the span between the two cannot exceed 90 days; if `endUpdatedAt` is omitted, `startUpdatedAt` cannot be more than 90 days in the past."
+                },
+                {
+                  "disabled": false,
+                  "key": "endUpdatedAt",
+                  "value": "<dateTime>",
+                  "description": "Only return entries last modified before this timestamp (exclusive). Combined with `startUpdatedAt`, the range cannot exceed 90 days. If used without `startUpdatedAt`, results start 90 days before this timestamp."
+                },
+                {
+                  "disabled": false,
+                  "key": "limit",
+                  "value": "500",
+                  "description": "Maximum number of objects to return in the response. Default 500, maximum 2000."
+                },
+                {
+                  "disabled": false,
+                  "key": "nextPageToken",
+                  "value": "<string>",
+                  "description": "Token to fetch the next page of results, taken from the `nextPageToken` returned by the previous request with the same filters. Omit it to fetch the first page. An invalid or malformed token is rejected with `404`."
+                }
+              ],
+              "variable": [
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "<string>",
+                  "key": "companyId",
+                  "description": "(Required) "
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{bearerToken}}"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "id": "a801a581-cb6d-4a0c-bfe9-4099be2aae98",
+              "name": "Successful Response",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "accountingentries",
+                    ":companyId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "reconciled",
+                      "value": "<boolean>"
+                    },
+                    {
+                      "key": "accountingCode",
+                      "value": "<string>"
+                    },
+                    {
+                      "key": "accountingEntryCode",
+                      "value": "<string>"
+                    },
+                    {
+                      "key": "startDate",
+                      "value": "<date>"
+                    },
+                    {
+                      "key": "endDate",
+                      "value": "<date>"
+                    },
+                    {
+                      "key": "startUpdatedAt",
+                      "value": "<dateTime>"
+                    },
+                    {
+                      "key": "endUpdatedAt",
+                      "value": "<dateTime>"
+                    },
+                    {
+                      "key": "limit",
+                      "value": "500"
+                    },
+                    {
+                      "key": "nextPageToken",
+                      "value": "<string>"
+                    }
+                  ],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"data\": [\n    {\n      \"accountingCode\": \"4300001\",\n      \"assetAmount\": 1250.5,\n      \"liabilityAmount\": 0,\n      \"date\": \"2024-01-15T00:00:00Z\",\n      \"id\": \"string\",\n      \"companyId\": \"string\",\n      \"updatedAt\": \"1988-03-22T11:51:58.992Z\",\n      \"createdAt\": \"2009-04-19T15:19:05.476Z\",\n      \"counterpartAccountingCode\": \"string\",\n      \"accountingName\": \"string\",\n      \"accountingAssetAmount\": 7553.290812278163,\n      \"balance\": 2547.2044189693243,\n      \"accountingLiabilityAmount\": 1635.2900021302141,\n      \"currency\": \"SRD\",\n      \"accountingCurrency\": \"XTS\",\n      \"contactCustomId\": \"string\",\n      \"exchangeRate\": 2183.6461526827143,\n      \"additionalInfo\": {\n        \"key_0\": \"string\"\n      },\n      \"description\": \"string\",\n      \"documentId\": \"string\",\n      \"transactionsIds\": [\n        \"string\",\n        \"string\"\n      ],\n      \"paymentId\": \"string\",\n      \"attributes\": [\n        {\n          \"customId\": \"cost-center\",\n          \"value\": \"Marketing\",\n          \"valueCustomId\": \"string\",\n          \"parentCustomId\": \"string\"\n        },\n        {\n          \"customId\": \"cost-center\",\n          \"value\": \"Marketing\",\n          \"valueCustomId\": \"string\",\n          \"parentCustomId\": \"string\"\n        }\n      ],\n      \"customId\": \"string\",\n      \"accountingEntryCode\": \"string\",\n      \"accountingEntryCodeId\": \"string\",\n      \"type\": \"analytics\",\n      \"reconciled\": false,\n      \"reconciliationsIds\": [\n        \"string\",\n        \"string\"\n      ]\n    },\n    {\n      \"accountingCode\": \"4300001\",\n      \"assetAmount\": 1250.5,\n      \"liabilityAmount\": 0,\n      \"date\": \"2024-01-15T00:00:00Z\",\n      \"id\": \"string\",\n      \"companyId\": \"string\",\n      \"updatedAt\": \"1959-05-13T04:13:45.449Z\",\n      \"createdAt\": \"2002-03-13T18:46:01.710Z\",\n      \"counterpartAccountingCode\": \"string\",\n      \"accountingName\": \"string\",\n      \"accountingAssetAmount\": 5864.171657262629,\n      \"balance\": 662.3414990044386,\n      \"accountingLiabilityAmount\": 7414.9166172672585,\n      \"currency\": \"PEN\",\n      \"accountingCurrency\": \"COU\",\n      \"contactCustomId\": \"string\",\n      \"exchangeRate\": 3289.872795562662,\n      \"additionalInfo\": {\n        \"key_0\": true,\n        \"key_1\": 1906.0123271390473,\n        \"key_2\": 9087.057919458595\n      },\n      \"description\": \"string\",\n      \"documentId\": \"string\",\n      \"transactionsIds\": [\n        \"string\",\n        \"string\"\n      ],\n      \"paymentId\": \"string\",\n      \"attributes\": [\n        {\n          \"customId\": \"cost-center\",\n          \"value\": \"Marketing\",\n          \"valueCustomId\": \"string\",\n          \"parentCustomId\": \"string\"\n        },\n        {\n          \"customId\": \"cost-center\",\n          \"value\": \"Marketing\",\n          \"valueCustomId\": \"string\",\n          \"parentCustomId\": \"string\"\n        }\n      ],\n      \"customId\": \"string\",\n      \"accountingEntryCode\": \"string\",\n      \"accountingEntryCodeId\": \"string\",\n      \"type\": \"analytics\",\n      \"reconciled\": false,\n      \"reconciliationsIds\": [\n        \"string\",\n        \"string\"\n      ]\n    }\n  ],\n  \"nextPageToken\": \"string\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "d9f8d6e9-1687-46a0-ad7a-1980eb8f2292",
+              "name": "Invalid date range: when only a start bound (`startDate` or `startUpdatedAt`) is given, it must not be in the future and cannot be more than 90 days in the past.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "accountingentries",
+                    ":companyId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "reconciled",
+                      "value": "<boolean>"
+                    },
+                    {
+                      "key": "accountingCode",
+                      "value": "<string>"
+                    },
+                    {
+                      "key": "accountingEntryCode",
+                      "value": "<string>"
+                    },
+                    {
+                      "key": "startDate",
+                      "value": "<date>"
+                    },
+                    {
+                      "key": "endDate",
+                      "value": "<date>"
+                    },
+                    {
+                      "key": "startUpdatedAt",
+                      "value": "<dateTime>"
+                    },
+                    {
+                      "key": "endUpdatedAt",
+                      "value": "<dateTime>"
+                    },
+                    {
+                      "key": "limit",
+                      "value": "500"
+                    },
+                    {
+                      "key": "nextPageToken",
+                      "value": "<string>"
+                    }
+                  ],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": \"startDate is a date after endDate\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "28fa839c-6b3d-41a8-9121-49182344de3a",
+              "name": "Unauthorized. The bearer token is missing, invalid or expired.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "accountingentries",
+                    ":companyId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "reconciled",
+                      "value": "<boolean>"
+                    },
+                    {
+                      "key": "accountingCode",
+                      "value": "<string>"
+                    },
+                    {
+                      "key": "accountingEntryCode",
+                      "value": "<string>"
+                    },
+                    {
+                      "key": "startDate",
+                      "value": "<date>"
+                    },
+                    {
+                      "key": "endDate",
+                      "value": "<date>"
+                    },
+                    {
+                      "key": "startUpdatedAt",
+                      "value": "<dateTime>"
+                    },
+                    {
+                      "key": "endUpdatedAt",
+                      "value": "<dateTime>"
+                    },
+                    {
+                      "key": "limit",
+                      "value": "500"
+                    },
+                    {
+                      "key": "nextPageToken",
+                      "value": "<string>"
+                    }
+                  ],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": \"user not authorized\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "62e81f68-be46-407f-9186-689445dfdd88",
+              "name": "Company not found, invalid `nextPageToken`, or an invalid date range when both bounds are given (start after end, or a span of more than 90 days).",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "accountingentries",
+                    ":companyId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "reconciled",
+                      "value": "<boolean>"
+                    },
+                    {
+                      "key": "accountingCode",
+                      "value": "<string>"
+                    },
+                    {
+                      "key": "accountingEntryCode",
+                      "value": "<string>"
+                    },
+                    {
+                      "key": "startDate",
+                      "value": "<date>"
+                    },
+                    {
+                      "key": "endDate",
+                      "value": "<date>"
+                    },
+                    {
+                      "key": "startUpdatedAt",
+                      "value": "<dateTime>"
+                    },
+                    {
+                      "key": "endUpdatedAt",
+                      "value": "<dateTime>"
+                    },
+                    {
+                      "key": "limit",
+                      "value": "500"
+                    },
+                    {
+                      "key": "nextPageToken",
+                      "value": "<string>"
+                    }
+                  ],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "Not Found",
+              "code": 404,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": \"0021 companyId not found\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "77a61fd8-0672-4ceb-a0bf-559e03a85427",
+              "name": "Validation Error",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "accountingentries",
+                    ":companyId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "reconciled",
+                      "value": "<boolean>"
+                    },
+                    {
+                      "key": "accountingCode",
+                      "value": "<string>"
+                    },
+                    {
+                      "key": "accountingEntryCode",
+                      "value": "<string>"
+                    },
+                    {
+                      "key": "startDate",
+                      "value": "<date>"
+                    },
+                    {
+                      "key": "endDate",
+                      "value": "<date>"
+                    },
+                    {
+                      "key": "startUpdatedAt",
+                      "value": "<dateTime>"
+                    },
+                    {
+                      "key": "endUpdatedAt",
+                      "value": "<dateTime>"
+                    },
+                    {
+                      "key": "limit",
+                      "value": "500"
+                    },
+                    {
+                      "key": "nextPageToken",
+                      "value": "<string>"
+                    }
+                  ],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "Unprocessable Entity (WebDAV) (RFC 4918)",
+              "code": 422,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": [\n    {\n      \"loc\": [\n        \"string\",\n        \"string\"\n      ],\n      \"msg\": \"string\",\n      \"type\": \"string\",\n      \"input\": {},\n      \"ctx\": {}\n    },\n    {\n      \"loc\": [\n        \"string\",\n        \"string\"\n      ],\n      \"msg\": \"string\",\n      \"type\": \"string\",\n      \"input\": {},\n      \"ctx\": {}\n    }\n  ]\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "409735b1-97c0-45cd-8e83-37fa30f9a9b0",
+          "name": "Create accounting entry",
+          "request": {
+            "name": "Create accounting entry",
+            "description": {
+              "content": "Creates a single accounting entry (one line of a general ledger journal). If `customId` is omitted, Embat auto-generates one; if the `customId` already exists, the entry is updated instead of duplicated (upsert). An entry always carries both an outflow side (`assetAmount`, stored with its sign inverted so negative means money out) and an inflow side (`liabilityAmount`, stored as sent); if you only send one, the other defaults to 0. If `description` is omitted, Embat generates one from the entry's identifier. Entries dated before the ledger account's configured start date are excluded from reconciliation matching.",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "accountingentries",
+                ":companyId"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "<string>",
+                  "key": "companyId",
+                  "description": "(Required) "
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "POST",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{bearerToken}}"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"accountingCode\": \"<string>\",\n  \"assetAmount\": \"<number>\",\n  \"liabilityAmount\": \"<number>\",\n  \"date\": \"<dateTime>\",\n  \"counterpartAccountingCode\": \"<string>\",\n  \"accountingName\": \"<string>\",\n  \"accountingAssetAmount\": \"<number>\",\n  \"balance\": \"<number>\",\n  \"accountingLiabilityAmount\": \"<number>\",\n  \"currency\": \"<string>\",\n  \"accountingCurrency\": \"<string>\",\n  \"contactCustomId\": \"<string>\",\n  \"exchangeRate\": \"<number>\",\n  \"additionalInfo\": {\n    \"key_0\": 6128,\n    \"key_1\": 7489,\n    \"key_2\": 713.1851644929021,\n    \"key_3\": \"string\"\n  },\n  \"description\": \"<string>\",\n  \"documentId\": \"<string>\",\n  \"transactionsIds\": [\n    \"<string>\",\n    \"<string>\"\n  ],\n  \"paymentId\": \"<string>\",\n  \"attributes\": [\n    {\n      \"customId\": \"<string>\",\n      \"value\": \"<string>\",\n      \"valueCustomId\": \"<string>\",\n      \"parentCustomId\": \"<string>\"\n    },\n    {\n      \"customId\": \"<string>\",\n      \"value\": \"<string>\",\n      \"valueCustomId\": \"<string>\",\n      \"parentCustomId\": \"<string>\"\n    }\n  ],\n  \"customId\": \"<string>\",\n  \"accountingEntryCode\": \"<string>\",\n  \"accountingEntryCodeId\": \"<string>\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "id": "fb0d9109-2427-46cf-a2e0-0462689de2fb",
+              "name": "Successful Response",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "accountingentries",
+                    ":companyId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"accountingCode\": \"4300001\",\n  \"assetAmount\": 1250.5,\n  \"liabilityAmount\": 0,\n  \"date\": \"2024-01-15T00:00:00Z\",\n  \"counterpartAccountingCode\": \"<string>\",\n  \"accountingName\": \"<string>\",\n  \"accountingAssetAmount\": \"<number>\",\n  \"balance\": \"<number>\",\n  \"accountingLiabilityAmount\": \"<number>\",\n  \"currency\": \"IRR\",\n  \"accountingCurrency\": \"ALL\",\n  \"contactCustomId\": \"<string>\",\n  \"exchangeRate\": \"<number>\",\n  \"additionalInfo\": {\n    \"key_0\": false\n  },\n  \"description\": \"<string>\",\n  \"documentId\": \"<string>\",\n  \"transactionsIds\": [\n    \"<string>\",\n    \"<string>\"\n  ],\n  \"paymentId\": \"<string>\",\n  \"attributes\": [\n    {\n      \"customId\": \"cost-center\",\n      \"value\": \"Marketing\",\n      \"valueCustomId\": \"string\",\n      \"parentCustomId\": \"string\"\n    },\n    {\n      \"customId\": \"cost-center\",\n      \"value\": \"Marketing\",\n      \"valueCustomId\": \"string\",\n      \"parentCustomId\": \"string\"\n    }\n  ],\n  \"customId\": \"<string>\",\n  \"accountingEntryCode\": \"<string>\",\n  \"accountingEntryCodeId\": \"<string>\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"id\": \"string\",\n  \"customId\": \"string\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "40be7d91-3b77-4310-8231-2534be7de8a7",
+              "name": "Unauthorized. The bearer token is missing, invalid or expired.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "accountingentries",
+                    ":companyId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"accountingCode\": \"4300001\",\n  \"assetAmount\": 1250.5,\n  \"liabilityAmount\": 0,\n  \"date\": \"2024-01-15T00:00:00Z\",\n  \"counterpartAccountingCode\": \"<string>\",\n  \"accountingName\": \"<string>\",\n  \"accountingAssetAmount\": \"<number>\",\n  \"balance\": \"<number>\",\n  \"accountingLiabilityAmount\": \"<number>\",\n  \"currency\": \"IRR\",\n  \"accountingCurrency\": \"ALL\",\n  \"contactCustomId\": \"<string>\",\n  \"exchangeRate\": \"<number>\",\n  \"additionalInfo\": {\n    \"key_0\": false\n  },\n  \"description\": \"<string>\",\n  \"documentId\": \"<string>\",\n  \"transactionsIds\": [\n    \"<string>\",\n    \"<string>\"\n  ],\n  \"paymentId\": \"<string>\",\n  \"attributes\": [\n    {\n      \"customId\": \"cost-center\",\n      \"value\": \"Marketing\",\n      \"valueCustomId\": \"string\",\n      \"parentCustomId\": \"string\"\n    },\n    {\n      \"customId\": \"cost-center\",\n      \"value\": \"Marketing\",\n      \"valueCustomId\": \"string\",\n      \"parentCustomId\": \"string\"\n    }\n  ],\n  \"customId\": \"<string>\",\n  \"accountingEntryCode\": \"<string>\",\n  \"accountingEntryCodeId\": \"<string>\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": \"user not authorized\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "1573f8c8-d27f-4c7e-a1a5-90d07735c8df",
+              "name": "Not found. The requested resource or `companyId` does not exist.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "accountingentries",
+                    ":companyId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"accountingCode\": \"4300001\",\n  \"assetAmount\": 1250.5,\n  \"liabilityAmount\": 0,\n  \"date\": \"2024-01-15T00:00:00Z\",\n  \"counterpartAccountingCode\": \"<string>\",\n  \"accountingName\": \"<string>\",\n  \"accountingAssetAmount\": \"<number>\",\n  \"balance\": \"<number>\",\n  \"accountingLiabilityAmount\": \"<number>\",\n  \"currency\": \"IRR\",\n  \"accountingCurrency\": \"ALL\",\n  \"contactCustomId\": \"<string>\",\n  \"exchangeRate\": \"<number>\",\n  \"additionalInfo\": {\n    \"key_0\": false\n  },\n  \"description\": \"<string>\",\n  \"documentId\": \"<string>\",\n  \"transactionsIds\": [\n    \"<string>\",\n    \"<string>\"\n  ],\n  \"paymentId\": \"<string>\",\n  \"attributes\": [\n    {\n      \"customId\": \"cost-center\",\n      \"value\": \"Marketing\",\n      \"valueCustomId\": \"string\",\n      \"parentCustomId\": \"string\"\n    },\n    {\n      \"customId\": \"cost-center\",\n      \"value\": \"Marketing\",\n      \"valueCustomId\": \"string\",\n      \"parentCustomId\": \"string\"\n    }\n  ],\n  \"customId\": \"<string>\",\n  \"accountingEntryCode\": \"<string>\",\n  \"accountingEntryCodeId\": \"<string>\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Not Found",
+              "code": 404,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": \"0021 companyId not found\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "7b3066d9-4e3b-4f37-8b9f-394f06605aa2",
+              "name": "Validation Error",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "accountingentries",
+                    ":companyId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"accountingCode\": \"4300001\",\n  \"assetAmount\": 1250.5,\n  \"liabilityAmount\": 0,\n  \"date\": \"2024-01-15T00:00:00Z\",\n  \"counterpartAccountingCode\": \"<string>\",\n  \"accountingName\": \"<string>\",\n  \"accountingAssetAmount\": \"<number>\",\n  \"balance\": \"<number>\",\n  \"accountingLiabilityAmount\": \"<number>\",\n  \"currency\": \"IRR\",\n  \"accountingCurrency\": \"ALL\",\n  \"contactCustomId\": \"<string>\",\n  \"exchangeRate\": \"<number>\",\n  \"additionalInfo\": {\n    \"key_0\": false\n  },\n  \"description\": \"<string>\",\n  \"documentId\": \"<string>\",\n  \"transactionsIds\": [\n    \"<string>\",\n    \"<string>\"\n  ],\n  \"paymentId\": \"<string>\",\n  \"attributes\": [\n    {\n      \"customId\": \"cost-center\",\n      \"value\": \"Marketing\",\n      \"valueCustomId\": \"string\",\n      \"parentCustomId\": \"string\"\n    },\n    {\n      \"customId\": \"cost-center\",\n      \"value\": \"Marketing\",\n      \"valueCustomId\": \"string\",\n      \"parentCustomId\": \"string\"\n    }\n  ],\n  \"customId\": \"<string>\",\n  \"accountingEntryCode\": \"<string>\",\n  \"accountingEntryCodeId\": \"<string>\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Unprocessable Entity (WebDAV) (RFC 4918)",
+              "code": 422,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": [\n    {\n      \"loc\": [\n        \"string\",\n        \"string\"\n      ],\n      \"msg\": \"string\",\n      \"type\": \"string\",\n      \"input\": {},\n      \"ctx\": {}\n    },\n    {\n      \"loc\": [\n        \"string\",\n        \"string\"\n      ],\n      \"msg\": \"string\",\n      \"type\": \"string\",\n      \"input\": {},\n      \"ctx\": {}\n    }\n  ]\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "f6f4915c-795d-4799-ad70-aca77646078d",
+              "name": "Unexpected error. Contact support if it persists.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "accountingentries",
+                    ":companyId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"accountingCode\": \"4300001\",\n  \"assetAmount\": 1250.5,\n  \"liabilityAmount\": 0,\n  \"date\": \"2024-01-15T00:00:00Z\",\n  \"counterpartAccountingCode\": \"<string>\",\n  \"accountingName\": \"<string>\",\n  \"accountingAssetAmount\": \"<number>\",\n  \"balance\": \"<number>\",\n  \"accountingLiabilityAmount\": \"<number>\",\n  \"currency\": \"IRR\",\n  \"accountingCurrency\": \"ALL\",\n  \"contactCustomId\": \"<string>\",\n  \"exchangeRate\": \"<number>\",\n  \"additionalInfo\": {\n    \"key_0\": false\n  },\n  \"description\": \"<string>\",\n  \"documentId\": \"<string>\",\n  \"transactionsIds\": [\n    \"<string>\",\n    \"<string>\"\n  ],\n  \"paymentId\": \"<string>\",\n  \"attributes\": [\n    {\n      \"customId\": \"cost-center\",\n      \"value\": \"Marketing\",\n      \"valueCustomId\": \"string\",\n      \"parentCustomId\": \"string\"\n    },\n    {\n      \"customId\": \"cost-center\",\n      \"value\": \"Marketing\",\n      \"valueCustomId\": \"string\",\n      \"parentCustomId\": \"string\"\n    }\n  ],\n  \"customId\": \"<string>\",\n  \"accountingEntryCode\": \"<string>\",\n  \"accountingEntryCodeId\": \"<string>\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Internal Server Error",
+              "code": 500,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": \"Internal server error\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "4a9ab18b-9e15-4c9b-b070-bf9be23ba5c1",
+          "name": "Update accounting entries in bulk",
+          "request": {
+            "name": "Update accounting entries in bulk",
+            "description": {
+              "content": "Updates one or more fields of several accounting entries, identified by `customId`, following the same rules as the single-entry update endpoint — including the `description` reset-when-omitted behavior. Entries whose `customId` does not match any existing entry are silently skipped; the call still returns `200` for the whole batch.",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "accountingentries",
+                ":companyId"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "<string>",
+                  "key": "companyId",
+                  "description": "(Required) "
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "PATCH",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{bearerToken}}"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"data\": [\n    {\n      \"customId\": \"<string>\",\n      \"accountingCode\": \"<string>\",\n      \"counterpartAccountingCode\": \"<string>\",\n      \"accountingName\": \"<string>\",\n      \"assetAmount\": \"<number>\",\n      \"accountingAssetAmount\": \"<number>\",\n      \"balance\": \"<number>\",\n      \"liabilityAmount\": \"<number>\",\n      \"accountingLiabilityAmount\": \"<number>\",\n      \"currency\": \"<string>\",\n      \"accountingCurrency\": \"<string>\",\n      \"contactCustomId\": \"<string>\",\n      \"exchangeRate\": \"<number>\",\n      \"additionalInfo\": {\n        \"key_0\": 2199.5633176263627\n      },\n      \"description\": \"<string>\",\n      \"documentId\": \"<string>\",\n      \"transactionsIds\": [\n        \"<string>\",\n        \"<string>\"\n      ],\n      \"paymentId\": \"<string>\",\n      \"date\": \"<dateTime>\",\n      \"attributes\": [\n        {\n          \"customId\": \"<string>\",\n          \"value\": \"<string>\",\n          \"valueCustomId\": \"<string>\",\n          \"parentCustomId\": \"<string>\"\n        },\n        {\n          \"customId\": \"<string>\",\n          \"value\": \"<string>\",\n          \"valueCustomId\": \"<string>\",\n          \"parentCustomId\": \"<string>\"\n        }\n      ]\n    },\n    {\n      \"customId\": \"<string>\",\n      \"accountingCode\": \"<string>\",\n      \"counterpartAccountingCode\": \"<string>\",\n      \"accountingName\": \"<string>\",\n      \"assetAmount\": \"<number>\",\n      \"accountingAssetAmount\": \"<number>\",\n      \"balance\": \"<number>\",\n      \"liabilityAmount\": \"<number>\",\n      \"accountingLiabilityAmount\": \"<number>\",\n      \"currency\": \"<string>\",\n      \"accountingCurrency\": \"<string>\",\n      \"contactCustomId\": \"<string>\",\n      \"exchangeRate\": \"<number>\",\n      \"additionalInfo\": {\n        \"key_0\": true\n      },\n      \"description\": \"<string>\",\n      \"documentId\": \"<string>\",\n      \"transactionsIds\": [\n        \"<string>\",\n        \"<string>\"\n      ],\n      \"paymentId\": \"<string>\",\n      \"date\": \"<dateTime>\",\n      \"attributes\": [\n        {\n          \"customId\": \"<string>\",\n          \"value\": \"<string>\",\n          \"valueCustomId\": \"<string>\",\n          \"parentCustomId\": \"<string>\"\n        },\n        {\n          \"customId\": \"<string>\",\n          \"value\": \"<string>\",\n          \"valueCustomId\": \"<string>\",\n          \"parentCustomId\": \"<string>\"\n        }\n      ]\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "id": "bb0139ab-8036-4c28-a906-910daf71e3d3",
+              "name": "Successful Response",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "accountingentries",
+                    ":companyId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "PATCH",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"data\": [\n    {\n      \"customId\": \"erp-entry-2024-001\",\n      \"accountingCode\": \"string\",\n      \"counterpartAccountingCode\": \"string\",\n      \"accountingName\": \"string\",\n      \"assetAmount\": 1280.5560462205435,\n      \"accountingAssetAmount\": 1699.710919853058,\n      \"balance\": 9151.707890442154,\n      \"liabilityAmount\": 5003.23745366503,\n      \"accountingLiabilityAmount\": 4366.514121503562,\n      \"currency\": \"SCR\",\n      \"accountingCurrency\": \"CAD\",\n      \"contactCustomId\": \"string\",\n      \"exchangeRate\": 6199.540447102931,\n      \"additionalInfo\": {\n        \"key_0\": 1815\n      },\n      \"description\": \"string\",\n      \"documentId\": \"string\",\n      \"transactionsIds\": [\n        \"string\",\n        \"string\"\n      ],\n      \"paymentId\": \"string\",\n      \"date\": \"1951-09-11T11:42:45.092Z\",\n      \"attributes\": [\n        {\n          \"customId\": \"cost-center\",\n          \"value\": \"Marketing\",\n          \"valueCustomId\": \"string\",\n          \"parentCustomId\": \"string\"\n        },\n        {\n          \"customId\": \"cost-center\",\n          \"value\": \"Marketing\",\n          \"valueCustomId\": \"string\",\n          \"parentCustomId\": \"string\"\n        }\n      ]\n    },\n    {\n      \"customId\": \"erp-entry-2024-001\",\n      \"accountingCode\": \"string\",\n      \"counterpartAccountingCode\": \"string\",\n      \"accountingName\": \"string\",\n      \"assetAmount\": 5407.239196025335,\n      \"accountingAssetAmount\": 1445.0545433011853,\n      \"balance\": 9239.109128542688,\n      \"liabilityAmount\": 521.635058044495,\n      \"accountingLiabilityAmount\": 5096.528454608916,\n      \"currency\": \"CHE\",\n      \"accountingCurrency\": \"UZS\",\n      \"contactCustomId\": \"string\",\n      \"exchangeRate\": 5528.404183604834,\n      \"additionalInfo\": {\n        \"key_0\": true,\n        \"key_1\": false\n      },\n      \"description\": \"string\",\n      \"documentId\": \"string\",\n      \"transactionsIds\": [\n        \"string\",\n        \"string\"\n      ],\n      \"paymentId\": \"string\",\n      \"date\": \"1958-08-22T01:43:31.300Z\",\n      \"attributes\": [\n        {\n          \"customId\": \"cost-center\",\n          \"value\": \"Marketing\",\n          \"valueCustomId\": \"string\",\n          \"parentCustomId\": \"string\"\n        },\n        {\n          \"customId\": \"cost-center\",\n          \"value\": \"Marketing\",\n          \"valueCustomId\": \"string\",\n          \"parentCustomId\": \"string\"\n        }\n      ]\n    }\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"data\": [\n    {\n      \"id\": \"string\",\n      \"customId\": \"string\"\n    },\n    {\n      \"id\": \"string\",\n      \"customId\": \"string\"\n    }\n  ]\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "0248ef9d-2a0d-495d-af6a-2f0e4d1d574c",
+              "name": "Unauthorized. The bearer token is missing, invalid or expired.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "accountingentries",
+                    ":companyId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "PATCH",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"data\": [\n    {\n      \"customId\": \"erp-entry-2024-001\",\n      \"accountingCode\": \"string\",\n      \"counterpartAccountingCode\": \"string\",\n      \"accountingName\": \"string\",\n      \"assetAmount\": 1280.5560462205435,\n      \"accountingAssetAmount\": 1699.710919853058,\n      \"balance\": 9151.707890442154,\n      \"liabilityAmount\": 5003.23745366503,\n      \"accountingLiabilityAmount\": 4366.514121503562,\n      \"currency\": \"SCR\",\n      \"accountingCurrency\": \"CAD\",\n      \"contactCustomId\": \"string\",\n      \"exchangeRate\": 6199.540447102931,\n      \"additionalInfo\": {\n        \"key_0\": 1815\n      },\n      \"description\": \"string\",\n      \"documentId\": \"string\",\n      \"transactionsIds\": [\n        \"string\",\n        \"string\"\n      ],\n      \"paymentId\": \"string\",\n      \"date\": \"1951-09-11T11:42:45.092Z\",\n      \"attributes\": [\n        {\n          \"customId\": \"cost-center\",\n          \"value\": \"Marketing\",\n          \"valueCustomId\": \"string\",\n          \"parentCustomId\": \"string\"\n        },\n        {\n          \"customId\": \"cost-center\",\n          \"value\": \"Marketing\",\n          \"valueCustomId\": \"string\",\n          \"parentCustomId\": \"string\"\n        }\n      ]\n    },\n    {\n      \"customId\": \"erp-entry-2024-001\",\n      \"accountingCode\": \"string\",\n      \"counterpartAccountingCode\": \"string\",\n      \"accountingName\": \"string\",\n      \"assetAmount\": 5407.239196025335,\n      \"accountingAssetAmount\": 1445.0545433011853,\n      \"balance\": 9239.109128542688,\n      \"liabilityAmount\": 521.635058044495,\n      \"accountingLiabilityAmount\": 5096.528454608916,\n      \"currency\": \"CHE\",\n      \"accountingCurrency\": \"UZS\",\n      \"contactCustomId\": \"string\",\n      \"exchangeRate\": 5528.404183604834,\n      \"additionalInfo\": {\n        \"key_0\": true,\n        \"key_1\": false\n      },\n      \"description\": \"string\",\n      \"documentId\": \"string\",\n      \"transactionsIds\": [\n        \"string\",\n        \"string\"\n      ],\n      \"paymentId\": \"string\",\n      \"date\": \"1958-08-22T01:43:31.300Z\",\n      \"attributes\": [\n        {\n          \"customId\": \"cost-center\",\n          \"value\": \"Marketing\",\n          \"valueCustomId\": \"string\",\n          \"parentCustomId\": \"string\"\n        },\n        {\n          \"customId\": \"cost-center\",\n          \"value\": \"Marketing\",\n          \"valueCustomId\": \"string\",\n          \"parentCustomId\": \"string\"\n        }\n      ]\n    }\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": \"user not authorized\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "2aaf3df3-d52e-4efb-813c-99e2e4649f5d",
+              "name": "Not found. The requested resource or `companyId` does not exist.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "accountingentries",
+                    ":companyId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "PATCH",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"data\": [\n    {\n      \"customId\": \"erp-entry-2024-001\",\n      \"accountingCode\": \"string\",\n      \"counterpartAccountingCode\": \"string\",\n      \"accountingName\": \"string\",\n      \"assetAmount\": 1280.5560462205435,\n      \"accountingAssetAmount\": 1699.710919853058,\n      \"balance\": 9151.707890442154,\n      \"liabilityAmount\": 5003.23745366503,\n      \"accountingLiabilityAmount\": 4366.514121503562,\n      \"currency\": \"SCR\",\n      \"accountingCurrency\": \"CAD\",\n      \"contactCustomId\": \"string\",\n      \"exchangeRate\": 6199.540447102931,\n      \"additionalInfo\": {\n        \"key_0\": 1815\n      },\n      \"description\": \"string\",\n      \"documentId\": \"string\",\n      \"transactionsIds\": [\n        \"string\",\n        \"string\"\n      ],\n      \"paymentId\": \"string\",\n      \"date\": \"1951-09-11T11:42:45.092Z\",\n      \"attributes\": [\n        {\n          \"customId\": \"cost-center\",\n          \"value\": \"Marketing\",\n          \"valueCustomId\": \"string\",\n          \"parentCustomId\": \"string\"\n        },\n        {\n          \"customId\": \"cost-center\",\n          \"value\": \"Marketing\",\n          \"valueCustomId\": \"string\",\n          \"parentCustomId\": \"string\"\n        }\n      ]\n    },\n    {\n      \"customId\": \"erp-entry-2024-001\",\n      \"accountingCode\": \"string\",\n      \"counterpartAccountingCode\": \"string\",\n      \"accountingName\": \"string\",\n      \"assetAmount\": 5407.239196025335,\n      \"accountingAssetAmount\": 1445.0545433011853,\n      \"balance\": 9239.109128542688,\n      \"liabilityAmount\": 521.635058044495,\n      \"accountingLiabilityAmount\": 5096.528454608916,\n      \"currency\": \"CHE\",\n      \"accountingCurrency\": \"UZS\",\n      \"contactCustomId\": \"string\",\n      \"exchangeRate\": 5528.404183604834,\n      \"additionalInfo\": {\n        \"key_0\": true,\n        \"key_1\": false\n      },\n      \"description\": \"string\",\n      \"documentId\": \"string\",\n      \"transactionsIds\": [\n        \"string\",\n        \"string\"\n      ],\n      \"paymentId\": \"string\",\n      \"date\": \"1958-08-22T01:43:31.300Z\",\n      \"attributes\": [\n        {\n          \"customId\": \"cost-center\",\n          \"value\": \"Marketing\",\n          \"valueCustomId\": \"string\",\n          \"parentCustomId\": \"string\"\n        },\n        {\n          \"customId\": \"cost-center\",\n          \"value\": \"Marketing\",\n          \"valueCustomId\": \"string\",\n          \"parentCustomId\": \"string\"\n        }\n      ]\n    }\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Not Found",
+              "code": 404,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": \"0021 companyId not found\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "b730abff-7038-43c8-9bb3-f21e435893f5",
+              "name": "Validation Error",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "accountingentries",
+                    ":companyId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "PATCH",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"data\": [\n    {\n      \"customId\": \"erp-entry-2024-001\",\n      \"accountingCode\": \"string\",\n      \"counterpartAccountingCode\": \"string\",\n      \"accountingName\": \"string\",\n      \"assetAmount\": 1280.5560462205435,\n      \"accountingAssetAmount\": 1699.710919853058,\n      \"balance\": 9151.707890442154,\n      \"liabilityAmount\": 5003.23745366503,\n      \"accountingLiabilityAmount\": 4366.514121503562,\n      \"currency\": \"SCR\",\n      \"accountingCurrency\": \"CAD\",\n      \"contactCustomId\": \"string\",\n      \"exchangeRate\": 6199.540447102931,\n      \"additionalInfo\": {\n        \"key_0\": 1815\n      },\n      \"description\": \"string\",\n      \"documentId\": \"string\",\n      \"transactionsIds\": [\n        \"string\",\n        \"string\"\n      ],\n      \"paymentId\": \"string\",\n      \"date\": \"1951-09-11T11:42:45.092Z\",\n      \"attributes\": [\n        {\n          \"customId\": \"cost-center\",\n          \"value\": \"Marketing\",\n          \"valueCustomId\": \"string\",\n          \"parentCustomId\": \"string\"\n        },\n        {\n          \"customId\": \"cost-center\",\n          \"value\": \"Marketing\",\n          \"valueCustomId\": \"string\",\n          \"parentCustomId\": \"string\"\n        }\n      ]\n    },\n    {\n      \"customId\": \"erp-entry-2024-001\",\n      \"accountingCode\": \"string\",\n      \"counterpartAccountingCode\": \"string\",\n      \"accountingName\": \"string\",\n      \"assetAmount\": 5407.239196025335,\n      \"accountingAssetAmount\": 1445.0545433011853,\n      \"balance\": 9239.109128542688,\n      \"liabilityAmount\": 521.635058044495,\n      \"accountingLiabilityAmount\": 5096.528454608916,\n      \"currency\": \"CHE\",\n      \"accountingCurrency\": \"UZS\",\n      \"contactCustomId\": \"string\",\n      \"exchangeRate\": 5528.404183604834,\n      \"additionalInfo\": {\n        \"key_0\": true,\n        \"key_1\": false\n      },\n      \"description\": \"string\",\n      \"documentId\": \"string\",\n      \"transactionsIds\": [\n        \"string\",\n        \"string\"\n      ],\n      \"paymentId\": \"string\",\n      \"date\": \"1958-08-22T01:43:31.300Z\",\n      \"attributes\": [\n        {\n          \"customId\": \"cost-center\",\n          \"value\": \"Marketing\",\n          \"valueCustomId\": \"string\",\n          \"parentCustomId\": \"string\"\n        },\n        {\n          \"customId\": \"cost-center\",\n          \"value\": \"Marketing\",\n          \"valueCustomId\": \"string\",\n          \"parentCustomId\": \"string\"\n        }\n      ]\n    }\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Unprocessable Entity (WebDAV) (RFC 4918)",
+              "code": 422,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": [\n    {\n      \"loc\": [\n        \"string\",\n        \"string\"\n      ],\n      \"msg\": \"string\",\n      \"type\": \"string\",\n      \"input\": {},\n      \"ctx\": {}\n    },\n    {\n      \"loc\": [\n        \"string\",\n        \"string\"\n      ],\n      \"msg\": \"string\",\n      \"type\": \"string\",\n      \"input\": {},\n      \"ctx\": {}\n    }\n  ]\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "0e7b6038-bb91-49c2-9038-ba2ccf10f7fd",
+              "name": "Unexpected error. Contact support if it persists.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "accountingentries",
+                    ":companyId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "PATCH",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"data\": [\n    {\n      \"customId\": \"erp-entry-2024-001\",\n      \"accountingCode\": \"string\",\n      \"counterpartAccountingCode\": \"string\",\n      \"accountingName\": \"string\",\n      \"assetAmount\": 1280.5560462205435,\n      \"accountingAssetAmount\": 1699.710919853058,\n      \"balance\": 9151.707890442154,\n      \"liabilityAmount\": 5003.23745366503,\n      \"accountingLiabilityAmount\": 4366.514121503562,\n      \"currency\": \"SCR\",\n      \"accountingCurrency\": \"CAD\",\n      \"contactCustomId\": \"string\",\n      \"exchangeRate\": 6199.540447102931,\n      \"additionalInfo\": {\n        \"key_0\": 1815\n      },\n      \"description\": \"string\",\n      \"documentId\": \"string\",\n      \"transactionsIds\": [\n        \"string\",\n        \"string\"\n      ],\n      \"paymentId\": \"string\",\n      \"date\": \"1951-09-11T11:42:45.092Z\",\n      \"attributes\": [\n        {\n          \"customId\": \"cost-center\",\n          \"value\": \"Marketing\",\n          \"valueCustomId\": \"string\",\n          \"parentCustomId\": \"string\"\n        },\n        {\n          \"customId\": \"cost-center\",\n          \"value\": \"Marketing\",\n          \"valueCustomId\": \"string\",\n          \"parentCustomId\": \"string\"\n        }\n      ]\n    },\n    {\n      \"customId\": \"erp-entry-2024-001\",\n      \"accountingCode\": \"string\",\n      \"counterpartAccountingCode\": \"string\",\n      \"accountingName\": \"string\",\n      \"assetAmount\": 5407.239196025335,\n      \"accountingAssetAmount\": 1445.0545433011853,\n      \"balance\": 9239.109128542688,\n      \"liabilityAmount\": 521.635058044495,\n      \"accountingLiabilityAmount\": 5096.528454608916,\n      \"currency\": \"CHE\",\n      \"accountingCurrency\": \"UZS\",\n      \"contactCustomId\": \"string\",\n      \"exchangeRate\": 5528.404183604834,\n      \"additionalInfo\": {\n        \"key_0\": true,\n        \"key_1\": false\n      },\n      \"description\": \"string\",\n      \"documentId\": \"string\",\n      \"transactionsIds\": [\n        \"string\",\n        \"string\"\n      ],\n      \"paymentId\": \"string\",\n      \"date\": \"1958-08-22T01:43:31.300Z\",\n      \"attributes\": [\n        {\n          \"customId\": \"cost-center\",\n          \"value\": \"Marketing\",\n          \"valueCustomId\": \"string\",\n          \"parentCustomId\": \"string\"\n        },\n        {\n          \"customId\": \"cost-center\",\n          \"value\": \"Marketing\",\n          \"valueCustomId\": \"string\",\n          \"parentCustomId\": \"string\"\n        }\n      ]\n    }\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Internal Server Error",
+              "code": 500,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": \"Internal server error\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "86242b73-cc6b-49c3-b379-6af1abba920c",
+          "name": "Delete accounting entries in bulk",
+          "request": {
+            "name": "Delete accounting entries in bulk",
+            "description": {
+              "content": "Deletes several accounting entries in a single call, identified by `customId`. The call returns `200` immediately — even for `customId` values that do not match any existing entry — and entries may still briefly appear in `GET` results right after deletion.",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "accountingentries",
+                ":companyId"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "<string>",
+                  "key": "companyId",
+                  "description": "(Required) "
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "DELETE",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{bearerToken}}"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"data\": [\n    {\n      \"customId\": \"<string>\"\n    },\n    {\n      \"customId\": \"<string>\"\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "id": "1bec9247-30b2-4d54-a768-75051c5627c6",
+              "name": "Successful Response",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "accountingentries",
+                    ":companyId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "DELETE",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"data\": [\n    {\n      \"customId\": \"string\"\n    },\n    {\n      \"customId\": \"string\"\n    }\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"data\": [\n    {\n      \"id\": \"string\"\n    },\n    {\n      \"id\": \"string\"\n    }\n  ]\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "4069adbb-b8ed-4892-85b8-f18d21448ec5",
+              "name": "Unauthorized. The bearer token is missing, invalid or expired.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "accountingentries",
+                    ":companyId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "DELETE",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"data\": [\n    {\n      \"customId\": \"string\"\n    },\n    {\n      \"customId\": \"string\"\n    }\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": \"user not authorized\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "644317dc-0f7d-4abf-a4f7-363af5c9d00a",
+              "name": "Not found. The requested resource or `companyId` does not exist.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "accountingentries",
+                    ":companyId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "DELETE",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"data\": [\n    {\n      \"customId\": \"string\"\n    },\n    {\n      \"customId\": \"string\"\n    }\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Not Found",
+              "code": 404,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": \"0021 companyId not found\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "3831c21e-8c0f-44f2-b429-4ae9e9d8440b",
+              "name": "Validation Error",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "accountingentries",
+                    ":companyId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "DELETE",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"data\": [\n    {\n      \"customId\": \"string\"\n    },\n    {\n      \"customId\": \"string\"\n    }\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Unprocessable Entity (WebDAV) (RFC 4918)",
+              "code": 422,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": [\n    {\n      \"loc\": [\n        \"string\",\n        \"string\"\n      ],\n      \"msg\": \"string\",\n      \"type\": \"string\",\n      \"input\": {},\n      \"ctx\": {}\n    },\n    {\n      \"loc\": [\n        \"string\",\n        \"string\"\n      ],\n      \"msg\": \"string\",\n      \"type\": \"string\",\n      \"input\": {},\n      \"ctx\": {}\n    }\n  ]\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "939efe1c-a74a-42b4-9ab7-2269e51b89df",
+              "name": "Unexpected error. Contact support if it persists.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "accountingentries",
+                    ":companyId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "DELETE",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"data\": [\n    {\n      \"customId\": \"string\"\n    },\n    {\n      \"customId\": \"string\"\n    }\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Internal Server Error",
+              "code": 500,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": \"Internal server error\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "0ab8c151-5941-4a95-bbbf-07777ac035e5",
+          "name": "Retrieve accounting entry",
+          "request": {
+            "name": "Retrieve accounting entry",
+            "description": {
+              "content": "Returns a single accounting entry by `customId`.",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "accountingentries",
+                ":companyId",
+                ":customId"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "<string>",
+                  "key": "customId",
+                  "description": "(Required) "
+                },
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "<string>",
+                  "key": "companyId",
+                  "description": "(Required) "
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{bearerToken}}"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "id": "51385e78-1051-4f39-80bd-1ff5062a02db",
+              "name": "Successful Response",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "accountingentries",
+                    ":companyId",
+                    ":customId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "customId",
+                      "description": "(Required) "
+                    },
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"accountingCode\": \"4300001\",\n  \"assetAmount\": 1250.5,\n  \"liabilityAmount\": 0,\n  \"date\": \"2024-01-15T00:00:00Z\",\n  \"id\": \"string\",\n  \"companyId\": \"string\",\n  \"updatedAt\": \"2003-01-30T08:16:06.946Z\",\n  \"createdAt\": \"1972-08-14T07:33:06.361Z\",\n  \"counterpartAccountingCode\": \"string\",\n  \"accountingName\": \"string\",\n  \"accountingAssetAmount\": 794.1464274642784,\n  \"balance\": 8221.987588808928,\n  \"accountingLiabilityAmount\": 4016.47572015865,\n  \"currency\": \"MXN\",\n  \"accountingCurrency\": \"SSP\",\n  \"contactCustomId\": \"string\",\n  \"exchangeRate\": 1573.8056270325374,\n  \"additionalInfo\": {\n    \"key_0\": false,\n    \"key_1\": 2295,\n    \"key_2\": \"string\"\n  },\n  \"description\": \"string\",\n  \"documentId\": \"string\",\n  \"transactionsIds\": [\n    \"string\",\n    \"string\"\n  ],\n  \"paymentId\": \"string\",\n  \"attributes\": [\n    {\n      \"customId\": \"cost-center\",\n      \"value\": \"Marketing\",\n      \"valueCustomId\": \"string\",\n      \"parentCustomId\": \"string\"\n    },\n    {\n      \"customId\": \"cost-center\",\n      \"value\": \"Marketing\",\n      \"valueCustomId\": \"string\",\n      \"parentCustomId\": \"string\"\n    }\n  ],\n  \"customId\": \"string\",\n  \"accountingEntryCode\": \"string\",\n  \"accountingEntryCodeId\": \"string\",\n  \"type\": \"accountings\",\n  \"reconciled\": false,\n  \"reconciliationsIds\": [\n    \"string\",\n    \"string\"\n  ]\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "6f6ff203-92dc-43ea-8bdf-e1fe6b0f0222",
+              "name": "Unauthorized. The bearer token is missing, invalid or expired.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "accountingentries",
+                    ":companyId",
+                    ":customId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "customId",
+                      "description": "(Required) "
+                    },
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": \"user not authorized\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "71a15640-f8d7-48c1-b22e-392290aa02a6",
+              "name": "Company not found, or no accounting entry matches the given `customId`.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "accountingentries",
+                    ":companyId",
+                    ":customId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "customId",
+                      "description": "(Required) "
+                    },
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "Not Found",
+              "code": 404,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": \"0021 companyId not found\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "4eaed56a-4db3-4eed-afc6-fd1dc4644327",
+              "name": "Validation Error",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "accountingentries",
+                    ":companyId",
+                    ":customId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "customId",
+                      "description": "(Required) "
+                    },
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "Unprocessable Entity (WebDAV) (RFC 4918)",
+              "code": 422,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": [\n    {\n      \"loc\": [\n        \"string\",\n        \"string\"\n      ],\n      \"msg\": \"string\",\n      \"type\": \"string\",\n      \"input\": {},\n      \"ctx\": {}\n    },\n    {\n      \"loc\": [\n        \"string\",\n        \"string\"\n      ],\n      \"msg\": \"string\",\n      \"type\": \"string\",\n      \"input\": {},\n      \"ctx\": {}\n    }\n  ]\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "4554991c-ba58-4ee5-81ae-42bc9f8e2745",
+          "name": "Update accounting entry",
+          "request": {
+            "name": "Update accounting entry",
+            "description": {
+              "content": "Updates one or more fields of an accounting entry identified by `customId`. Only the fields you send are changed — except `description`: if it is omitted, Embat resets it to an auto-generated value derived from the entry's identifier, overwriting any previously set custom description; resend the current value to keep it unchanged. Updating a `customId` that does not match any existing entry is a no-op: the call still returns `200` without creating or changing anything, and no `404` is raised.",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "accountingentries",
+                ":companyId",
+                ":customId"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "<string>",
+                  "key": "customId",
+                  "description": "(Required) "
+                },
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "<string>",
+                  "key": "companyId",
+                  "description": "(Required) "
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "PATCH",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{bearerToken}}"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"accountingCode\": \"<string>\",\n  \"counterpartAccountingCode\": \"<string>\",\n  \"accountingName\": \"<string>\",\n  \"assetAmount\": \"<number>\",\n  \"accountingAssetAmount\": \"<number>\",\n  \"balance\": \"<number>\",\n  \"liabilityAmount\": \"<number>\",\n  \"accountingLiabilityAmount\": \"<number>\",\n  \"currency\": \"<string>\",\n  \"accountingCurrency\": \"<string>\",\n  \"contactCustomId\": \"<string>\",\n  \"exchangeRate\": \"<number>\",\n  \"additionalInfo\": {\n    \"key_0\": true,\n    \"key_1\": true,\n    \"key_2\": 2238,\n    \"key_3\": true\n  },\n  \"description\": \"<string>\",\n  \"documentId\": \"<string>\",\n  \"transactionsIds\": [\n    \"<string>\",\n    \"<string>\"\n  ],\n  \"paymentId\": \"<string>\",\n  \"date\": \"<dateTime>\",\n  \"attributes\": [\n    {\n      \"customId\": \"<string>\",\n      \"value\": \"<string>\",\n      \"valueCustomId\": \"<string>\",\n      \"parentCustomId\": \"<string>\"\n    },\n    {\n      \"customId\": \"<string>\",\n      \"value\": \"<string>\",\n      \"valueCustomId\": \"<string>\",\n      \"parentCustomId\": \"<string>\"\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "id": "aecf8280-1d7a-4132-9c6a-498d8b465549",
+              "name": "Successful Response",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "accountingentries",
+                    ":companyId",
+                    ":customId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "customId",
+                      "description": "(Required) "
+                    },
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "PATCH",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"accountingCode\": \"<string>\",\n  \"counterpartAccountingCode\": \"<string>\",\n  \"accountingName\": \"<string>\",\n  \"assetAmount\": \"<number>\",\n  \"accountingAssetAmount\": \"<number>\",\n  \"balance\": \"<number>\",\n  \"liabilityAmount\": \"<number>\",\n  \"accountingLiabilityAmount\": \"<number>\",\n  \"currency\": \"CLP\",\n  \"accountingCurrency\": \"HUF\",\n  \"contactCustomId\": \"<string>\",\n  \"exchangeRate\": \"<number>\",\n  \"additionalInfo\": {\n    \"key_0\": false,\n    \"key_1\": 593\n  },\n  \"description\": \"<string>\",\n  \"documentId\": \"<string>\",\n  \"transactionsIds\": [\n    \"<string>\",\n    \"<string>\"\n  ],\n  \"paymentId\": \"<string>\",\n  \"date\": \"<dateTime>\",\n  \"attributes\": [\n    {\n      \"customId\": \"cost-center\",\n      \"value\": \"Marketing\",\n      \"valueCustomId\": \"string\",\n      \"parentCustomId\": \"string\"\n    },\n    {\n      \"customId\": \"cost-center\",\n      \"value\": \"Marketing\",\n      \"valueCustomId\": \"string\",\n      \"parentCustomId\": \"string\"\n    }\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"id\": \"string\",\n  \"customId\": \"string\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "f56ec4dc-027c-49e8-98da-2345cd3b6ef2",
+              "name": "Unauthorized. The bearer token is missing, invalid or expired.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "accountingentries",
+                    ":companyId",
+                    ":customId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "customId",
+                      "description": "(Required) "
+                    },
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "PATCH",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"accountingCode\": \"<string>\",\n  \"counterpartAccountingCode\": \"<string>\",\n  \"accountingName\": \"<string>\",\n  \"assetAmount\": \"<number>\",\n  \"accountingAssetAmount\": \"<number>\",\n  \"balance\": \"<number>\",\n  \"liabilityAmount\": \"<number>\",\n  \"accountingLiabilityAmount\": \"<number>\",\n  \"currency\": \"CLP\",\n  \"accountingCurrency\": \"HUF\",\n  \"contactCustomId\": \"<string>\",\n  \"exchangeRate\": \"<number>\",\n  \"additionalInfo\": {\n    \"key_0\": false,\n    \"key_1\": 593\n  },\n  \"description\": \"<string>\",\n  \"documentId\": \"<string>\",\n  \"transactionsIds\": [\n    \"<string>\",\n    \"<string>\"\n  ],\n  \"paymentId\": \"<string>\",\n  \"date\": \"<dateTime>\",\n  \"attributes\": [\n    {\n      \"customId\": \"cost-center\",\n      \"value\": \"Marketing\",\n      \"valueCustomId\": \"string\",\n      \"parentCustomId\": \"string\"\n    },\n    {\n      \"customId\": \"cost-center\",\n      \"value\": \"Marketing\",\n      \"valueCustomId\": \"string\",\n      \"parentCustomId\": \"string\"\n    }\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": \"user not authorized\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "d60a7c93-8008-4bce-a92f-6bb6abc7b3bd",
+              "name": "Not found. The requested resource or `companyId` does not exist.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "accountingentries",
+                    ":companyId",
+                    ":customId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "customId",
+                      "description": "(Required) "
+                    },
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "PATCH",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"accountingCode\": \"<string>\",\n  \"counterpartAccountingCode\": \"<string>\",\n  \"accountingName\": \"<string>\",\n  \"assetAmount\": \"<number>\",\n  \"accountingAssetAmount\": \"<number>\",\n  \"balance\": \"<number>\",\n  \"liabilityAmount\": \"<number>\",\n  \"accountingLiabilityAmount\": \"<number>\",\n  \"currency\": \"CLP\",\n  \"accountingCurrency\": \"HUF\",\n  \"contactCustomId\": \"<string>\",\n  \"exchangeRate\": \"<number>\",\n  \"additionalInfo\": {\n    \"key_0\": false,\n    \"key_1\": 593\n  },\n  \"description\": \"<string>\",\n  \"documentId\": \"<string>\",\n  \"transactionsIds\": [\n    \"<string>\",\n    \"<string>\"\n  ],\n  \"paymentId\": \"<string>\",\n  \"date\": \"<dateTime>\",\n  \"attributes\": [\n    {\n      \"customId\": \"cost-center\",\n      \"value\": \"Marketing\",\n      \"valueCustomId\": \"string\",\n      \"parentCustomId\": \"string\"\n    },\n    {\n      \"customId\": \"cost-center\",\n      \"value\": \"Marketing\",\n      \"valueCustomId\": \"string\",\n      \"parentCustomId\": \"string\"\n    }\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Not Found",
+              "code": 404,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": \"0021 companyId not found\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "3f4dc881-3d5c-466a-a7cf-433e54214cbb",
+              "name": "Validation Error",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "accountingentries",
+                    ":companyId",
+                    ":customId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "customId",
+                      "description": "(Required) "
+                    },
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "PATCH",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"accountingCode\": \"<string>\",\n  \"counterpartAccountingCode\": \"<string>\",\n  \"accountingName\": \"<string>\",\n  \"assetAmount\": \"<number>\",\n  \"accountingAssetAmount\": \"<number>\",\n  \"balance\": \"<number>\",\n  \"liabilityAmount\": \"<number>\",\n  \"accountingLiabilityAmount\": \"<number>\",\n  \"currency\": \"CLP\",\n  \"accountingCurrency\": \"HUF\",\n  \"contactCustomId\": \"<string>\",\n  \"exchangeRate\": \"<number>\",\n  \"additionalInfo\": {\n    \"key_0\": false,\n    \"key_1\": 593\n  },\n  \"description\": \"<string>\",\n  \"documentId\": \"<string>\",\n  \"transactionsIds\": [\n    \"<string>\",\n    \"<string>\"\n  ],\n  \"paymentId\": \"<string>\",\n  \"date\": \"<dateTime>\",\n  \"attributes\": [\n    {\n      \"customId\": \"cost-center\",\n      \"value\": \"Marketing\",\n      \"valueCustomId\": \"string\",\n      \"parentCustomId\": \"string\"\n    },\n    {\n      \"customId\": \"cost-center\",\n      \"value\": \"Marketing\",\n      \"valueCustomId\": \"string\",\n      \"parentCustomId\": \"string\"\n    }\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Unprocessable Entity (WebDAV) (RFC 4918)",
+              "code": 422,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": [\n    {\n      \"loc\": [\n        \"string\",\n        \"string\"\n      ],\n      \"msg\": \"string\",\n      \"type\": \"string\",\n      \"input\": {},\n      \"ctx\": {}\n    },\n    {\n      \"loc\": [\n        \"string\",\n        \"string\"\n      ],\n      \"msg\": \"string\",\n      \"type\": \"string\",\n      \"input\": {},\n      \"ctx\": {}\n    }\n  ]\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "6d56ccd1-02db-4caa-8428-522e39c68f42",
+              "name": "Unexpected error. Contact support if it persists.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "accountingentries",
+                    ":companyId",
+                    ":customId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "customId",
+                      "description": "(Required) "
+                    },
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "PATCH",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"accountingCode\": \"<string>\",\n  \"counterpartAccountingCode\": \"<string>\",\n  \"accountingName\": \"<string>\",\n  \"assetAmount\": \"<number>\",\n  \"accountingAssetAmount\": \"<number>\",\n  \"balance\": \"<number>\",\n  \"liabilityAmount\": \"<number>\",\n  \"accountingLiabilityAmount\": \"<number>\",\n  \"currency\": \"CLP\",\n  \"accountingCurrency\": \"HUF\",\n  \"contactCustomId\": \"<string>\",\n  \"exchangeRate\": \"<number>\",\n  \"additionalInfo\": {\n    \"key_0\": false,\n    \"key_1\": 593\n  },\n  \"description\": \"<string>\",\n  \"documentId\": \"<string>\",\n  \"transactionsIds\": [\n    \"<string>\",\n    \"<string>\"\n  ],\n  \"paymentId\": \"<string>\",\n  \"date\": \"<dateTime>\",\n  \"attributes\": [\n    {\n      \"customId\": \"cost-center\",\n      \"value\": \"Marketing\",\n      \"valueCustomId\": \"string\",\n      \"parentCustomId\": \"string\"\n    },\n    {\n      \"customId\": \"cost-center\",\n      \"value\": \"Marketing\",\n      \"valueCustomId\": \"string\",\n      \"parentCustomId\": \"string\"\n    }\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Internal Server Error",
+              "code": 500,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": \"Internal server error\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "0a58f08b-44af-4c6d-9335-2cb1fb4b5873",
+          "name": "Delete accounting entry",
+          "request": {
+            "name": "Delete accounting entry",
+            "description": {
+              "content": "Deletes an accounting entry by `customId`. The call returns `200` immediately — even if `customId` does not match any existing entry — and the entry may still briefly appear in `GET` results right after deletion.",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "accountingentries",
+                ":companyId",
+                ":customId"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "<string>",
+                  "key": "customId",
+                  "description": "(Required) "
+                },
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "<string>",
+                  "key": "companyId",
+                  "description": "(Required) "
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "DELETE",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{bearerToken}}"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "id": "14073d16-35d2-49f7-87b3-59301eacd92d",
+              "name": "Successful Response",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "accountingentries",
+                    ":companyId",
+                    ":customId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "customId",
+                      "description": "(Required) "
+                    },
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "DELETE",
+                "body": {}
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"id\": \"string\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "af0a468e-0cb4-40d4-b321-33abfa1d28dc",
+              "name": "Unauthorized. The bearer token is missing, invalid or expired.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "accountingentries",
+                    ":companyId",
+                    ":customId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "customId",
+                      "description": "(Required) "
+                    },
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "DELETE",
+                "body": {}
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": \"user not authorized\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "d77d8c7f-0232-4981-9ef3-f674e908979b",
+              "name": "Not found. The requested resource or `companyId` does not exist.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "accountingentries",
+                    ":companyId",
+                    ":customId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "customId",
+                      "description": "(Required) "
+                    },
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "DELETE",
+                "body": {}
+              },
+              "status": "Not Found",
+              "code": 404,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": \"0021 companyId not found\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "7eed5621-563d-4bdd-9006-c5687a9be006",
+              "name": "Validation Error",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "accountingentries",
+                    ":companyId",
+                    ":customId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "customId",
+                      "description": "(Required) "
+                    },
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "DELETE",
+                "body": {}
+              },
+              "status": "Unprocessable Entity (WebDAV) (RFC 4918)",
+              "code": 422,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": [\n    {\n      \"loc\": [\n        \"string\",\n        \"string\"\n      ],\n      \"msg\": \"string\",\n      \"type\": \"string\",\n      \"input\": {},\n      \"ctx\": {}\n    },\n    {\n      \"loc\": [\n        \"string\",\n        \"string\"\n      ],\n      \"msg\": \"string\",\n      \"type\": \"string\",\n      \"input\": {},\n      \"ctx\": {}\n    }\n  ]\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "4cb87458-34f8-48f0-abdd-9d26476ea2d6",
+              "name": "Unexpected error. Contact support if it persists.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "accountingentries",
+                    ":companyId",
+                    ":customId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "customId",
+                      "description": "(Required) "
+                    },
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "DELETE",
+                "body": {}
+              },
+              "status": "Internal Server Error",
+              "code": 500,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": \"Internal server error\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "099881d1-fdc2-4beb-ae13-f23c3819abc0",
+          "name": "Create accounting entries in bulk",
+          "request": {
+            "name": "Create accounting entries in bulk",
+            "description": {
+              "content": "Creates several accounting entries in a single call, following the same rules as the single entry creation endpoint. Entries sharing the same `customId` within the request are deduplicated and only the first occurrence is processed.",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "accountingentries",
+                ":companyId",
+                "bulk"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "<string>",
+                  "key": "companyId",
+                  "description": "(Required) "
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "POST",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{bearerToken}}"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"data\": [\n    {\n      \"accountingCode\": \"<string>\",\n      \"assetAmount\": \"<number>\",\n      \"liabilityAmount\": \"<number>\",\n      \"date\": \"<dateTime>\",\n      \"counterpartAccountingCode\": \"<string>\",\n      \"accountingName\": \"<string>\",\n      \"accountingAssetAmount\": \"<number>\",\n      \"balance\": \"<number>\",\n      \"accountingLiabilityAmount\": \"<number>\",\n      \"currency\": \"<string>\",\n      \"accountingCurrency\": \"<string>\",\n      \"contactCustomId\": \"<string>\",\n      \"exchangeRate\": \"<number>\",\n      \"additionalInfo\": {\n        \"key_0\": \"string\"\n      },\n      \"description\": \"<string>\",\n      \"documentId\": \"<string>\",\n      \"transactionsIds\": [\n        \"<string>\",\n        \"<string>\"\n      ],\n      \"paymentId\": \"<string>\",\n      \"attributes\": [\n        {\n          \"customId\": \"<string>\",\n          \"value\": \"<string>\",\n          \"valueCustomId\": \"<string>\",\n          \"parentCustomId\": \"<string>\"\n        },\n        {\n          \"customId\": \"<string>\",\n          \"value\": \"<string>\",\n          \"valueCustomId\": \"<string>\",\n          \"parentCustomId\": \"<string>\"\n        }\n      ],\n      \"customId\": \"<string>\",\n      \"accountingEntryCode\": \"<string>\",\n      \"accountingEntryCodeId\": \"<string>\"\n    },\n    {\n      \"accountingCode\": \"<string>\",\n      \"assetAmount\": \"<number>\",\n      \"liabilityAmount\": \"<number>\",\n      \"date\": \"<dateTime>\",\n      \"counterpartAccountingCode\": \"<string>\",\n      \"accountingName\": \"<string>\",\n      \"accountingAssetAmount\": \"<number>\",\n      \"balance\": \"<number>\",\n      \"accountingLiabilityAmount\": \"<number>\",\n      \"currency\": \"<string>\",\n      \"accountingCurrency\": \"<string>\",\n      \"contactCustomId\": \"<string>\",\n      \"exchangeRate\": \"<number>\",\n      \"additionalInfo\": {\n        \"key_0\": \"string\"\n      },\n      \"description\": \"<string>\",\n      \"documentId\": \"<string>\",\n      \"transactionsIds\": [\n        \"<string>\",\n        \"<string>\"\n      ],\n      \"paymentId\": \"<string>\",\n      \"attributes\": [\n        {\n          \"customId\": \"<string>\",\n          \"value\": \"<string>\",\n          \"valueCustomId\": \"<string>\",\n          \"parentCustomId\": \"<string>\"\n        },\n        {\n          \"customId\": \"<string>\",\n          \"value\": \"<string>\",\n          \"valueCustomId\": \"<string>\",\n          \"parentCustomId\": \"<string>\"\n        }\n      ],\n      \"customId\": \"<string>\",\n      \"accountingEntryCode\": \"<string>\",\n      \"accountingEntryCodeId\": \"<string>\"\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "id": "4654c308-b650-4e0d-94a4-c19a05550617",
+              "name": "Successful Response",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "accountingentries",
+                    ":companyId",
+                    "bulk"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"data\": [\n    {\n      \"accountingCode\": \"4300001\",\n      \"assetAmount\": 1250.5,\n      \"liabilityAmount\": 0,\n      \"date\": \"2024-01-15T00:00:00Z\",\n      \"counterpartAccountingCode\": \"string\",\n      \"accountingName\": \"string\",\n      \"accountingAssetAmount\": 5710.494758710673,\n      \"balance\": 2046.2550026725735,\n      \"accountingLiabilityAmount\": 3132.67133889229,\n      \"currency\": \"EUR\",\n      \"accountingCurrency\": \"SBD\",\n      \"contactCustomId\": \"string\",\n      \"exchangeRate\": 7062.748412263756,\n      \"additionalInfo\": {\n        \"key_0\": 7696.244657165079,\n        \"key_1\": true\n      },\n      \"description\": \"string\",\n      \"documentId\": \"string\",\n      \"transactionsIds\": [\n        \"string\",\n        \"string\"\n      ],\n      \"paymentId\": \"string\",\n      \"attributes\": [\n        {\n          \"customId\": \"cost-center\",\n          \"value\": \"Marketing\",\n          \"valueCustomId\": \"string\",\n          \"parentCustomId\": \"string\"\n        },\n        {\n          \"customId\": \"cost-center\",\n          \"value\": \"Marketing\",\n          \"valueCustomId\": \"string\",\n          \"parentCustomId\": \"string\"\n        }\n      ],\n      \"customId\": \"string\",\n      \"accountingEntryCode\": \"string\",\n      \"accountingEntryCodeId\": \"string\"\n    },\n    {\n      \"accountingCode\": \"4300001\",\n      \"assetAmount\": 1250.5,\n      \"liabilityAmount\": 0,\n      \"date\": \"2024-01-15T00:00:00Z\",\n      \"counterpartAccountingCode\": \"string\",\n      \"accountingName\": \"string\",\n      \"accountingAssetAmount\": 479.7299517803078,\n      \"balance\": 9429.60878773454,\n      \"accountingLiabilityAmount\": 4669.5143341671765,\n      \"currency\": \"SBD\",\n      \"accountingCurrency\": \"ISK\",\n      \"contactCustomId\": \"string\",\n      \"exchangeRate\": 8796.72304116289,\n      \"additionalInfo\": {\n        \"key_0\": \"string\"\n      },\n      \"description\": \"string\",\n      \"documentId\": \"string\",\n      \"transactionsIds\": [\n        \"string\",\n        \"string\"\n      ],\n      \"paymentId\": \"string\",\n      \"attributes\": [\n        {\n          \"customId\": \"cost-center\",\n          \"value\": \"Marketing\",\n          \"valueCustomId\": \"string\",\n          \"parentCustomId\": \"string\"\n        },\n        {\n          \"customId\": \"cost-center\",\n          \"value\": \"Marketing\",\n          \"valueCustomId\": \"string\",\n          \"parentCustomId\": \"string\"\n        }\n      ],\n      \"customId\": \"string\",\n      \"accountingEntryCode\": \"string\",\n      \"accountingEntryCodeId\": \"string\"\n    }\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"data\": [\n    {\n      \"id\": \"string\",\n      \"customId\": \"string\"\n    },\n    {\n      \"id\": \"string\",\n      \"customId\": \"string\"\n    }\n  ]\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "4c407f25-3b26-4aa3-aed9-e4aa64952001",
+              "name": "Unauthorized. The bearer token is missing, invalid or expired.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "accountingentries",
+                    ":companyId",
+                    "bulk"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"data\": [\n    {\n      \"accountingCode\": \"4300001\",\n      \"assetAmount\": 1250.5,\n      \"liabilityAmount\": 0,\n      \"date\": \"2024-01-15T00:00:00Z\",\n      \"counterpartAccountingCode\": \"string\",\n      \"accountingName\": \"string\",\n      \"accountingAssetAmount\": 5710.494758710673,\n      \"balance\": 2046.2550026725735,\n      \"accountingLiabilityAmount\": 3132.67133889229,\n      \"currency\": \"EUR\",\n      \"accountingCurrency\": \"SBD\",\n      \"contactCustomId\": \"string\",\n      \"exchangeRate\": 7062.748412263756,\n      \"additionalInfo\": {\n        \"key_0\": 7696.244657165079,\n        \"key_1\": true\n      },\n      \"description\": \"string\",\n      \"documentId\": \"string\",\n      \"transactionsIds\": [\n        \"string\",\n        \"string\"\n      ],\n      \"paymentId\": \"string\",\n      \"attributes\": [\n        {\n          \"customId\": \"cost-center\",\n          \"value\": \"Marketing\",\n          \"valueCustomId\": \"string\",\n          \"parentCustomId\": \"string\"\n        },\n        {\n          \"customId\": \"cost-center\",\n          \"value\": \"Marketing\",\n          \"valueCustomId\": \"string\",\n          \"parentCustomId\": \"string\"\n        }\n      ],\n      \"customId\": \"string\",\n      \"accountingEntryCode\": \"string\",\n      \"accountingEntryCodeId\": \"string\"\n    },\n    {\n      \"accountingCode\": \"4300001\",\n      \"assetAmount\": 1250.5,\n      \"liabilityAmount\": 0,\n      \"date\": \"2024-01-15T00:00:00Z\",\n      \"counterpartAccountingCode\": \"string\",\n      \"accountingName\": \"string\",\n      \"accountingAssetAmount\": 479.7299517803078,\n      \"balance\": 9429.60878773454,\n      \"accountingLiabilityAmount\": 4669.5143341671765,\n      \"currency\": \"SBD\",\n      \"accountingCurrency\": \"ISK\",\n      \"contactCustomId\": \"string\",\n      \"exchangeRate\": 8796.72304116289,\n      \"additionalInfo\": {\n        \"key_0\": \"string\"\n      },\n      \"description\": \"string\",\n      \"documentId\": \"string\",\n      \"transactionsIds\": [\n        \"string\",\n        \"string\"\n      ],\n      \"paymentId\": \"string\",\n      \"attributes\": [\n        {\n          \"customId\": \"cost-center\",\n          \"value\": \"Marketing\",\n          \"valueCustomId\": \"string\",\n          \"parentCustomId\": \"string\"\n        },\n        {\n          \"customId\": \"cost-center\",\n          \"value\": \"Marketing\",\n          \"valueCustomId\": \"string\",\n          \"parentCustomId\": \"string\"\n        }\n      ],\n      \"customId\": \"string\",\n      \"accountingEntryCode\": \"string\",\n      \"accountingEntryCodeId\": \"string\"\n    }\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": \"user not authorized\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "bf9f7b5a-7181-44eb-a329-2372bedcdae7",
+              "name": "Not found. The requested resource or `companyId` does not exist.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "accountingentries",
+                    ":companyId",
+                    "bulk"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"data\": [\n    {\n      \"accountingCode\": \"4300001\",\n      \"assetAmount\": 1250.5,\n      \"liabilityAmount\": 0,\n      \"date\": \"2024-01-15T00:00:00Z\",\n      \"counterpartAccountingCode\": \"string\",\n      \"accountingName\": \"string\",\n      \"accountingAssetAmount\": 5710.494758710673,\n      \"balance\": 2046.2550026725735,\n      \"accountingLiabilityAmount\": 3132.67133889229,\n      \"currency\": \"EUR\",\n      \"accountingCurrency\": \"SBD\",\n      \"contactCustomId\": \"string\",\n      \"exchangeRate\": 7062.748412263756,\n      \"additionalInfo\": {\n        \"key_0\": 7696.244657165079,\n        \"key_1\": true\n      },\n      \"description\": \"string\",\n      \"documentId\": \"string\",\n      \"transactionsIds\": [\n        \"string\",\n        \"string\"\n      ],\n      \"paymentId\": \"string\",\n      \"attributes\": [\n        {\n          \"customId\": \"cost-center\",\n          \"value\": \"Marketing\",\n          \"valueCustomId\": \"string\",\n          \"parentCustomId\": \"string\"\n        },\n        {\n          \"customId\": \"cost-center\",\n          \"value\": \"Marketing\",\n          \"valueCustomId\": \"string\",\n          \"parentCustomId\": \"string\"\n        }\n      ],\n      \"customId\": \"string\",\n      \"accountingEntryCode\": \"string\",\n      \"accountingEntryCodeId\": \"string\"\n    },\n    {\n      \"accountingCode\": \"4300001\",\n      \"assetAmount\": 1250.5,\n      \"liabilityAmount\": 0,\n      \"date\": \"2024-01-15T00:00:00Z\",\n      \"counterpartAccountingCode\": \"string\",\n      \"accountingName\": \"string\",\n      \"accountingAssetAmount\": 479.7299517803078,\n      \"balance\": 9429.60878773454,\n      \"accountingLiabilityAmount\": 4669.5143341671765,\n      \"currency\": \"SBD\",\n      \"accountingCurrency\": \"ISK\",\n      \"contactCustomId\": \"string\",\n      \"exchangeRate\": 8796.72304116289,\n      \"additionalInfo\": {\n        \"key_0\": \"string\"\n      },\n      \"description\": \"string\",\n      \"documentId\": \"string\",\n      \"transactionsIds\": [\n        \"string\",\n        \"string\"\n      ],\n      \"paymentId\": \"string\",\n      \"attributes\": [\n        {\n          \"customId\": \"cost-center\",\n          \"value\": \"Marketing\",\n          \"valueCustomId\": \"string\",\n          \"parentCustomId\": \"string\"\n        },\n        {\n          \"customId\": \"cost-center\",\n          \"value\": \"Marketing\",\n          \"valueCustomId\": \"string\",\n          \"parentCustomId\": \"string\"\n        }\n      ],\n      \"customId\": \"string\",\n      \"accountingEntryCode\": \"string\",\n      \"accountingEntryCodeId\": \"string\"\n    }\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Not Found",
+              "code": 404,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": \"0021 companyId not found\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "08186891-9bb5-48a3-a190-bbd30b521b69",
+              "name": "Validation Error",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "accountingentries",
+                    ":companyId",
+                    "bulk"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"data\": [\n    {\n      \"accountingCode\": \"4300001\",\n      \"assetAmount\": 1250.5,\n      \"liabilityAmount\": 0,\n      \"date\": \"2024-01-15T00:00:00Z\",\n      \"counterpartAccountingCode\": \"string\",\n      \"accountingName\": \"string\",\n      \"accountingAssetAmount\": 5710.494758710673,\n      \"balance\": 2046.2550026725735,\n      \"accountingLiabilityAmount\": 3132.67133889229,\n      \"currency\": \"EUR\",\n      \"accountingCurrency\": \"SBD\",\n      \"contactCustomId\": \"string\",\n      \"exchangeRate\": 7062.748412263756,\n      \"additionalInfo\": {\n        \"key_0\": 7696.244657165079,\n        \"key_1\": true\n      },\n      \"description\": \"string\",\n      \"documentId\": \"string\",\n      \"transactionsIds\": [\n        \"string\",\n        \"string\"\n      ],\n      \"paymentId\": \"string\",\n      \"attributes\": [\n        {\n          \"customId\": \"cost-center\",\n          \"value\": \"Marketing\",\n          \"valueCustomId\": \"string\",\n          \"parentCustomId\": \"string\"\n        },\n        {\n          \"customId\": \"cost-center\",\n          \"value\": \"Marketing\",\n          \"valueCustomId\": \"string\",\n          \"parentCustomId\": \"string\"\n        }\n      ],\n      \"customId\": \"string\",\n      \"accountingEntryCode\": \"string\",\n      \"accountingEntryCodeId\": \"string\"\n    },\n    {\n      \"accountingCode\": \"4300001\",\n      \"assetAmount\": 1250.5,\n      \"liabilityAmount\": 0,\n      \"date\": \"2024-01-15T00:00:00Z\",\n      \"counterpartAccountingCode\": \"string\",\n      \"accountingName\": \"string\",\n      \"accountingAssetAmount\": 479.7299517803078,\n      \"balance\": 9429.60878773454,\n      \"accountingLiabilityAmount\": 4669.5143341671765,\n      \"currency\": \"SBD\",\n      \"accountingCurrency\": \"ISK\",\n      \"contactCustomId\": \"string\",\n      \"exchangeRate\": 8796.72304116289,\n      \"additionalInfo\": {\n        \"key_0\": \"string\"\n      },\n      \"description\": \"string\",\n      \"documentId\": \"string\",\n      \"transactionsIds\": [\n        \"string\",\n        \"string\"\n      ],\n      \"paymentId\": \"string\",\n      \"attributes\": [\n        {\n          \"customId\": \"cost-center\",\n          \"value\": \"Marketing\",\n          \"valueCustomId\": \"string\",\n          \"parentCustomId\": \"string\"\n        },\n        {\n          \"customId\": \"cost-center\",\n          \"value\": \"Marketing\",\n          \"valueCustomId\": \"string\",\n          \"parentCustomId\": \"string\"\n        }\n      ],\n      \"customId\": \"string\",\n      \"accountingEntryCode\": \"string\",\n      \"accountingEntryCodeId\": \"string\"\n    }\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Unprocessable Entity (WebDAV) (RFC 4918)",
+              "code": 422,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": [\n    {\n      \"loc\": [\n        \"string\",\n        \"string\"\n      ],\n      \"msg\": \"string\",\n      \"type\": \"string\",\n      \"input\": {},\n      \"ctx\": {}\n    },\n    {\n      \"loc\": [\n        \"string\",\n        \"string\"\n      ],\n      \"msg\": \"string\",\n      \"type\": \"string\",\n      \"input\": {},\n      \"ctx\": {}\n    }\n  ]\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "e33114ff-d74b-478b-ab4b-758386178b75",
+              "name": "Unexpected error. Contact support if it persists.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "accountingentries",
+                    ":companyId",
+                    "bulk"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"data\": [\n    {\n      \"accountingCode\": \"4300001\",\n      \"assetAmount\": 1250.5,\n      \"liabilityAmount\": 0,\n      \"date\": \"2024-01-15T00:00:00Z\",\n      \"counterpartAccountingCode\": \"string\",\n      \"accountingName\": \"string\",\n      \"accountingAssetAmount\": 5710.494758710673,\n      \"balance\": 2046.2550026725735,\n      \"accountingLiabilityAmount\": 3132.67133889229,\n      \"currency\": \"EUR\",\n      \"accountingCurrency\": \"SBD\",\n      \"contactCustomId\": \"string\",\n      \"exchangeRate\": 7062.748412263756,\n      \"additionalInfo\": {\n        \"key_0\": 7696.244657165079,\n        \"key_1\": true\n      },\n      \"description\": \"string\",\n      \"documentId\": \"string\",\n      \"transactionsIds\": [\n        \"string\",\n        \"string\"\n      ],\n      \"paymentId\": \"string\",\n      \"attributes\": [\n        {\n          \"customId\": \"cost-center\",\n          \"value\": \"Marketing\",\n          \"valueCustomId\": \"string\",\n          \"parentCustomId\": \"string\"\n        },\n        {\n          \"customId\": \"cost-center\",\n          \"value\": \"Marketing\",\n          \"valueCustomId\": \"string\",\n          \"parentCustomId\": \"string\"\n        }\n      ],\n      \"customId\": \"string\",\n      \"accountingEntryCode\": \"string\",\n      \"accountingEntryCodeId\": \"string\"\n    },\n    {\n      \"accountingCode\": \"4300001\",\n      \"assetAmount\": 1250.5,\n      \"liabilityAmount\": 0,\n      \"date\": \"2024-01-15T00:00:00Z\",\n      \"counterpartAccountingCode\": \"string\",\n      \"accountingName\": \"string\",\n      \"accountingAssetAmount\": 479.7299517803078,\n      \"balance\": 9429.60878773454,\n      \"accountingLiabilityAmount\": 4669.5143341671765,\n      \"currency\": \"SBD\",\n      \"accountingCurrency\": \"ISK\",\n      \"contactCustomId\": \"string\",\n      \"exchangeRate\": 8796.72304116289,\n      \"additionalInfo\": {\n        \"key_0\": \"string\"\n      },\n      \"description\": \"string\",\n      \"documentId\": \"string\",\n      \"transactionsIds\": [\n        \"string\",\n        \"string\"\n      ],\n      \"paymentId\": \"string\",\n      \"attributes\": [\n        {\n          \"customId\": \"cost-center\",\n          \"value\": \"Marketing\",\n          \"valueCustomId\": \"string\",\n          \"parentCustomId\": \"string\"\n        },\n        {\n          \"customId\": \"cost-center\",\n          \"value\": \"Marketing\",\n          \"valueCustomId\": \"string\",\n          \"parentCustomId\": \"string\"\n        }\n      ],\n      \"customId\": \"string\",\n      \"accountingEntryCode\": \"string\",\n      \"accountingEntryCodeId\": \"string\"\n    }\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Internal Server Error",
+              "code": 500,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": \"Internal server error\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "f7b15b14-39ec-4118-81d0-f2d712f11826",
+          "name": "Delete accounting entries in bulk by entry code",
+          "request": {
+            "name": "Delete accounting entries in bulk by entry code",
+            "description": {
+              "content": "Deletes every accounting entry whose `accountingEntryCode` or `accountingEntryCodeId` matches one of the given codes. The call returns `200` immediately; matching entries may still briefly appear in `GET` results right after deletion.",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "accountingentries",
+                "accountingentrycode",
+                ":companyId"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "<string>",
+                  "key": "companyId",
+                  "description": "(Required) "
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "DELETE",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{bearerToken}}"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"data\": [\n    {\n      \"accountingEntryCode\": \"<string>\"\n    },\n    {\n      \"accountingEntryCode\": \"<string>\"\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "id": "3ec74605-fb46-4b7f-a824-e5556f782374",
+              "name": "Successful Response",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "accountingentries",
+                    "accountingentrycode",
+                    ":companyId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "DELETE",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"data\": [\n    {\n      \"accountingEntryCode\": \"invoice-2024-001\"\n    },\n    {\n      \"accountingEntryCode\": \"invoice-2024-001\"\n    }\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"data\": [\n    {\n      \"id\": \"string\"\n    },\n    {\n      \"id\": \"string\"\n    }\n  ]\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "9a6c89c5-6cfc-48ec-8127-0bf441b3d53d",
+              "name": "Unauthorized. The bearer token is missing, invalid or expired.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "accountingentries",
+                    "accountingentrycode",
+                    ":companyId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "DELETE",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"data\": [\n    {\n      \"accountingEntryCode\": \"invoice-2024-001\"\n    },\n    {\n      \"accountingEntryCode\": \"invoice-2024-001\"\n    }\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": \"user not authorized\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "ccc6e24b-d781-45e9-9f61-657c245147ec",
+              "name": "Not found. The requested resource or `companyId` does not exist.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "accountingentries",
+                    "accountingentrycode",
+                    ":companyId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "DELETE",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"data\": [\n    {\n      \"accountingEntryCode\": \"invoice-2024-001\"\n    },\n    {\n      \"accountingEntryCode\": \"invoice-2024-001\"\n    }\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Not Found",
+              "code": 404,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": \"0021 companyId not found\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "0b3bc075-2890-4ad8-aba2-4de049a791de",
+              "name": "Validation Error",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "accountingentries",
+                    "accountingentrycode",
+                    ":companyId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "DELETE",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"data\": [\n    {\n      \"accountingEntryCode\": \"invoice-2024-001\"\n    },\n    {\n      \"accountingEntryCode\": \"invoice-2024-001\"\n    }\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Unprocessable Entity (WebDAV) (RFC 4918)",
+              "code": 422,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": [\n    {\n      \"loc\": [\n        \"string\",\n        \"string\"\n      ],\n      \"msg\": \"string\",\n      \"type\": \"string\",\n      \"input\": {},\n      \"ctx\": {}\n    },\n    {\n      \"loc\": [\n        \"string\",\n        \"string\"\n      ],\n      \"msg\": \"string\",\n      \"type\": \"string\",\n      \"input\": {},\n      \"ctx\": {}\n    }\n  ]\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "f8ac0c4f-e1ab-46f1-8dc9-f501e761237f",
+              "name": "Unexpected error. Contact support if it persists.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "accountingentries",
+                    "accountingentrycode",
+                    ":companyId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "DELETE",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"data\": [\n    {\n      \"accountingEntryCode\": \"invoice-2024-001\"\n    },\n    {\n      \"accountingEntryCode\": \"invoice-2024-001\"\n    }\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Internal Server Error",
+              "code": 500,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": \"Internal server error\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        }
+      ],
+      "event": []
+    }
+  ],
+  "event": [],
+  "variable": [
+    {
+      "type": "string",
+      "value": "/",
+      "key": "baseUrl"
+    }
+  ],
+  "info": {
+    "_postman_id": "cb979ee1-8925-4eb1-83cd-2b9b9826f203",
+    "name": "Embat AccountingAccounts AccountingEntries API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": {
+      "content": "Embat API enables connections between any third party application and Embat. Is organized around REST principles, using HTTP responses code and returning data in JSON format. While testing the API, you have to request **sandbox credentials**.\n\nContact Support:\n Name: API Support\n Email: tech@embat.io",
+      "type": "text/plain"
+    }
+  }
+}

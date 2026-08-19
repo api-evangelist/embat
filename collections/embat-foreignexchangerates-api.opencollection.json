@@ -1,0 +1,87 @@
+{
+  "opencollection": "1.0.0",
+  "info": {
+    "name": "Embat AccountingAccounts ForeignExchangeRates API",
+    "version": "2.120.3"
+  },
+  "items": [
+    {
+      "info": {
+        "name": "ForeignExchangeRates",
+        "type": "folder"
+      },
+      "items": [
+        {
+          "info": {
+            "name": "List foreign exchange rates",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "{{baseUrl}}/foreignexchangerates",
+            "params": [
+              {
+                "name": "baseCurrency",
+                "value": "",
+                "type": "query",
+                "description": "Currency all returned `rates` are expressed against."
+              },
+              {
+                "name": "startDate",
+                "value": "",
+                "type": "query",
+                "description": "Only return exchange rates dated on or after this date (inclusive)."
+              },
+              {
+                "name": "endDate",
+                "value": "",
+                "type": "query",
+                "description": "Only return exchange rates dated before this date (exclusive)."
+              },
+              {
+                "name": "limit",
+                "value": "",
+                "type": "query",
+                "description": "Maximum number of objects to return in the response. Default 500, maximum 2000."
+              },
+              {
+                "name": "nextPageToken",
+                "value": "",
+                "type": "query",
+                "description": "Token to fetch the next page of results, taken from the `nextPageToken` returned by the previous request with the same filters. Omit it to fetch the first page. An invalid or malformed token is rejected with `404`."
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Returns the daily foreign exchange rates recorded in Embat, most recent first, recalculated to be expressed against `baseCurrency`. Results are paginated: use `limit` to control page size and pass the returned `nextPageToken` to fetch the next page. `startDate`/`endDate` filter by rate date: `startDate` is inclusive and `endDate` is exclusive. If only one of the two is given, the range is open-ended on the other side."
+        },
+        {
+          "info": {
+            "name": "Retrieve foreign exchange rate",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "{{baseUrl}}/foreignexchangerates/:id",
+            "params": [
+              {
+                "name": "id",
+                "value": "",
+                "type": "path"
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Returns a single foreign exchange rate record by `id`, always expressed against EUR — the `baseCurrency` conversion available on the list endpoint does not apply here."
+        }
+      ]
+    }
+  ],
+  "bundled": true
+}

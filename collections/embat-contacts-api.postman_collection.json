@@ -1,0 +1,2880 @@
+{
+  "item": [
+    {
+      "id": "5298af14-6033-4531-aa68-35cc2bc6dcf3",
+      "name": "Contacts",
+      "description": {
+        "content": "`Contact` represents a client or supplier your company transacts with. `customId` is the unique identifier of a contact: set your own value to use as your ERP contact ID, or let Embat auto-generate one.\n\nA contact is referenced from other entities to identify who is involved in a transaction: `Operations` (invoices/bills) are billed to or from a contact, `Payments` can record a collection or payment made to a contact, and `AccountingEntries` can be linked to a contact for reconciliation. A contact also carries the bank account details (`accounts`, `paymentsAccounts`) Embat uses to execute payments to it.\n\n**Typical flow:** contacts are usually kept in sync from your ERP, since they are the master data referenced when creating operations and payments.\n\n1. **Create or update a contact from your ERP.** Whenever a client or supplier is created or edited in your ERP, upsert it in Embat with its identification and, if relevant, bank account details:\n\n```json\nPOST /contacts/{companyId}\n{\n  \"customId\": \"erp-contact-001\",\n  \"legalName\": \"Acme Supplies S.L.\",\n  \"taxId\": \"B12345678\",\n  \"type\": \"supplier\",\n  \"paymentsAccounts\": [\n    { \"currency\": \"EUR\", \"default\": true, \"details\": { \"iban\": \"ES9121000418450200051332\" } }\n  ]\n}\n```\n\n2. **Reference the contact by `customId`.** Use the same `customId` in `Operations` and `Payments` to link them to this contact.\n3. **Keep it up to date.** Sending `POST /contacts/{companyId}` again with the same `customId` updates the existing contact instead of creating a duplicate; use `PATCH /contacts/{companyId}/{customId}` (or the bulk variant) to update specific fields only.\n",
+        "type": "text/plain"
+      },
+      "item": [
+        {
+          "id": "edc6bef4-8b71-4ff3-ba2e-cad70734ec89",
+          "name": "List contacts",
+          "request": {
+            "name": "List contacts",
+            "description": {
+              "content": "Returns the contacts (clients/suppliers) of a company. Results are paginated: use `limit` to control page size and pass the returned `nextPageToken` to fetch the next page.",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "contacts",
+                ":companyId"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [
+                {
+                  "disabled": false,
+                  "key": "limit",
+                  "value": "500",
+                  "description": "Maximum number of objects to return in the response. Default 500, maximum 2000."
+                },
+                {
+                  "disabled": false,
+                  "key": "nextPageToken",
+                  "value": "<string>",
+                  "description": "Token to fetch the next page of results, taken from the `nextPageToken` returned by the previous request with the same filters. Omit it to fetch the first page. An invalid or malformed token is rejected with `404`."
+                }
+              ],
+              "variable": [
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "<string>",
+                  "key": "companyId",
+                  "description": "(Required) "
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{bearerToken}}"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "id": "e17017fb-22a3-41aa-a77f-5fb4d41bc9a1",
+              "name": "Successful Response",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "contacts",
+                    ":companyId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "limit",
+                      "value": "500"
+                    },
+                    {
+                      "key": "nextPageToken",
+                      "value": "<string>"
+                    }
+                  ],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"data\": [\n    {\n      \"type\": \"supplier\",\n      \"id\": \"string\",\n      \"companyId\": \"string\",\n      \"updatedAt\": \"2025-09-10T18:49:52.381Z\",\n      \"createdAt\": \"1980-03-25T01:38:53.431Z\",\n      \"tradeName\": \"string\",\n      \"legalName\": \"string\",\n      \"taxId\": \"string\",\n      \"contact\": {\n        \"phone\": \"string\",\n        \"email\": \"string\",\n        \"name\": \"string\",\n        \"surname\": \"string\"\n      },\n      \"address\": {\n        \"postalCode\": \"string\",\n        \"address\": \"string\",\n        \"province\": \"string\",\n        \"city\": \"string\",\n        \"country\": \"string\"\n      },\n      \"contactType\": \"company\",\n      \"accounts\": [\n        {\n          \"swift\": \"string\",\n          \"iban\": \"string\",\n          \"default\": true\n        },\n        {\n          \"swift\": \"string\",\n          \"iban\": \"string\",\n          \"default\": false\n        }\n      ],\n      \"paymentsAccounts\": [\n        {\n          \"default\": false,\n          \"currency\": {\n            \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n          },\n          \"details\": {\n            \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n          }\n        },\n        {\n          \"default\": false,\n          \"currency\": {\n            \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n          },\n          \"details\": {\n            \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n          }\n        }\n      ],\n      \"additionalInfo\": {\n        \"key_0\": 4739.068522847702\n      },\n      \"accountingCode\": \"string\",\n      \"paymentMethod\": \"string\",\n      \"paymentTerms\": 8896,\n      \"attributes\": [\n        {\n          \"customId\": \"cost-center\",\n          \"value\": \"Marketing\",\n          \"valueCustomId\": \"string\",\n          \"parentCustomId\": \"string\"\n        },\n        {\n          \"customId\": \"cost-center\",\n          \"value\": \"Marketing\",\n          \"valueCustomId\": \"string\",\n          \"parentCustomId\": \"string\"\n        }\n      ],\n      \"customId\": \"string\"\n    },\n    {\n      \"type\": \"supplier\",\n      \"id\": \"string\",\n      \"companyId\": \"string\",\n      \"updatedAt\": \"2008-05-23T02:24:01.082Z\",\n      \"createdAt\": \"1973-10-04T01:52:43.847Z\",\n      \"tradeName\": \"string\",\n      \"legalName\": \"string\",\n      \"taxId\": \"string\",\n      \"contact\": {\n        \"phone\": \"string\",\n        \"email\": \"string\",\n        \"name\": \"string\",\n        \"surname\": \"string\"\n      },\n      \"address\": {\n        \"postalCode\": \"string\",\n        \"address\": \"string\",\n        \"province\": \"string\",\n        \"city\": \"string\",\n        \"country\": \"string\"\n      },\n      \"contactType\": \"company\",\n      \"accounts\": [\n        {\n          \"swift\": \"string\",\n          \"iban\": \"string\",\n          \"default\": false\n        },\n        {\n          \"swift\": \"string\",\n          \"iban\": \"string\",\n          \"default\": false\n        }\n      ],\n      \"paymentsAccounts\": [\n        {\n          \"default\": false,\n          \"currency\": {\n            \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n          },\n          \"details\": {\n            \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n          }\n        },\n        {\n          \"default\": false,\n          \"currency\": {\n            \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n          },\n          \"details\": {\n            \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n          }\n        }\n      ],\n      \"additionalInfo\": {\n        \"key_0\": true\n      },\n      \"accountingCode\": \"string\",\n      \"paymentMethod\": \"string\",\n      \"paymentTerms\": 3706,\n      \"attributes\": [\n        {\n          \"customId\": \"cost-center\",\n          \"value\": \"Marketing\",\n          \"valueCustomId\": \"string\",\n          \"parentCustomId\": \"string\"\n        },\n        {\n          \"customId\": \"cost-center\",\n          \"value\": \"Marketing\",\n          \"valueCustomId\": \"string\",\n          \"parentCustomId\": \"string\"\n        }\n      ],\n      \"customId\": \"string\"\n    }\n  ],\n  \"nextPageToken\": \"string\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "7223ed00-02c0-4c56-9cdf-d755ef7c8ae1",
+              "name": "Unauthorized. The bearer token is missing, invalid or expired.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "contacts",
+                    ":companyId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "limit",
+                      "value": "500"
+                    },
+                    {
+                      "key": "nextPageToken",
+                      "value": "<string>"
+                    }
+                  ],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": \"user not authorized\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "b73e19bb-8432-481a-aabd-76cb8370e035",
+              "name": "Company not found, or invalid `nextPageToken`.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "contacts",
+                    ":companyId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "limit",
+                      "value": "500"
+                    },
+                    {
+                      "key": "nextPageToken",
+                      "value": "<string>"
+                    }
+                  ],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "Not Found",
+              "code": 404,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": \"0021 companyId not found\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "6914c280-00d8-4b0b-8dbc-c123c07dc003",
+              "name": "Validation Error",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "contacts",
+                    ":companyId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "limit",
+                      "value": "500"
+                    },
+                    {
+                      "key": "nextPageToken",
+                      "value": "<string>"
+                    }
+                  ],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "Unprocessable Entity (WebDAV) (RFC 4918)",
+              "code": 422,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": [\n    {\n      \"loc\": [\n        \"string\",\n        \"string\"\n      ],\n      \"msg\": \"string\",\n      \"type\": \"string\",\n      \"input\": {},\n      \"ctx\": {}\n    },\n    {\n      \"loc\": [\n        \"string\",\n        \"string\"\n      ],\n      \"msg\": \"string\",\n      \"type\": \"string\",\n      \"input\": {},\n      \"ctx\": {}\n    }\n  ]\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "d8e134fc-b5e3-492b-b608-5c414478d9d3",
+          "name": "Create contact",
+          "request": {
+            "name": "Create contact",
+            "description": {
+              "content": "Creates a contact (client/supplier). If `customId` is omitted, Embat auto-generates one. Calling this endpoint again with a `customId` that already exists **updates** the existing contact instead of creating a duplicate or raising a conflict error; if the submitted data is identical to the stored contact, the call is a no-op.",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "contacts",
+                ":companyId"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "<string>",
+                  "key": "companyId",
+                  "description": "(Required) "
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "POST",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{bearerToken}}"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"legalName\": \"<string>\",\n  \"type\": \"<string>\",\n  \"tradeName\": \"<string>\",\n  \"taxId\": \"<string>\",\n  \"contact\": {\n    \"phone\": \"<string>\",\n    \"email\": \"<string>\",\n    \"name\": \"<string>\",\n    \"surname\": \"<string>\"\n  },\n  \"address\": {\n    \"postalCode\": \"<string>\",\n    \"address\": \"<string>\",\n    \"province\": \"<string>\",\n    \"city\": \"<string>\",\n    \"country\": \"<string>\"\n  },\n  \"contactType\": \"company\",\n  \"accounts\": [\n    {\n      \"swift\": \"<string>\",\n      \"iban\": \"<string>\",\n      \"default\": \"<boolean>\"\n    },\n    {\n      \"swift\": \"<string>\",\n      \"iban\": \"<string>\",\n      \"default\": \"<boolean>\"\n    }\n  ],\n  \"paymentsAccounts\": [\n    {\n      \"default\": false,\n      \"currency\": \"<string>\",\n      \"details\": {\n        \"iban\": \"<string>\",\n        \"bic\": \"<string>\",\n        \"swift\": \"<string>\",\n        \"accountNumber\": \"<string>\",\n        \"accountType\": {\n          \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n        },\n        \"routingNumber\": \"<string>\",\n        \"sortCode\": \"<string>\",\n        \"institutionNumber\": \"<string>\",\n        \"transitNumber\": \"<string>\",\n        \"bankCode\": \"<string>\",\n        \"branchCode\": \"<string>\",\n        \"bsb\": \"<string>\",\n        \"bankCountryCode\": {\n          \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n        }\n      }\n    },\n    {\n      \"default\": false,\n      \"currency\": \"<string>\",\n      \"details\": {\n        \"iban\": \"<string>\",\n        \"bic\": \"<string>\",\n        \"swift\": \"<string>\",\n        \"accountNumber\": \"<string>\",\n        \"accountType\": {\n          \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n        },\n        \"routingNumber\": \"<string>\",\n        \"sortCode\": \"<string>\",\n        \"institutionNumber\": \"<string>\",\n        \"transitNumber\": \"<string>\",\n        \"bankCode\": \"<string>\",\n        \"branchCode\": \"<string>\",\n        \"bsb\": \"<string>\",\n        \"bankCountryCode\": {\n          \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n        }\n      }\n    }\n  ],\n  \"additionalInfo\": {\n    \"key_0\": true,\n    \"key_1\": \"string\",\n    \"key_2\": 843\n  },\n  \"accountingCode\": \"<string>\",\n  \"paymentMethod\": \"<string>\",\n  \"paymentTerms\": \"<integer>\",\n  \"attributes\": [\n    {\n      \"customId\": \"<string>\",\n      \"value\": \"<string>\",\n      \"valueCustomId\": \"<string>\",\n      \"parentCustomId\": \"<string>\"\n    },\n    {\n      \"customId\": \"<string>\",\n      \"value\": \"<string>\",\n      \"valueCustomId\": \"<string>\",\n      \"parentCustomId\": \"<string>\"\n    }\n  ],\n  \"customId\": \"<string>\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "id": "3c560dbc-c843-429c-8140-a345572e83ca",
+              "name": "Successful Response",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "contacts",
+                    ":companyId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"legalName\": \"Acme Supplies S.L.\",\n  \"type\": \"supplier\",\n  \"tradeName\": \"<string>\",\n  \"taxId\": \"<string>\",\n  \"contact\": {\n    \"phone\": \"string\",\n    \"email\": \"string\",\n    \"name\": \"string\",\n    \"surname\": \"string\"\n  },\n  \"address\": {\n    \"postalCode\": \"string\",\n    \"address\": \"string\",\n    \"province\": \"string\",\n    \"city\": \"string\",\n    \"country\": \"string\"\n  },\n  \"contactType\": \"company\",\n  \"accounts\": [\n    {\n      \"swift\": \"string\",\n      \"iban\": \"string\",\n      \"default\": false\n    },\n    {\n      \"swift\": \"string\",\n      \"iban\": \"string\",\n      \"default\": false\n    }\n  ],\n  \"paymentsAccounts\": [\n    {\n      \"default\": false,\n      \"currency\": \"TND\",\n      \"details\": {\n        \"iban\": \"string\",\n        \"bic\": \"string\",\n        \"swift\": \"string\",\n        \"accountNumber\": \"string\",\n        \"accountType\": {\n          \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n        },\n        \"routingNumber\": \"string\",\n        \"sortCode\": \"string\",\n        \"institutionNumber\": \"string\",\n        \"transitNumber\": \"string\",\n        \"bankCode\": \"string\",\n        \"branchCode\": \"string\",\n        \"bsb\": \"string\",\n        \"bankCountryCode\": {\n          \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n        }\n      }\n    },\n    {\n      \"default\": false,\n      \"currency\": \"BTN\",\n      \"details\": {\n        \"iban\": \"string\",\n        \"bic\": \"string\",\n        \"swift\": \"string\",\n        \"accountNumber\": \"string\",\n        \"accountType\": {\n          \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n        },\n        \"routingNumber\": \"string\",\n        \"sortCode\": \"string\",\n        \"institutionNumber\": \"string\",\n        \"transitNumber\": \"string\",\n        \"bankCode\": \"string\",\n        \"branchCode\": \"string\",\n        \"bsb\": \"string\",\n        \"bankCountryCode\": {\n          \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n        }\n      }\n    }\n  ],\n  \"additionalInfo\": {\n    \"key_0\": 3527.7166760213063\n  },\n  \"accountingCode\": \"<string>\",\n  \"paymentMethod\": \"<string>\",\n  \"paymentTerms\": \"<integer>\",\n  \"attributes\": [\n    {\n      \"customId\": \"cost-center\",\n      \"value\": \"Marketing\",\n      \"valueCustomId\": \"string\",\n      \"parentCustomId\": \"string\"\n    },\n    {\n      \"customId\": \"cost-center\",\n      \"value\": \"Marketing\",\n      \"valueCustomId\": \"string\",\n      \"parentCustomId\": \"string\"\n    }\n  ],\n  \"customId\": \"<string>\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"id\": \"string\",\n  \"customId\": \"string\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "fa4ee5df-7be8-4ab3-b647-79affedf5a1f",
+              "name": "Unauthorized. The bearer token is missing, invalid or expired.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "contacts",
+                    ":companyId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"legalName\": \"Acme Supplies S.L.\",\n  \"type\": \"supplier\",\n  \"tradeName\": \"<string>\",\n  \"taxId\": \"<string>\",\n  \"contact\": {\n    \"phone\": \"string\",\n    \"email\": \"string\",\n    \"name\": \"string\",\n    \"surname\": \"string\"\n  },\n  \"address\": {\n    \"postalCode\": \"string\",\n    \"address\": \"string\",\n    \"province\": \"string\",\n    \"city\": \"string\",\n    \"country\": \"string\"\n  },\n  \"contactType\": \"company\",\n  \"accounts\": [\n    {\n      \"swift\": \"string\",\n      \"iban\": \"string\",\n      \"default\": false\n    },\n    {\n      \"swift\": \"string\",\n      \"iban\": \"string\",\n      \"default\": false\n    }\n  ],\n  \"paymentsAccounts\": [\n    {\n      \"default\": false,\n      \"currency\": \"TND\",\n      \"details\": {\n        \"iban\": \"string\",\n        \"bic\": \"string\",\n        \"swift\": \"string\",\n        \"accountNumber\": \"string\",\n        \"accountType\": {\n          \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n        },\n        \"routingNumber\": \"string\",\n        \"sortCode\": \"string\",\n        \"institutionNumber\": \"string\",\n        \"transitNumber\": \"string\",\n        \"bankCode\": \"string\",\n        \"branchCode\": \"string\",\n        \"bsb\": \"string\",\n        \"bankCountryCode\": {\n          \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n        }\n      }\n    },\n    {\n      \"default\": false,\n      \"currency\": \"BTN\",\n      \"details\": {\n        \"iban\": \"string\",\n        \"bic\": \"string\",\n        \"swift\": \"string\",\n        \"accountNumber\": \"string\",\n        \"accountType\": {\n          \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n        },\n        \"routingNumber\": \"string\",\n        \"sortCode\": \"string\",\n        \"institutionNumber\": \"string\",\n        \"transitNumber\": \"string\",\n        \"bankCode\": \"string\",\n        \"branchCode\": \"string\",\n        \"bsb\": \"string\",\n        \"bankCountryCode\": {\n          \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n        }\n      }\n    }\n  ],\n  \"additionalInfo\": {\n    \"key_0\": 3527.7166760213063\n  },\n  \"accountingCode\": \"<string>\",\n  \"paymentMethod\": \"<string>\",\n  \"paymentTerms\": \"<integer>\",\n  \"attributes\": [\n    {\n      \"customId\": \"cost-center\",\n      \"value\": \"Marketing\",\n      \"valueCustomId\": \"string\",\n      \"parentCustomId\": \"string\"\n    },\n    {\n      \"customId\": \"cost-center\",\n      \"value\": \"Marketing\",\n      \"valueCustomId\": \"string\",\n      \"parentCustomId\": \"string\"\n    }\n  ],\n  \"customId\": \"<string>\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": \"user not authorized\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "7c837ad1-f470-4ac3-92c4-1008db8da579",
+              "name": "Not found. The requested resource or `companyId` does not exist.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "contacts",
+                    ":companyId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"legalName\": \"Acme Supplies S.L.\",\n  \"type\": \"supplier\",\n  \"tradeName\": \"<string>\",\n  \"taxId\": \"<string>\",\n  \"contact\": {\n    \"phone\": \"string\",\n    \"email\": \"string\",\n    \"name\": \"string\",\n    \"surname\": \"string\"\n  },\n  \"address\": {\n    \"postalCode\": \"string\",\n    \"address\": \"string\",\n    \"province\": \"string\",\n    \"city\": \"string\",\n    \"country\": \"string\"\n  },\n  \"contactType\": \"company\",\n  \"accounts\": [\n    {\n      \"swift\": \"string\",\n      \"iban\": \"string\",\n      \"default\": false\n    },\n    {\n      \"swift\": \"string\",\n      \"iban\": \"string\",\n      \"default\": false\n    }\n  ],\n  \"paymentsAccounts\": [\n    {\n      \"default\": false,\n      \"currency\": \"TND\",\n      \"details\": {\n        \"iban\": \"string\",\n        \"bic\": \"string\",\n        \"swift\": \"string\",\n        \"accountNumber\": \"string\",\n        \"accountType\": {\n          \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n        },\n        \"routingNumber\": \"string\",\n        \"sortCode\": \"string\",\n        \"institutionNumber\": \"string\",\n        \"transitNumber\": \"string\",\n        \"bankCode\": \"string\",\n        \"branchCode\": \"string\",\n        \"bsb\": \"string\",\n        \"bankCountryCode\": {\n          \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n        }\n      }\n    },\n    {\n      \"default\": false,\n      \"currency\": \"BTN\",\n      \"details\": {\n        \"iban\": \"string\",\n        \"bic\": \"string\",\n        \"swift\": \"string\",\n        \"accountNumber\": \"string\",\n        \"accountType\": {\n          \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n        },\n        \"routingNumber\": \"string\",\n        \"sortCode\": \"string\",\n        \"institutionNumber\": \"string\",\n        \"transitNumber\": \"string\",\n        \"bankCode\": \"string\",\n        \"branchCode\": \"string\",\n        \"bsb\": \"string\",\n        \"bankCountryCode\": {\n          \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n        }\n      }\n    }\n  ],\n  \"additionalInfo\": {\n    \"key_0\": 3527.7166760213063\n  },\n  \"accountingCode\": \"<string>\",\n  \"paymentMethod\": \"<string>\",\n  \"paymentTerms\": \"<integer>\",\n  \"attributes\": [\n    {\n      \"customId\": \"cost-center\",\n      \"value\": \"Marketing\",\n      \"valueCustomId\": \"string\",\n      \"parentCustomId\": \"string\"\n    },\n    {\n      \"customId\": \"cost-center\",\n      \"value\": \"Marketing\",\n      \"valueCustomId\": \"string\",\n      \"parentCustomId\": \"string\"\n    }\n  ],\n  \"customId\": \"<string>\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Not Found",
+              "code": 404,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": \"0021 companyId not found\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "fbe9a226-ba3e-45ec-ae66-4933d96c2b5b",
+              "name": "Validation Error",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "contacts",
+                    ":companyId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"legalName\": \"Acme Supplies S.L.\",\n  \"type\": \"supplier\",\n  \"tradeName\": \"<string>\",\n  \"taxId\": \"<string>\",\n  \"contact\": {\n    \"phone\": \"string\",\n    \"email\": \"string\",\n    \"name\": \"string\",\n    \"surname\": \"string\"\n  },\n  \"address\": {\n    \"postalCode\": \"string\",\n    \"address\": \"string\",\n    \"province\": \"string\",\n    \"city\": \"string\",\n    \"country\": \"string\"\n  },\n  \"contactType\": \"company\",\n  \"accounts\": [\n    {\n      \"swift\": \"string\",\n      \"iban\": \"string\",\n      \"default\": false\n    },\n    {\n      \"swift\": \"string\",\n      \"iban\": \"string\",\n      \"default\": false\n    }\n  ],\n  \"paymentsAccounts\": [\n    {\n      \"default\": false,\n      \"currency\": \"TND\",\n      \"details\": {\n        \"iban\": \"string\",\n        \"bic\": \"string\",\n        \"swift\": \"string\",\n        \"accountNumber\": \"string\",\n        \"accountType\": {\n          \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n        },\n        \"routingNumber\": \"string\",\n        \"sortCode\": \"string\",\n        \"institutionNumber\": \"string\",\n        \"transitNumber\": \"string\",\n        \"bankCode\": \"string\",\n        \"branchCode\": \"string\",\n        \"bsb\": \"string\",\n        \"bankCountryCode\": {\n          \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n        }\n      }\n    },\n    {\n      \"default\": false,\n      \"currency\": \"BTN\",\n      \"details\": {\n        \"iban\": \"string\",\n        \"bic\": \"string\",\n        \"swift\": \"string\",\n        \"accountNumber\": \"string\",\n        \"accountType\": {\n          \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n        },\n        \"routingNumber\": \"string\",\n        \"sortCode\": \"string\",\n        \"institutionNumber\": \"string\",\n        \"transitNumber\": \"string\",\n        \"bankCode\": \"string\",\n        \"branchCode\": \"string\",\n        \"bsb\": \"string\",\n        \"bankCountryCode\": {\n          \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n        }\n      }\n    }\n  ],\n  \"additionalInfo\": {\n    \"key_0\": 3527.7166760213063\n  },\n  \"accountingCode\": \"<string>\",\n  \"paymentMethod\": \"<string>\",\n  \"paymentTerms\": \"<integer>\",\n  \"attributes\": [\n    {\n      \"customId\": \"cost-center\",\n      \"value\": \"Marketing\",\n      \"valueCustomId\": \"string\",\n      \"parentCustomId\": \"string\"\n    },\n    {\n      \"customId\": \"cost-center\",\n      \"value\": \"Marketing\",\n      \"valueCustomId\": \"string\",\n      \"parentCustomId\": \"string\"\n    }\n  ],\n  \"customId\": \"<string>\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Unprocessable Entity (WebDAV) (RFC 4918)",
+              "code": 422,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": [\n    {\n      \"loc\": [\n        \"string\",\n        \"string\"\n      ],\n      \"msg\": \"string\",\n      \"type\": \"string\",\n      \"input\": {},\n      \"ctx\": {}\n    },\n    {\n      \"loc\": [\n        \"string\",\n        \"string\"\n      ],\n      \"msg\": \"string\",\n      \"type\": \"string\",\n      \"input\": {},\n      \"ctx\": {}\n    }\n  ]\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "b1b057be-af6a-40b6-bd70-7c9928f64acf",
+              "name": "Unexpected error. Contact support if it persists.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "contacts",
+                    ":companyId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"legalName\": \"Acme Supplies S.L.\",\n  \"type\": \"supplier\",\n  \"tradeName\": \"<string>\",\n  \"taxId\": \"<string>\",\n  \"contact\": {\n    \"phone\": \"string\",\n    \"email\": \"string\",\n    \"name\": \"string\",\n    \"surname\": \"string\"\n  },\n  \"address\": {\n    \"postalCode\": \"string\",\n    \"address\": \"string\",\n    \"province\": \"string\",\n    \"city\": \"string\",\n    \"country\": \"string\"\n  },\n  \"contactType\": \"company\",\n  \"accounts\": [\n    {\n      \"swift\": \"string\",\n      \"iban\": \"string\",\n      \"default\": false\n    },\n    {\n      \"swift\": \"string\",\n      \"iban\": \"string\",\n      \"default\": false\n    }\n  ],\n  \"paymentsAccounts\": [\n    {\n      \"default\": false,\n      \"currency\": \"TND\",\n      \"details\": {\n        \"iban\": \"string\",\n        \"bic\": \"string\",\n        \"swift\": \"string\",\n        \"accountNumber\": \"string\",\n        \"accountType\": {\n          \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n        },\n        \"routingNumber\": \"string\",\n        \"sortCode\": \"string\",\n        \"institutionNumber\": \"string\",\n        \"transitNumber\": \"string\",\n        \"bankCode\": \"string\",\n        \"branchCode\": \"string\",\n        \"bsb\": \"string\",\n        \"bankCountryCode\": {\n          \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n        }\n      }\n    },\n    {\n      \"default\": false,\n      \"currency\": \"BTN\",\n      \"details\": {\n        \"iban\": \"string\",\n        \"bic\": \"string\",\n        \"swift\": \"string\",\n        \"accountNumber\": \"string\",\n        \"accountType\": {\n          \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n        },\n        \"routingNumber\": \"string\",\n        \"sortCode\": \"string\",\n        \"institutionNumber\": \"string\",\n        \"transitNumber\": \"string\",\n        \"bankCode\": \"string\",\n        \"branchCode\": \"string\",\n        \"bsb\": \"string\",\n        \"bankCountryCode\": {\n          \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n        }\n      }\n    }\n  ],\n  \"additionalInfo\": {\n    \"key_0\": 3527.7166760213063\n  },\n  \"accountingCode\": \"<string>\",\n  \"paymentMethod\": \"<string>\",\n  \"paymentTerms\": \"<integer>\",\n  \"attributes\": [\n    {\n      \"customId\": \"cost-center\",\n      \"value\": \"Marketing\",\n      \"valueCustomId\": \"string\",\n      \"parentCustomId\": \"string\"\n    },\n    {\n      \"customId\": \"cost-center\",\n      \"value\": \"Marketing\",\n      \"valueCustomId\": \"string\",\n      \"parentCustomId\": \"string\"\n    }\n  ],\n  \"customId\": \"<string>\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Internal Server Error",
+              "code": 500,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": \"Internal server error\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "22e328a6-e3f9-48cd-84e5-3b9498d3c1c0",
+          "name": "Update contacts in bulk",
+          "request": {
+            "name": "Update contacts in bulk",
+            "description": {
+              "content": "Updates several contacts in a single call, identified by `customId`. Entries whose `customId` does not match any contact are silently skipped — the call returns `200` for the whole batch. Contacts sharing the same `customId` within the request are deduplicated and only the first occurrence is processed.",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "contacts",
+                ":companyId"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "<string>",
+                  "key": "companyId",
+                  "description": "(Required) "
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "PATCH",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{bearerToken}}"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"data\": [\n    {\n      \"customId\": \"<string>\",\n      \"tradeName\": \"<string>\",\n      \"legalName\": \"<string>\",\n      \"taxId\": \"<string>\",\n      \"contact\": {\n        \"phone\": \"<string>\",\n        \"email\": \"<string>\",\n        \"name\": \"<string>\",\n        \"surname\": \"<string>\"\n      },\n      \"address\": {\n        \"postalCode\": \"<string>\",\n        \"address\": \"<string>\",\n        \"province\": \"<string>\",\n        \"city\": \"<string>\",\n        \"country\": \"<string>\"\n      },\n      \"contactType\": \"company\",\n      \"type\": \"<string>\",\n      \"accounts\": [\n        {\n          \"swift\": \"<string>\",\n          \"iban\": \"<string>\",\n          \"default\": \"<boolean>\"\n        },\n        {\n          \"swift\": \"<string>\",\n          \"iban\": \"<string>\",\n          \"default\": \"<boolean>\"\n        }\n      ],\n      \"paymentsAccounts\": [\n        {\n          \"default\": false,\n          \"currency\": {\n            \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n          },\n          \"details\": {\n            \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n          }\n        },\n        {\n          \"default\": false,\n          \"currency\": {\n            \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n          },\n          \"details\": {\n            \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n          }\n        }\n      ],\n      \"additionalInfo\": {\n        \"key_0\": 3726.5673789104635,\n        \"key_1\": false,\n        \"key_2\": 9351\n      },\n      \"accountingCode\": \"<string>\",\n      \"paymentMethod\": \"<string>\",\n      \"paymentTerms\": \"<integer>\",\n      \"attributes\": [\n        {\n          \"customId\": \"<string>\",\n          \"value\": \"<string>\",\n          \"valueCustomId\": \"<string>\",\n          \"parentCustomId\": \"<string>\"\n        },\n        {\n          \"customId\": \"<string>\",\n          \"value\": \"<string>\",\n          \"valueCustomId\": \"<string>\",\n          \"parentCustomId\": \"<string>\"\n        }\n      ]\n    },\n    {\n      \"customId\": \"<string>\",\n      \"tradeName\": \"<string>\",\n      \"legalName\": \"<string>\",\n      \"taxId\": \"<string>\",\n      \"contact\": {\n        \"phone\": \"<string>\",\n        \"email\": \"<string>\",\n        \"name\": \"<string>\",\n        \"surname\": \"<string>\"\n      },\n      \"address\": {\n        \"postalCode\": \"<string>\",\n        \"address\": \"<string>\",\n        \"province\": \"<string>\",\n        \"city\": \"<string>\",\n        \"country\": \"<string>\"\n      },\n      \"contactType\": \"company\",\n      \"type\": \"<string>\",\n      \"accounts\": [\n        {\n          \"swift\": \"<string>\",\n          \"iban\": \"<string>\",\n          \"default\": \"<boolean>\"\n        },\n        {\n          \"swift\": \"<string>\",\n          \"iban\": \"<string>\",\n          \"default\": \"<boolean>\"\n        }\n      ],\n      \"paymentsAccounts\": [\n        {\n          \"default\": false,\n          \"currency\": {\n            \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n          },\n          \"details\": {\n            \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n          }\n        },\n        {\n          \"default\": false,\n          \"currency\": {\n            \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n          },\n          \"details\": {\n            \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n          }\n        }\n      ],\n      \"additionalInfo\": {\n        \"key_0\": \"string\"\n      },\n      \"accountingCode\": \"<string>\",\n      \"paymentMethod\": \"<string>\",\n      \"paymentTerms\": \"<integer>\",\n      \"attributes\": [\n        {\n          \"customId\": \"<string>\",\n          \"value\": \"<string>\",\n          \"valueCustomId\": \"<string>\",\n          \"parentCustomId\": \"<string>\"\n        },\n        {\n          \"customId\": \"<string>\",\n          \"value\": \"<string>\",\n          \"valueCustomId\": \"<string>\",\n          \"parentCustomId\": \"<string>\"\n        }\n      ]\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "id": "5658a064-bfe0-4ce7-bce4-6ad2041e967b",
+              "name": "Successful Response",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "contacts",
+                    ":companyId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "PATCH",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"data\": [\n    {\n      \"customId\": \"erp-contact-001\",\n      \"tradeName\": \"string\",\n      \"legalName\": \"string\",\n      \"taxId\": \"string\",\n      \"contact\": {\n        \"phone\": \"string\",\n        \"email\": \"string\",\n        \"name\": \"string\",\n        \"surname\": \"string\"\n      },\n      \"address\": {\n        \"postalCode\": \"string\",\n        \"address\": \"string\",\n        \"province\": \"string\",\n        \"city\": \"string\",\n        \"country\": \"string\"\n      },\n      \"contactType\": \"company\",\n      \"type\": \"client\",\n      \"accounts\": [\n        {\n          \"swift\": \"string\",\n          \"iban\": \"string\",\n          \"default\": false\n        },\n        {\n          \"swift\": \"string\",\n          \"iban\": \"string\",\n          \"default\": false\n        }\n      ],\n      \"paymentsAccounts\": [\n        {\n          \"default\": false,\n          \"currency\": {\n            \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n          },\n          \"details\": {\n            \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n          }\n        },\n        {\n          \"default\": false,\n          \"currency\": {\n            \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n          },\n          \"details\": {\n            \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n          }\n        }\n      ],\n      \"additionalInfo\": {\n        \"key_0\": \"string\",\n        \"key_1\": 1641.456968212549\n      },\n      \"accountingCode\": \"string\",\n      \"paymentMethod\": \"string\",\n      \"paymentTerms\": 7733,\n      \"attributes\": [\n        {\n          \"customId\": \"cost-center\",\n          \"value\": \"Marketing\",\n          \"valueCustomId\": \"string\",\n          \"parentCustomId\": \"string\"\n        },\n        {\n          \"customId\": \"cost-center\",\n          \"value\": \"Marketing\",\n          \"valueCustomId\": \"string\",\n          \"parentCustomId\": \"string\"\n        }\n      ]\n    },\n    {\n      \"customId\": \"erp-contact-001\",\n      \"tradeName\": \"string\",\n      \"legalName\": \"string\",\n      \"taxId\": \"string\",\n      \"contact\": {\n        \"phone\": \"string\",\n        \"email\": \"string\",\n        \"name\": \"string\",\n        \"surname\": \"string\"\n      },\n      \"address\": {\n        \"postalCode\": \"string\",\n        \"address\": \"string\",\n        \"province\": \"string\",\n        \"city\": \"string\",\n        \"country\": \"string\"\n      },\n      \"contactType\": \"company\",\n      \"type\": \"client\",\n      \"accounts\": [\n        {\n          \"swift\": \"string\",\n          \"iban\": \"string\",\n          \"default\": false\n        },\n        {\n          \"swift\": \"string\",\n          \"iban\": \"string\",\n          \"default\": false\n        }\n      ],\n      \"paymentsAccounts\": [\n        {\n          \"default\": false,\n          \"currency\": {\n            \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n          },\n          \"details\": {\n            \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n          }\n        },\n        {\n          \"default\": false,\n          \"currency\": {\n            \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n          },\n          \"details\": {\n            \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n          }\n        }\n      ],\n      \"additionalInfo\": {\n        \"key_0\": \"string\",\n        \"key_1\": true,\n        \"key_2\": 452.86585565186385,\n        \"key_3\": 5610\n      },\n      \"accountingCode\": \"string\",\n      \"paymentMethod\": \"string\",\n      \"paymentTerms\": 7106,\n      \"attributes\": [\n        {\n          \"customId\": \"cost-center\",\n          \"value\": \"Marketing\",\n          \"valueCustomId\": \"string\",\n          \"parentCustomId\": \"string\"\n        },\n        {\n          \"customId\": \"cost-center\",\n          \"value\": \"Marketing\",\n          \"valueCustomId\": \"string\",\n          \"parentCustomId\": \"string\"\n        }\n      ]\n    }\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"data\": [\n    {\n      \"id\": \"string\",\n      \"customId\": \"string\"\n    },\n    {\n      \"id\": \"string\",\n      \"customId\": \"string\"\n    }\n  ]\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "2b874334-8815-4cf4-9db5-a0fdfc48fc2a",
+              "name": "Unauthorized. The bearer token is missing, invalid or expired.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "contacts",
+                    ":companyId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "PATCH",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"data\": [\n    {\n      \"customId\": \"erp-contact-001\",\n      \"tradeName\": \"string\",\n      \"legalName\": \"string\",\n      \"taxId\": \"string\",\n      \"contact\": {\n        \"phone\": \"string\",\n        \"email\": \"string\",\n        \"name\": \"string\",\n        \"surname\": \"string\"\n      },\n      \"address\": {\n        \"postalCode\": \"string\",\n        \"address\": \"string\",\n        \"province\": \"string\",\n        \"city\": \"string\",\n        \"country\": \"string\"\n      },\n      \"contactType\": \"company\",\n      \"type\": \"client\",\n      \"accounts\": [\n        {\n          \"swift\": \"string\",\n          \"iban\": \"string\",\n          \"default\": false\n        },\n        {\n          \"swift\": \"string\",\n          \"iban\": \"string\",\n          \"default\": false\n        }\n      ],\n      \"paymentsAccounts\": [\n        {\n          \"default\": false,\n          \"currency\": {\n            \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n          },\n          \"details\": {\n            \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n          }\n        },\n        {\n          \"default\": false,\n          \"currency\": {\n            \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n          },\n          \"details\": {\n            \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n          }\n        }\n      ],\n      \"additionalInfo\": {\n        \"key_0\": \"string\",\n        \"key_1\": 1641.456968212549\n      },\n      \"accountingCode\": \"string\",\n      \"paymentMethod\": \"string\",\n      \"paymentTerms\": 7733,\n      \"attributes\": [\n        {\n          \"customId\": \"cost-center\",\n          \"value\": \"Marketing\",\n          \"valueCustomId\": \"string\",\n          \"parentCustomId\": \"string\"\n        },\n        {\n          \"customId\": \"cost-center\",\n          \"value\": \"Marketing\",\n          \"valueCustomId\": \"string\",\n          \"parentCustomId\": \"string\"\n        }\n      ]\n    },\n    {\n      \"customId\": \"erp-contact-001\",\n      \"tradeName\": \"string\",\n      \"legalName\": \"string\",\n      \"taxId\": \"string\",\n      \"contact\": {\n        \"phone\": \"string\",\n        \"email\": \"string\",\n        \"name\": \"string\",\n        \"surname\": \"string\"\n      },\n      \"address\": {\n        \"postalCode\": \"string\",\n        \"address\": \"string\",\n        \"province\": \"string\",\n        \"city\": \"string\",\n        \"country\": \"string\"\n      },\n      \"contactType\": \"company\",\n      \"type\": \"client\",\n      \"accounts\": [\n        {\n          \"swift\": \"string\",\n          \"iban\": \"string\",\n          \"default\": false\n        },\n        {\n          \"swift\": \"string\",\n          \"iban\": \"string\",\n          \"default\": false\n        }\n      ],\n      \"paymentsAccounts\": [\n        {\n          \"default\": false,\n          \"currency\": {\n            \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n          },\n          \"details\": {\n            \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n          }\n        },\n        {\n          \"default\": false,\n          \"currency\": {\n            \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n          },\n          \"details\": {\n            \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n          }\n        }\n      ],\n      \"additionalInfo\": {\n        \"key_0\": \"string\",\n        \"key_1\": true,\n        \"key_2\": 452.86585565186385,\n        \"key_3\": 5610\n      },\n      \"accountingCode\": \"string\",\n      \"paymentMethod\": \"string\",\n      \"paymentTerms\": 7106,\n      \"attributes\": [\n        {\n          \"customId\": \"cost-center\",\n          \"value\": \"Marketing\",\n          \"valueCustomId\": \"string\",\n          \"parentCustomId\": \"string\"\n        },\n        {\n          \"customId\": \"cost-center\",\n          \"value\": \"Marketing\",\n          \"valueCustomId\": \"string\",\n          \"parentCustomId\": \"string\"\n        }\n      ]\n    }\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": \"user not authorized\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "b69dc69b-a8a1-4428-850a-913a32f597ca",
+              "name": "Not found. The requested resource or `companyId` does not exist.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "contacts",
+                    ":companyId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "PATCH",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"data\": [\n    {\n      \"customId\": \"erp-contact-001\",\n      \"tradeName\": \"string\",\n      \"legalName\": \"string\",\n      \"taxId\": \"string\",\n      \"contact\": {\n        \"phone\": \"string\",\n        \"email\": \"string\",\n        \"name\": \"string\",\n        \"surname\": \"string\"\n      },\n      \"address\": {\n        \"postalCode\": \"string\",\n        \"address\": \"string\",\n        \"province\": \"string\",\n        \"city\": \"string\",\n        \"country\": \"string\"\n      },\n      \"contactType\": \"company\",\n      \"type\": \"client\",\n      \"accounts\": [\n        {\n          \"swift\": \"string\",\n          \"iban\": \"string\",\n          \"default\": false\n        },\n        {\n          \"swift\": \"string\",\n          \"iban\": \"string\",\n          \"default\": false\n        }\n      ],\n      \"paymentsAccounts\": [\n        {\n          \"default\": false,\n          \"currency\": {\n            \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n          },\n          \"details\": {\n            \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n          }\n        },\n        {\n          \"default\": false,\n          \"currency\": {\n            \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n          },\n          \"details\": {\n            \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n          }\n        }\n      ],\n      \"additionalInfo\": {\n        \"key_0\": \"string\",\n        \"key_1\": 1641.456968212549\n      },\n      \"accountingCode\": \"string\",\n      \"paymentMethod\": \"string\",\n      \"paymentTerms\": 7733,\n      \"attributes\": [\n        {\n          \"customId\": \"cost-center\",\n          \"value\": \"Marketing\",\n          \"valueCustomId\": \"string\",\n          \"parentCustomId\": \"string\"\n        },\n        {\n          \"customId\": \"cost-center\",\n          \"value\": \"Marketing\",\n          \"valueCustomId\": \"string\",\n          \"parentCustomId\": \"string\"\n        }\n      ]\n    },\n    {\n      \"customId\": \"erp-contact-001\",\n      \"tradeName\": \"string\",\n      \"legalName\": \"string\",\n      \"taxId\": \"string\",\n      \"contact\": {\n        \"phone\": \"string\",\n        \"email\": \"string\",\n        \"name\": \"string\",\n        \"surname\": \"string\"\n      },\n      \"address\": {\n        \"postalCode\": \"string\",\n        \"address\": \"string\",\n        \"province\": \"string\",\n        \"city\": \"string\",\n        \"country\": \"string\"\n      },\n      \"contactType\": \"company\",\n      \"type\": \"client\",\n      \"accounts\": [\n        {\n          \"swift\": \"string\",\n          \"iban\": \"string\",\n          \"default\": false\n        },\n        {\n          \"swift\": \"string\",\n          \"iban\": \"string\",\n          \"default\": false\n        }\n      ],\n      \"paymentsAccounts\": [\n        {\n          \"default\": false,\n          \"currency\": {\n            \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n          },\n          \"details\": {\n            \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n          }\n        },\n        {\n          \"default\": false,\n          \"currency\": {\n            \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n          },\n          \"details\": {\n            \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n          }\n        }\n      ],\n      \"additionalInfo\": {\n        \"key_0\": \"string\",\n        \"key_1\": true,\n        \"key_2\": 452.86585565186385,\n        \"key_3\": 5610\n      },\n      \"accountingCode\": \"string\",\n      \"paymentMethod\": \"string\",\n      \"paymentTerms\": 7106,\n      \"attributes\": [\n        {\n          \"customId\": \"cost-center\",\n          \"value\": \"Marketing\",\n          \"valueCustomId\": \"string\",\n          \"parentCustomId\": \"string\"\n        },\n        {\n          \"customId\": \"cost-center\",\n          \"value\": \"Marketing\",\n          \"valueCustomId\": \"string\",\n          \"parentCustomId\": \"string\"\n        }\n      ]\n    }\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Not Found",
+              "code": 404,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": \"0021 companyId not found\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "a95580c8-f8ba-45d6-8a01-41185ab5ead6",
+              "name": "Validation Error",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "contacts",
+                    ":companyId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "PATCH",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"data\": [\n    {\n      \"customId\": \"erp-contact-001\",\n      \"tradeName\": \"string\",\n      \"legalName\": \"string\",\n      \"taxId\": \"string\",\n      \"contact\": {\n        \"phone\": \"string\",\n        \"email\": \"string\",\n        \"name\": \"string\",\n        \"surname\": \"string\"\n      },\n      \"address\": {\n        \"postalCode\": \"string\",\n        \"address\": \"string\",\n        \"province\": \"string\",\n        \"city\": \"string\",\n        \"country\": \"string\"\n      },\n      \"contactType\": \"company\",\n      \"type\": \"client\",\n      \"accounts\": [\n        {\n          \"swift\": \"string\",\n          \"iban\": \"string\",\n          \"default\": false\n        },\n        {\n          \"swift\": \"string\",\n          \"iban\": \"string\",\n          \"default\": false\n        }\n      ],\n      \"paymentsAccounts\": [\n        {\n          \"default\": false,\n          \"currency\": {\n            \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n          },\n          \"details\": {\n            \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n          }\n        },\n        {\n          \"default\": false,\n          \"currency\": {\n            \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n          },\n          \"details\": {\n            \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n          }\n        }\n      ],\n      \"additionalInfo\": {\n        \"key_0\": \"string\",\n        \"key_1\": 1641.456968212549\n      },\n      \"accountingCode\": \"string\",\n      \"paymentMethod\": \"string\",\n      \"paymentTerms\": 7733,\n      \"attributes\": [\n        {\n          \"customId\": \"cost-center\",\n          \"value\": \"Marketing\",\n          \"valueCustomId\": \"string\",\n          \"parentCustomId\": \"string\"\n        },\n        {\n          \"customId\": \"cost-center\",\n          \"value\": \"Marketing\",\n          \"valueCustomId\": \"string\",\n          \"parentCustomId\": \"string\"\n        }\n      ]\n    },\n    {\n      \"customId\": \"erp-contact-001\",\n      \"tradeName\": \"string\",\n      \"legalName\": \"string\",\n      \"taxId\": \"string\",\n      \"contact\": {\n        \"phone\": \"string\",\n        \"email\": \"string\",\n        \"name\": \"string\",\n        \"surname\": \"string\"\n      },\n      \"address\": {\n        \"postalCode\": \"string\",\n        \"address\": \"string\",\n        \"province\": \"string\",\n        \"city\": \"string\",\n        \"country\": \"string\"\n      },\n      \"contactType\": \"company\",\n      \"type\": \"client\",\n      \"accounts\": [\n        {\n          \"swift\": \"string\",\n          \"iban\": \"string\",\n          \"default\": false\n        },\n        {\n          \"swift\": \"string\",\n          \"iban\": \"string\",\n          \"default\": false\n        }\n      ],\n      \"paymentsAccounts\": [\n        {\n          \"default\": false,\n          \"currency\": {\n            \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n          },\n          \"details\": {\n            \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n          }\n        },\n        {\n          \"default\": false,\n          \"currency\": {\n            \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n          },\n          \"details\": {\n            \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n          }\n        }\n      ],\n      \"additionalInfo\": {\n        \"key_0\": \"string\",\n        \"key_1\": true,\n        \"key_2\": 452.86585565186385,\n        \"key_3\": 5610\n      },\n      \"accountingCode\": \"string\",\n      \"paymentMethod\": \"string\",\n      \"paymentTerms\": 7106,\n      \"attributes\": [\n        {\n          \"customId\": \"cost-center\",\n          \"value\": \"Marketing\",\n          \"valueCustomId\": \"string\",\n          \"parentCustomId\": \"string\"\n        },\n        {\n          \"customId\": \"cost-center\",\n          \"value\": \"Marketing\",\n          \"valueCustomId\": \"string\",\n          \"parentCustomId\": \"string\"\n        }\n      ]\n    }\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Unprocessable Entity (WebDAV) (RFC 4918)",
+              "code": 422,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": [\n    {\n      \"loc\": [\n        \"string\",\n        \"string\"\n      ],\n      \"msg\": \"string\",\n      \"type\": \"string\",\n      \"input\": {},\n      \"ctx\": {}\n    },\n    {\n      \"loc\": [\n        \"string\",\n        \"string\"\n      ],\n      \"msg\": \"string\",\n      \"type\": \"string\",\n      \"input\": {},\n      \"ctx\": {}\n    }\n  ]\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "41561c9d-3c67-48ef-b9e0-ece84db03163",
+              "name": "Unexpected error. Contact support if it persists.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "contacts",
+                    ":companyId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "PATCH",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"data\": [\n    {\n      \"customId\": \"erp-contact-001\",\n      \"tradeName\": \"string\",\n      \"legalName\": \"string\",\n      \"taxId\": \"string\",\n      \"contact\": {\n        \"phone\": \"string\",\n        \"email\": \"string\",\n        \"name\": \"string\",\n        \"surname\": \"string\"\n      },\n      \"address\": {\n        \"postalCode\": \"string\",\n        \"address\": \"string\",\n        \"province\": \"string\",\n        \"city\": \"string\",\n        \"country\": \"string\"\n      },\n      \"contactType\": \"company\",\n      \"type\": \"client\",\n      \"accounts\": [\n        {\n          \"swift\": \"string\",\n          \"iban\": \"string\",\n          \"default\": false\n        },\n        {\n          \"swift\": \"string\",\n          \"iban\": \"string\",\n          \"default\": false\n        }\n      ],\n      \"paymentsAccounts\": [\n        {\n          \"default\": false,\n          \"currency\": {\n            \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n          },\n          \"details\": {\n            \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n          }\n        },\n        {\n          \"default\": false,\n          \"currency\": {\n            \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n          },\n          \"details\": {\n            \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n          }\n        }\n      ],\n      \"additionalInfo\": {\n        \"key_0\": \"string\",\n        \"key_1\": 1641.456968212549\n      },\n      \"accountingCode\": \"string\",\n      \"paymentMethod\": \"string\",\n      \"paymentTerms\": 7733,\n      \"attributes\": [\n        {\n          \"customId\": \"cost-center\",\n          \"value\": \"Marketing\",\n          \"valueCustomId\": \"string\",\n          \"parentCustomId\": \"string\"\n        },\n        {\n          \"customId\": \"cost-center\",\n          \"value\": \"Marketing\",\n          \"valueCustomId\": \"string\",\n          \"parentCustomId\": \"string\"\n        }\n      ]\n    },\n    {\n      \"customId\": \"erp-contact-001\",\n      \"tradeName\": \"string\",\n      \"legalName\": \"string\",\n      \"taxId\": \"string\",\n      \"contact\": {\n        \"phone\": \"string\",\n        \"email\": \"string\",\n        \"name\": \"string\",\n        \"surname\": \"string\"\n      },\n      \"address\": {\n        \"postalCode\": \"string\",\n        \"address\": \"string\",\n        \"province\": \"string\",\n        \"city\": \"string\",\n        \"country\": \"string\"\n      },\n      \"contactType\": \"company\",\n      \"type\": \"client\",\n      \"accounts\": [\n        {\n          \"swift\": \"string\",\n          \"iban\": \"string\",\n          \"default\": false\n        },\n        {\n          \"swift\": \"string\",\n          \"iban\": \"string\",\n          \"default\": false\n        }\n      ],\n      \"paymentsAccounts\": [\n        {\n          \"default\": false,\n          \"currency\": {\n            \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n          },\n          \"details\": {\n            \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n          }\n        },\n        {\n          \"default\": false,\n          \"currency\": {\n            \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n          },\n          \"details\": {\n            \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n          }\n        }\n      ],\n      \"additionalInfo\": {\n        \"key_0\": \"string\",\n        \"key_1\": true,\n        \"key_2\": 452.86585565186385,\n        \"key_3\": 5610\n      },\n      \"accountingCode\": \"string\",\n      \"paymentMethod\": \"string\",\n      \"paymentTerms\": 7106,\n      \"attributes\": [\n        {\n          \"customId\": \"cost-center\",\n          \"value\": \"Marketing\",\n          \"valueCustomId\": \"string\",\n          \"parentCustomId\": \"string\"\n        },\n        {\n          \"customId\": \"cost-center\",\n          \"value\": \"Marketing\",\n          \"valueCustomId\": \"string\",\n          \"parentCustomId\": \"string\"\n        }\n      ]\n    }\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Internal Server Error",
+              "code": 500,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": \"Internal server error\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "87fed6a5-d856-4da0-b39b-74f4c722d087",
+          "name": "Delete contacts in bulk",
+          "request": {
+            "name": "Delete contacts in bulk",
+            "description": {
+              "content": "Deletes several contacts in a single call, identified by `customId`. Entries whose `customId` does not match any contact are silently skipped — no error is raised and the call still returns `200` for the whole batch.",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "contacts",
+                ":companyId"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "<string>",
+                  "key": "companyId",
+                  "description": "(Required) "
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "DELETE",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{bearerToken}}"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"data\": [\n    {\n      \"customId\": \"<string>\"\n    },\n    {\n      \"customId\": \"<string>\"\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "id": "d91d0523-b78b-47dd-9b6d-3aebf1933eb6",
+              "name": "Successful Response",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "contacts",
+                    ":companyId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "DELETE",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"data\": [\n    {\n      \"customId\": \"string\"\n    },\n    {\n      \"customId\": \"string\"\n    }\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"data\": [\n    {\n      \"id\": \"string\"\n    },\n    {\n      \"id\": \"string\"\n    }\n  ]\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "6c523604-f062-4d86-9c98-10572ec35798",
+              "name": "Unauthorized. The bearer token is missing, invalid or expired.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "contacts",
+                    ":companyId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "DELETE",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"data\": [\n    {\n      \"customId\": \"string\"\n    },\n    {\n      \"customId\": \"string\"\n    }\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": \"user not authorized\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "331adfc8-a5d3-435f-81b0-3379e70df110",
+              "name": "Not found. The requested resource or `companyId` does not exist.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "contacts",
+                    ":companyId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "DELETE",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"data\": [\n    {\n      \"customId\": \"string\"\n    },\n    {\n      \"customId\": \"string\"\n    }\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Not Found",
+              "code": 404,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": \"0021 companyId not found\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "646b6e3d-52a4-4e48-a3b4-19f3c086de42",
+              "name": "Validation Error",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "contacts",
+                    ":companyId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "DELETE",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"data\": [\n    {\n      \"customId\": \"string\"\n    },\n    {\n      \"customId\": \"string\"\n    }\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Unprocessable Entity (WebDAV) (RFC 4918)",
+              "code": 422,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": [\n    {\n      \"loc\": [\n        \"string\",\n        \"string\"\n      ],\n      \"msg\": \"string\",\n      \"type\": \"string\",\n      \"input\": {},\n      \"ctx\": {}\n    },\n    {\n      \"loc\": [\n        \"string\",\n        \"string\"\n      ],\n      \"msg\": \"string\",\n      \"type\": \"string\",\n      \"input\": {},\n      \"ctx\": {}\n    }\n  ]\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "018b1822-c637-4649-abc3-bb3d9581f5f0",
+              "name": "Unexpected error. Contact support if it persists.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "contacts",
+                    ":companyId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "DELETE",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"data\": [\n    {\n      \"customId\": \"string\"\n    },\n    {\n      \"customId\": \"string\"\n    }\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Internal Server Error",
+              "code": 500,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": \"Internal server error\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "ddf329f1-afdd-4946-9064-ba9f62c0a078",
+          "name": "Retrieve contact",
+          "request": {
+            "name": "Retrieve contact",
+            "description": {
+              "content": "Returns a single contact by `customId`.",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "contacts",
+                ":companyId",
+                ":customId"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "<string>",
+                  "key": "customId",
+                  "description": "(Required) "
+                },
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "<string>",
+                  "key": "companyId",
+                  "description": "(Required) "
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{bearerToken}}"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "id": "6cd696df-bfcc-4395-9e13-93e43f7fa331",
+              "name": "Successful Response",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "contacts",
+                    ":companyId",
+                    ":customId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "customId",
+                      "description": "(Required) "
+                    },
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"type\": \"client\",\n  \"id\": \"string\",\n  \"companyId\": \"string\",\n  \"updatedAt\": \"1967-03-10T06:52:40.233Z\",\n  \"createdAt\": \"2014-01-31T10:35:05.471Z\",\n  \"tradeName\": \"string\",\n  \"legalName\": \"string\",\n  \"taxId\": \"string\",\n  \"contact\": {\n    \"phone\": \"string\",\n    \"email\": \"string\",\n    \"name\": \"string\",\n    \"surname\": \"string\"\n  },\n  \"address\": {\n    \"postalCode\": \"string\",\n    \"address\": \"string\",\n    \"province\": \"string\",\n    \"city\": \"string\",\n    \"country\": \"string\"\n  },\n  \"contactType\": \"company\",\n  \"accounts\": [\n    {\n      \"swift\": \"string\",\n      \"iban\": \"string\",\n      \"default\": true\n    },\n    {\n      \"swift\": \"string\",\n      \"iban\": \"string\",\n      \"default\": false\n    }\n  ],\n  \"paymentsAccounts\": [\n    {\n      \"default\": false,\n      \"currency\": \"USD\",\n      \"details\": {\n        \"iban\": \"string\",\n        \"bic\": \"string\",\n        \"swift\": \"string\",\n        \"accountNumber\": \"string\",\n        \"accountType\": {\n          \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n        },\n        \"routingNumber\": \"string\",\n        \"sortCode\": \"string\",\n        \"institutionNumber\": \"string\",\n        \"transitNumber\": \"string\",\n        \"bankCode\": \"string\",\n        \"branchCode\": \"string\",\n        \"bsb\": \"string\",\n        \"bankCountryCode\": {\n          \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n        }\n      }\n    },\n    {\n      \"default\": false,\n      \"currency\": \"BBD\",\n      \"details\": {\n        \"iban\": \"string\",\n        \"bic\": \"string\",\n        \"swift\": \"string\",\n        \"accountNumber\": \"string\",\n        \"accountType\": {\n          \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n        },\n        \"routingNumber\": \"string\",\n        \"sortCode\": \"string\",\n        \"institutionNumber\": \"string\",\n        \"transitNumber\": \"string\",\n        \"bankCode\": \"string\",\n        \"branchCode\": \"string\",\n        \"bsb\": \"string\",\n        \"bankCountryCode\": {\n          \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n        }\n      }\n    }\n  ],\n  \"additionalInfo\": {\n    \"key_0\": \"string\",\n    \"key_1\": 9012.974915107425,\n    \"key_2\": 3904\n  },\n  \"accountingCode\": \"string\",\n  \"paymentMethod\": \"string\",\n  \"paymentTerms\": 4880,\n  \"attributes\": [\n    {\n      \"customId\": \"cost-center\",\n      \"value\": \"Marketing\",\n      \"valueCustomId\": \"string\",\n      \"parentCustomId\": \"string\"\n    },\n    {\n      \"customId\": \"cost-center\",\n      \"value\": \"Marketing\",\n      \"valueCustomId\": \"string\",\n      \"parentCustomId\": \"string\"\n    }\n  ],\n  \"customId\": \"string\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "96e72faf-d47a-461c-ac29-425ade501487",
+              "name": "Unauthorized. The bearer token is missing, invalid or expired.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "contacts",
+                    ":companyId",
+                    ":customId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "customId",
+                      "description": "(Required) "
+                    },
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": \"user not authorized\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "7addeef2-96ce-4c16-b4b9-acaa9ccd8d77",
+              "name": "Company not found, or no contact matches the given `customId`.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "contacts",
+                    ":companyId",
+                    ":customId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "customId",
+                      "description": "(Required) "
+                    },
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "Not Found",
+              "code": 404,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": \"0021 companyId not found\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "63f8eb60-4dc0-48e2-8a15-77a2ea16c17c",
+              "name": "Validation Error",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "contacts",
+                    ":companyId",
+                    ":customId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "customId",
+                      "description": "(Required) "
+                    },
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "Unprocessable Entity (WebDAV) (RFC 4918)",
+              "code": 422,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": [\n    {\n      \"loc\": [\n        \"string\",\n        \"string\"\n      ],\n      \"msg\": \"string\",\n      \"type\": \"string\",\n      \"input\": {},\n      \"ctx\": {}\n    },\n    {\n      \"loc\": [\n        \"string\",\n        \"string\"\n      ],\n      \"msg\": \"string\",\n      \"type\": \"string\",\n      \"input\": {},\n      \"ctx\": {}\n    }\n  ]\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "668bbc59-a833-4877-967b-1b2503380bd1",
+          "name": "Update contact",
+          "request": {
+            "name": "Update contact",
+            "description": {
+              "content": "Updates a contact identified by `customId`. Note that updating a `customId` that does not match any contact also returns `200` without applying any change — no `404` is raised.",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "contacts",
+                ":companyId",
+                ":customId"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "<string>",
+                  "key": "customId",
+                  "description": "(Required) "
+                },
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "<string>",
+                  "key": "companyId",
+                  "description": "(Required) "
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "PATCH",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{bearerToken}}"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tradeName\": \"<string>\",\n  \"legalName\": \"<string>\",\n  \"taxId\": \"<string>\",\n  \"contact\": {\n    \"phone\": \"<string>\",\n    \"email\": \"<string>\",\n    \"name\": \"<string>\",\n    \"surname\": \"<string>\"\n  },\n  \"address\": {\n    \"postalCode\": \"<string>\",\n    \"address\": \"<string>\",\n    \"province\": \"<string>\",\n    \"city\": \"<string>\",\n    \"country\": \"<string>\"\n  },\n  \"contactType\": \"company\",\n  \"type\": \"<string>\",\n  \"accounts\": [\n    {\n      \"swift\": \"<string>\",\n      \"iban\": \"<string>\",\n      \"default\": \"<boolean>\"\n    },\n    {\n      \"swift\": \"<string>\",\n      \"iban\": \"<string>\",\n      \"default\": \"<boolean>\"\n    }\n  ],\n  \"paymentsAccounts\": [\n    {\n      \"default\": false,\n      \"currency\": \"<string>\",\n      \"details\": {\n        \"iban\": \"<string>\",\n        \"bic\": \"<string>\",\n        \"swift\": \"<string>\",\n        \"accountNumber\": \"<string>\",\n        \"accountType\": {\n          \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n        },\n        \"routingNumber\": \"<string>\",\n        \"sortCode\": \"<string>\",\n        \"institutionNumber\": \"<string>\",\n        \"transitNumber\": \"<string>\",\n        \"bankCode\": \"<string>\",\n        \"branchCode\": \"<string>\",\n        \"bsb\": \"<string>\",\n        \"bankCountryCode\": {\n          \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n        }\n      }\n    },\n    {\n      \"default\": false,\n      \"currency\": \"<string>\",\n      \"details\": {\n        \"iban\": \"<string>\",\n        \"bic\": \"<string>\",\n        \"swift\": \"<string>\",\n        \"accountNumber\": \"<string>\",\n        \"accountType\": {\n          \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n        },\n        \"routingNumber\": \"<string>\",\n        \"sortCode\": \"<string>\",\n        \"institutionNumber\": \"<string>\",\n        \"transitNumber\": \"<string>\",\n        \"bankCode\": \"<string>\",\n        \"branchCode\": \"<string>\",\n        \"bsb\": \"<string>\",\n        \"bankCountryCode\": {\n          \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n        }\n      }\n    }\n  ],\n  \"additionalInfo\": {\n    \"key_0\": 4235,\n    \"key_1\": \"string\"\n  },\n  \"accountingCode\": \"<string>\",\n  \"paymentMethod\": \"<string>\",\n  \"paymentTerms\": \"<integer>\",\n  \"attributes\": [\n    {\n      \"customId\": \"<string>\",\n      \"value\": \"<string>\",\n      \"valueCustomId\": \"<string>\",\n      \"parentCustomId\": \"<string>\"\n    },\n    {\n      \"customId\": \"<string>\",\n      \"value\": \"<string>\",\n      \"valueCustomId\": \"<string>\",\n      \"parentCustomId\": \"<string>\"\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "id": "852a665e-dc51-4b2d-924d-3546ab6edb45",
+              "name": "Successful Response",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "contacts",
+                    ":companyId",
+                    ":customId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "customId",
+                      "description": "(Required) "
+                    },
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "PATCH",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"tradeName\": \"<string>\",\n  \"legalName\": \"<string>\",\n  \"taxId\": \"<string>\",\n  \"contact\": {\n    \"phone\": \"string\",\n    \"email\": \"string\",\n    \"name\": \"string\",\n    \"surname\": \"string\"\n  },\n  \"address\": {\n    \"postalCode\": \"string\",\n    \"address\": \"string\",\n    \"province\": \"string\",\n    \"city\": \"string\",\n    \"country\": \"string\"\n  },\n  \"contactType\": \"company\",\n  \"type\": \"client\",\n  \"accounts\": [\n    {\n      \"swift\": \"string\",\n      \"iban\": \"string\",\n      \"default\": false\n    },\n    {\n      \"swift\": \"string\",\n      \"iban\": \"string\",\n      \"default\": true\n    }\n  ],\n  \"paymentsAccounts\": [\n    {\n      \"default\": false,\n      \"currency\": \"KYD\",\n      \"details\": {\n        \"iban\": \"string\",\n        \"bic\": \"string\",\n        \"swift\": \"string\",\n        \"accountNumber\": \"string\",\n        \"accountType\": {\n          \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n        },\n        \"routingNumber\": \"string\",\n        \"sortCode\": \"string\",\n        \"institutionNumber\": \"string\",\n        \"transitNumber\": \"string\",\n        \"bankCode\": \"string\",\n        \"branchCode\": \"string\",\n        \"bsb\": \"string\",\n        \"bankCountryCode\": {\n          \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n        }\n      }\n    },\n    {\n      \"default\": false,\n      \"currency\": \"IDR\",\n      \"details\": {\n        \"iban\": \"string\",\n        \"bic\": \"string\",\n        \"swift\": \"string\",\n        \"accountNumber\": \"string\",\n        \"accountType\": {\n          \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n        },\n        \"routingNumber\": \"string\",\n        \"sortCode\": \"string\",\n        \"institutionNumber\": \"string\",\n        \"transitNumber\": \"string\",\n        \"bankCode\": \"string\",\n        \"branchCode\": \"string\",\n        \"bsb\": \"string\",\n        \"bankCountryCode\": {\n          \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n        }\n      }\n    }\n  ],\n  \"additionalInfo\": {\n    \"key_0\": false,\n    \"key_1\": \"string\"\n  },\n  \"accountingCode\": \"<string>\",\n  \"paymentMethod\": \"<string>\",\n  \"paymentTerms\": \"<integer>\",\n  \"attributes\": [\n    {\n      \"customId\": \"cost-center\",\n      \"value\": \"Marketing\",\n      \"valueCustomId\": \"string\",\n      \"parentCustomId\": \"string\"\n    },\n    {\n      \"customId\": \"cost-center\",\n      \"value\": \"Marketing\",\n      \"valueCustomId\": \"string\",\n      \"parentCustomId\": \"string\"\n    }\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"id\": \"string\",\n  \"customId\": \"string\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "fa57a097-7e97-441d-bc92-0669df53a9d7",
+              "name": "Unauthorized. The bearer token is missing, invalid or expired.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "contacts",
+                    ":companyId",
+                    ":customId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "customId",
+                      "description": "(Required) "
+                    },
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "PATCH",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"tradeName\": \"<string>\",\n  \"legalName\": \"<string>\",\n  \"taxId\": \"<string>\",\n  \"contact\": {\n    \"phone\": \"string\",\n    \"email\": \"string\",\n    \"name\": \"string\",\n    \"surname\": \"string\"\n  },\n  \"address\": {\n    \"postalCode\": \"string\",\n    \"address\": \"string\",\n    \"province\": \"string\",\n    \"city\": \"string\",\n    \"country\": \"string\"\n  },\n  \"contactType\": \"company\",\n  \"type\": \"client\",\n  \"accounts\": [\n    {\n      \"swift\": \"string\",\n      \"iban\": \"string\",\n      \"default\": false\n    },\n    {\n      \"swift\": \"string\",\n      \"iban\": \"string\",\n      \"default\": true\n    }\n  ],\n  \"paymentsAccounts\": [\n    {\n      \"default\": false,\n      \"currency\": \"KYD\",\n      \"details\": {\n        \"iban\": \"string\",\n        \"bic\": \"string\",\n        \"swift\": \"string\",\n        \"accountNumber\": \"string\",\n        \"accountType\": {\n          \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n        },\n        \"routingNumber\": \"string\",\n        \"sortCode\": \"string\",\n        \"institutionNumber\": \"string\",\n        \"transitNumber\": \"string\",\n        \"bankCode\": \"string\",\n        \"branchCode\": \"string\",\n        \"bsb\": \"string\",\n        \"bankCountryCode\": {\n          \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n        }\n      }\n    },\n    {\n      \"default\": false,\n      \"currency\": \"IDR\",\n      \"details\": {\n        \"iban\": \"string\",\n        \"bic\": \"string\",\n        \"swift\": \"string\",\n        \"accountNumber\": \"string\",\n        \"accountType\": {\n          \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n        },\n        \"routingNumber\": \"string\",\n        \"sortCode\": \"string\",\n        \"institutionNumber\": \"string\",\n        \"transitNumber\": \"string\",\n        \"bankCode\": \"string\",\n        \"branchCode\": \"string\",\n        \"bsb\": \"string\",\n        \"bankCountryCode\": {\n          \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n        }\n      }\n    }\n  ],\n  \"additionalInfo\": {\n    \"key_0\": false,\n    \"key_1\": \"string\"\n  },\n  \"accountingCode\": \"<string>\",\n  \"paymentMethod\": \"<string>\",\n  \"paymentTerms\": \"<integer>\",\n  \"attributes\": [\n    {\n      \"customId\": \"cost-center\",\n      \"value\": \"Marketing\",\n      \"valueCustomId\": \"string\",\n      \"parentCustomId\": \"string\"\n    },\n    {\n      \"customId\": \"cost-center\",\n      \"value\": \"Marketing\",\n      \"valueCustomId\": \"string\",\n      \"parentCustomId\": \"string\"\n    }\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": \"user not authorized\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "c144a5d1-5411-4e44-a4a4-006529a90688",
+              "name": "Not found. The requested resource or `companyId` does not exist.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "contacts",
+                    ":companyId",
+                    ":customId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "customId",
+                      "description": "(Required) "
+                    },
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "PATCH",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"tradeName\": \"<string>\",\n  \"legalName\": \"<string>\",\n  \"taxId\": \"<string>\",\n  \"contact\": {\n    \"phone\": \"string\",\n    \"email\": \"string\",\n    \"name\": \"string\",\n    \"surname\": \"string\"\n  },\n  \"address\": {\n    \"postalCode\": \"string\",\n    \"address\": \"string\",\n    \"province\": \"string\",\n    \"city\": \"string\",\n    \"country\": \"string\"\n  },\n  \"contactType\": \"company\",\n  \"type\": \"client\",\n  \"accounts\": [\n    {\n      \"swift\": \"string\",\n      \"iban\": \"string\",\n      \"default\": false\n    },\n    {\n      \"swift\": \"string\",\n      \"iban\": \"string\",\n      \"default\": true\n    }\n  ],\n  \"paymentsAccounts\": [\n    {\n      \"default\": false,\n      \"currency\": \"KYD\",\n      \"details\": {\n        \"iban\": \"string\",\n        \"bic\": \"string\",\n        \"swift\": \"string\",\n        \"accountNumber\": \"string\",\n        \"accountType\": {\n          \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n        },\n        \"routingNumber\": \"string\",\n        \"sortCode\": \"string\",\n        \"institutionNumber\": \"string\",\n        \"transitNumber\": \"string\",\n        \"bankCode\": \"string\",\n        \"branchCode\": \"string\",\n        \"bsb\": \"string\",\n        \"bankCountryCode\": {\n          \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n        }\n      }\n    },\n    {\n      \"default\": false,\n      \"currency\": \"IDR\",\n      \"details\": {\n        \"iban\": \"string\",\n        \"bic\": \"string\",\n        \"swift\": \"string\",\n        \"accountNumber\": \"string\",\n        \"accountType\": {\n          \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n        },\n        \"routingNumber\": \"string\",\n        \"sortCode\": \"string\",\n        \"institutionNumber\": \"string\",\n        \"transitNumber\": \"string\",\n        \"bankCode\": \"string\",\n        \"branchCode\": \"string\",\n        \"bsb\": \"string\",\n        \"bankCountryCode\": {\n          \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n        }\n      }\n    }\n  ],\n  \"additionalInfo\": {\n    \"key_0\": false,\n    \"key_1\": \"string\"\n  },\n  \"accountingCode\": \"<string>\",\n  \"paymentMethod\": \"<string>\",\n  \"paymentTerms\": \"<integer>\",\n  \"attributes\": [\n    {\n      \"customId\": \"cost-center\",\n      \"value\": \"Marketing\",\n      \"valueCustomId\": \"string\",\n      \"parentCustomId\": \"string\"\n    },\n    {\n      \"customId\": \"cost-center\",\n      \"value\": \"Marketing\",\n      \"valueCustomId\": \"string\",\n      \"parentCustomId\": \"string\"\n    }\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Not Found",
+              "code": 404,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": \"0021 companyId not found\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "4764da18-2d2e-46d2-8520-756719181f7f",
+              "name": "Validation Error",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "contacts",
+                    ":companyId",
+                    ":customId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "customId",
+                      "description": "(Required) "
+                    },
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "PATCH",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"tradeName\": \"<string>\",\n  \"legalName\": \"<string>\",\n  \"taxId\": \"<string>\",\n  \"contact\": {\n    \"phone\": \"string\",\n    \"email\": \"string\",\n    \"name\": \"string\",\n    \"surname\": \"string\"\n  },\n  \"address\": {\n    \"postalCode\": \"string\",\n    \"address\": \"string\",\n    \"province\": \"string\",\n    \"city\": \"string\",\n    \"country\": \"string\"\n  },\n  \"contactType\": \"company\",\n  \"type\": \"client\",\n  \"accounts\": [\n    {\n      \"swift\": \"string\",\n      \"iban\": \"string\",\n      \"default\": false\n    },\n    {\n      \"swift\": \"string\",\n      \"iban\": \"string\",\n      \"default\": true\n    }\n  ],\n  \"paymentsAccounts\": [\n    {\n      \"default\": false,\n      \"currency\": \"KYD\",\n      \"details\": {\n        \"iban\": \"string\",\n        \"bic\": \"string\",\n        \"swift\": \"string\",\n        \"accountNumber\": \"string\",\n        \"accountType\": {\n          \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n        },\n        \"routingNumber\": \"string\",\n        \"sortCode\": \"string\",\n        \"institutionNumber\": \"string\",\n        \"transitNumber\": \"string\",\n        \"bankCode\": \"string\",\n        \"branchCode\": \"string\",\n        \"bsb\": \"string\",\n        \"bankCountryCode\": {\n          \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n        }\n      }\n    },\n    {\n      \"default\": false,\n      \"currency\": \"IDR\",\n      \"details\": {\n        \"iban\": \"string\",\n        \"bic\": \"string\",\n        \"swift\": \"string\",\n        \"accountNumber\": \"string\",\n        \"accountType\": {\n          \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n        },\n        \"routingNumber\": \"string\",\n        \"sortCode\": \"string\",\n        \"institutionNumber\": \"string\",\n        \"transitNumber\": \"string\",\n        \"bankCode\": \"string\",\n        \"branchCode\": \"string\",\n        \"bsb\": \"string\",\n        \"bankCountryCode\": {\n          \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n        }\n      }\n    }\n  ],\n  \"additionalInfo\": {\n    \"key_0\": false,\n    \"key_1\": \"string\"\n  },\n  \"accountingCode\": \"<string>\",\n  \"paymentMethod\": \"<string>\",\n  \"paymentTerms\": \"<integer>\",\n  \"attributes\": [\n    {\n      \"customId\": \"cost-center\",\n      \"value\": \"Marketing\",\n      \"valueCustomId\": \"string\",\n      \"parentCustomId\": \"string\"\n    },\n    {\n      \"customId\": \"cost-center\",\n      \"value\": \"Marketing\",\n      \"valueCustomId\": \"string\",\n      \"parentCustomId\": \"string\"\n    }\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Unprocessable Entity (WebDAV) (RFC 4918)",
+              "code": 422,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": [\n    {\n      \"loc\": [\n        \"string\",\n        \"string\"\n      ],\n      \"msg\": \"string\",\n      \"type\": \"string\",\n      \"input\": {},\n      \"ctx\": {}\n    },\n    {\n      \"loc\": [\n        \"string\",\n        \"string\"\n      ],\n      \"msg\": \"string\",\n      \"type\": \"string\",\n      \"input\": {},\n      \"ctx\": {}\n    }\n  ]\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "5673e7b5-5b10-4db2-a395-0be6875d9c0d",
+              "name": "Unexpected error. Contact support if it persists.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "contacts",
+                    ":companyId",
+                    ":customId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "customId",
+                      "description": "(Required) "
+                    },
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "PATCH",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"tradeName\": \"<string>\",\n  \"legalName\": \"<string>\",\n  \"taxId\": \"<string>\",\n  \"contact\": {\n    \"phone\": \"string\",\n    \"email\": \"string\",\n    \"name\": \"string\",\n    \"surname\": \"string\"\n  },\n  \"address\": {\n    \"postalCode\": \"string\",\n    \"address\": \"string\",\n    \"province\": \"string\",\n    \"city\": \"string\",\n    \"country\": \"string\"\n  },\n  \"contactType\": \"company\",\n  \"type\": \"client\",\n  \"accounts\": [\n    {\n      \"swift\": \"string\",\n      \"iban\": \"string\",\n      \"default\": false\n    },\n    {\n      \"swift\": \"string\",\n      \"iban\": \"string\",\n      \"default\": true\n    }\n  ],\n  \"paymentsAccounts\": [\n    {\n      \"default\": false,\n      \"currency\": \"KYD\",\n      \"details\": {\n        \"iban\": \"string\",\n        \"bic\": \"string\",\n        \"swift\": \"string\",\n        \"accountNumber\": \"string\",\n        \"accountType\": {\n          \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n        },\n        \"routingNumber\": \"string\",\n        \"sortCode\": \"string\",\n        \"institutionNumber\": \"string\",\n        \"transitNumber\": \"string\",\n        \"bankCode\": \"string\",\n        \"branchCode\": \"string\",\n        \"bsb\": \"string\",\n        \"bankCountryCode\": {\n          \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n        }\n      }\n    },\n    {\n      \"default\": false,\n      \"currency\": \"IDR\",\n      \"details\": {\n        \"iban\": \"string\",\n        \"bic\": \"string\",\n        \"swift\": \"string\",\n        \"accountNumber\": \"string\",\n        \"accountType\": {\n          \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n        },\n        \"routingNumber\": \"string\",\n        \"sortCode\": \"string\",\n        \"institutionNumber\": \"string\",\n        \"transitNumber\": \"string\",\n        \"bankCode\": \"string\",\n        \"branchCode\": \"string\",\n        \"bsb\": \"string\",\n        \"bankCountryCode\": {\n          \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n        }\n      }\n    }\n  ],\n  \"additionalInfo\": {\n    \"key_0\": false,\n    \"key_1\": \"string\"\n  },\n  \"accountingCode\": \"<string>\",\n  \"paymentMethod\": \"<string>\",\n  \"paymentTerms\": \"<integer>\",\n  \"attributes\": [\n    {\n      \"customId\": \"cost-center\",\n      \"value\": \"Marketing\",\n      \"valueCustomId\": \"string\",\n      \"parentCustomId\": \"string\"\n    },\n    {\n      \"customId\": \"cost-center\",\n      \"value\": \"Marketing\",\n      \"valueCustomId\": \"string\",\n      \"parentCustomId\": \"string\"\n    }\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Internal Server Error",
+              "code": 500,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": \"Internal server error\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "41489316-c688-407f-9e43-8088fdb86a2f",
+          "name": "Delete contact",
+          "request": {
+            "name": "Delete contact",
+            "description": {
+              "content": "Deletes a contact by `customId`. If `customId` does not match any contact, no error is raised — the call still returns `200`.",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "contacts",
+                ":companyId",
+                ":customId"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "<string>",
+                  "key": "customId",
+                  "description": "(Required) "
+                },
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "<string>",
+                  "key": "companyId",
+                  "description": "(Required) "
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "DELETE",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{bearerToken}}"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "id": "8e265ca8-6cfe-47b5-be31-e24657ad67b2",
+              "name": "Successful Response",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "contacts",
+                    ":companyId",
+                    ":customId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "customId",
+                      "description": "(Required) "
+                    },
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "DELETE",
+                "body": {}
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"id\": \"string\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "366d9fc0-4c66-4044-9a16-7462cb1c3861",
+              "name": "Unauthorized. The bearer token is missing, invalid or expired.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "contacts",
+                    ":companyId",
+                    ":customId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "customId",
+                      "description": "(Required) "
+                    },
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "DELETE",
+                "body": {}
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": \"user not authorized\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "73459a11-0564-4bda-a30c-310dea79316a",
+              "name": "Not found. The requested resource or `companyId` does not exist.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "contacts",
+                    ":companyId",
+                    ":customId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "customId",
+                      "description": "(Required) "
+                    },
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "DELETE",
+                "body": {}
+              },
+              "status": "Not Found",
+              "code": 404,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": \"0021 companyId not found\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "3914d807-2d92-408e-aa5a-0612895600db",
+              "name": "Validation Error",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "contacts",
+                    ":companyId",
+                    ":customId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "customId",
+                      "description": "(Required) "
+                    },
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "DELETE",
+                "body": {}
+              },
+              "status": "Unprocessable Entity (WebDAV) (RFC 4918)",
+              "code": 422,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": [\n    {\n      \"loc\": [\n        \"string\",\n        \"string\"\n      ],\n      \"msg\": \"string\",\n      \"type\": \"string\",\n      \"input\": {},\n      \"ctx\": {}\n    },\n    {\n      \"loc\": [\n        \"string\",\n        \"string\"\n      ],\n      \"msg\": \"string\",\n      \"type\": \"string\",\n      \"input\": {},\n      \"ctx\": {}\n    }\n  ]\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "d161524a-1c10-4e5b-8b57-0c0ca23dc492",
+              "name": "Unexpected error. Contact support if it persists.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "contacts",
+                    ":companyId",
+                    ":customId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "customId",
+                      "description": "(Required) "
+                    },
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "DELETE",
+                "body": {}
+              },
+              "status": "Internal Server Error",
+              "code": 500,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": \"Internal server error\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "19785d46-ad0a-4b3a-91cc-76d0ba612ac8",
+          "name": "Create contacts in bulk",
+          "request": {
+            "name": "Create contacts in bulk",
+            "description": {
+              "content": "Creates several contacts in a single call, following the same rules as the single contact creation endpoint: a `customId` that already exists updates the existing contact rather than creating a duplicate. Contacts sharing the same `customId` within the request are deduplicated and only the first occurrence is processed.",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "contacts",
+                ":companyId",
+                "bulk"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "<string>",
+                  "key": "companyId",
+                  "description": "(Required) "
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "POST",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{bearerToken}}"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"data\": [\n    {\n      \"legalName\": \"<string>\",\n      \"type\": \"<string>\",\n      \"tradeName\": \"<string>\",\n      \"taxId\": \"<string>\",\n      \"contact\": {\n        \"phone\": \"<string>\",\n        \"email\": \"<string>\",\n        \"name\": \"<string>\",\n        \"surname\": \"<string>\"\n      },\n      \"address\": {\n        \"postalCode\": \"<string>\",\n        \"address\": \"<string>\",\n        \"province\": \"<string>\",\n        \"city\": \"<string>\",\n        \"country\": \"<string>\"\n      },\n      \"contactType\": \"company\",\n      \"accounts\": [\n        {\n          \"swift\": \"<string>\",\n          \"iban\": \"<string>\",\n          \"default\": \"<boolean>\"\n        },\n        {\n          \"swift\": \"<string>\",\n          \"iban\": \"<string>\",\n          \"default\": \"<boolean>\"\n        }\n      ],\n      \"paymentsAccounts\": [\n        {\n          \"default\": false,\n          \"currency\": {\n            \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n          },\n          \"details\": {\n            \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n          }\n        },\n        {\n          \"default\": false,\n          \"currency\": {\n            \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n          },\n          \"details\": {\n            \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n          }\n        }\n      ],\n      \"additionalInfo\": {\n        \"key_0\": true\n      },\n      \"accountingCode\": \"<string>\",\n      \"paymentMethod\": \"<string>\",\n      \"paymentTerms\": \"<integer>\",\n      \"attributes\": [\n        {\n          \"customId\": \"<string>\",\n          \"value\": \"<string>\",\n          \"valueCustomId\": \"<string>\",\n          \"parentCustomId\": \"<string>\"\n        },\n        {\n          \"customId\": \"<string>\",\n          \"value\": \"<string>\",\n          \"valueCustomId\": \"<string>\",\n          \"parentCustomId\": \"<string>\"\n        }\n      ],\n      \"customId\": \"<string>\"\n    },\n    {\n      \"legalName\": \"<string>\",\n      \"type\": \"<string>\",\n      \"tradeName\": \"<string>\",\n      \"taxId\": \"<string>\",\n      \"contact\": {\n        \"phone\": \"<string>\",\n        \"email\": \"<string>\",\n        \"name\": \"<string>\",\n        \"surname\": \"<string>\"\n      },\n      \"address\": {\n        \"postalCode\": \"<string>\",\n        \"address\": \"<string>\",\n        \"province\": \"<string>\",\n        \"city\": \"<string>\",\n        \"country\": \"<string>\"\n      },\n      \"contactType\": \"company\",\n      \"accounts\": [\n        {\n          \"swift\": \"<string>\",\n          \"iban\": \"<string>\",\n          \"default\": \"<boolean>\"\n        },\n        {\n          \"swift\": \"<string>\",\n          \"iban\": \"<string>\",\n          \"default\": \"<boolean>\"\n        }\n      ],\n      \"paymentsAccounts\": [\n        {\n          \"default\": false,\n          \"currency\": {\n            \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n          },\n          \"details\": {\n            \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n          }\n        },\n        {\n          \"default\": false,\n          \"currency\": {\n            \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n          },\n          \"details\": {\n            \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n          }\n        }\n      ],\n      \"additionalInfo\": {\n        \"key_0\": true,\n        \"key_1\": true,\n        \"key_2\": 2996.427258370702\n      },\n      \"accountingCode\": \"<string>\",\n      \"paymentMethod\": \"<string>\",\n      \"paymentTerms\": \"<integer>\",\n      \"attributes\": [\n        {\n          \"customId\": \"<string>\",\n          \"value\": \"<string>\",\n          \"valueCustomId\": \"<string>\",\n          \"parentCustomId\": \"<string>\"\n        },\n        {\n          \"customId\": \"<string>\",\n          \"value\": \"<string>\",\n          \"valueCustomId\": \"<string>\",\n          \"parentCustomId\": \"<string>\"\n        }\n      ],\n      \"customId\": \"<string>\"\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "id": "a5dc3f32-a80a-4000-aad0-9055d6a2342c",
+              "name": "Successful Response",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "contacts",
+                    ":companyId",
+                    "bulk"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"data\": [\n    {\n      \"legalName\": \"Acme Supplies S.L.\",\n      \"type\": \"client-supplier\",\n      \"tradeName\": \"string\",\n      \"taxId\": \"string\",\n      \"contact\": {\n        \"phone\": \"string\",\n        \"email\": \"string\",\n        \"name\": \"string\",\n        \"surname\": \"string\"\n      },\n      \"address\": {\n        \"postalCode\": \"string\",\n        \"address\": \"string\",\n        \"province\": \"string\",\n        \"city\": \"string\",\n        \"country\": \"string\"\n      },\n      \"contactType\": \"company\",\n      \"accounts\": [\n        {\n          \"swift\": \"string\",\n          \"iban\": \"string\",\n          \"default\": true\n        },\n        {\n          \"swift\": \"string\",\n          \"iban\": \"string\",\n          \"default\": false\n        }\n      ],\n      \"paymentsAccounts\": [\n        {\n          \"default\": false,\n          \"currency\": {\n            \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n          },\n          \"details\": {\n            \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n          }\n        },\n        {\n          \"default\": false,\n          \"currency\": {\n            \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n          },\n          \"details\": {\n            \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n          }\n        }\n      ],\n      \"additionalInfo\": {\n        \"key_0\": \"string\",\n        \"key_1\": 6872.894127579655\n      },\n      \"accountingCode\": \"string\",\n      \"paymentMethod\": \"string\",\n      \"paymentTerms\": 2272,\n      \"attributes\": [\n        {\n          \"customId\": \"cost-center\",\n          \"value\": \"Marketing\",\n          \"valueCustomId\": \"string\",\n          \"parentCustomId\": \"string\"\n        },\n        {\n          \"customId\": \"cost-center\",\n          \"value\": \"Marketing\",\n          \"valueCustomId\": \"string\",\n          \"parentCustomId\": \"string\"\n        }\n      ],\n      \"customId\": \"string\"\n    },\n    {\n      \"legalName\": \"Acme Supplies S.L.\",\n      \"type\": \"client-supplier\",\n      \"tradeName\": \"string\",\n      \"taxId\": \"string\",\n      \"contact\": {\n        \"phone\": \"string\",\n        \"email\": \"string\",\n        \"name\": \"string\",\n        \"surname\": \"string\"\n      },\n      \"address\": {\n        \"postalCode\": \"string\",\n        \"address\": \"string\",\n        \"province\": \"string\",\n        \"city\": \"string\",\n        \"country\": \"string\"\n      },\n      \"contactType\": \"company\",\n      \"accounts\": [\n        {\n          \"swift\": \"string\",\n          \"iban\": \"string\",\n          \"default\": false\n        },\n        {\n          \"swift\": \"string\",\n          \"iban\": \"string\",\n          \"default\": true\n        }\n      ],\n      \"paymentsAccounts\": [\n        {\n          \"default\": false,\n          \"currency\": {\n            \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n          },\n          \"details\": {\n            \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n          }\n        },\n        {\n          \"default\": false,\n          \"currency\": {\n            \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n          },\n          \"details\": {\n            \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n          }\n        }\n      ],\n      \"additionalInfo\": {\n        \"key_0\": \"string\"\n      },\n      \"accountingCode\": \"string\",\n      \"paymentMethod\": \"string\",\n      \"paymentTerms\": 8341,\n      \"attributes\": [\n        {\n          \"customId\": \"cost-center\",\n          \"value\": \"Marketing\",\n          \"valueCustomId\": \"string\",\n          \"parentCustomId\": \"string\"\n        },\n        {\n          \"customId\": \"cost-center\",\n          \"value\": \"Marketing\",\n          \"valueCustomId\": \"string\",\n          \"parentCustomId\": \"string\"\n        }\n      ],\n      \"customId\": \"string\"\n    }\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"data\": [\n    {\n      \"id\": \"string\",\n      \"customId\": \"string\"\n    },\n    {\n      \"id\": \"string\",\n      \"customId\": \"string\"\n    }\n  ]\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "2289f106-d63e-4282-b377-337385620751",
+              "name": "Unauthorized. The bearer token is missing, invalid or expired.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "contacts",
+                    ":companyId",
+                    "bulk"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"data\": [\n    {\n      \"legalName\": \"Acme Supplies S.L.\",\n      \"type\": \"client-supplier\",\n      \"tradeName\": \"string\",\n      \"taxId\": \"string\",\n      \"contact\": {\n        \"phone\": \"string\",\n        \"email\": \"string\",\n        \"name\": \"string\",\n        \"surname\": \"string\"\n      },\n      \"address\": {\n        \"postalCode\": \"string\",\n        \"address\": \"string\",\n        \"province\": \"string\",\n        \"city\": \"string\",\n        \"country\": \"string\"\n      },\n      \"contactType\": \"company\",\n      \"accounts\": [\n        {\n          \"swift\": \"string\",\n          \"iban\": \"string\",\n          \"default\": true\n        },\n        {\n          \"swift\": \"string\",\n          \"iban\": \"string\",\n          \"default\": false\n        }\n      ],\n      \"paymentsAccounts\": [\n        {\n          \"default\": false,\n          \"currency\": {\n            \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n          },\n          \"details\": {\n            \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n          }\n        },\n        {\n          \"default\": false,\n          \"currency\": {\n            \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n          },\n          \"details\": {\n            \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n          }\n        }\n      ],\n      \"additionalInfo\": {\n        \"key_0\": \"string\",\n        \"key_1\": 6872.894127579655\n      },\n      \"accountingCode\": \"string\",\n      \"paymentMethod\": \"string\",\n      \"paymentTerms\": 2272,\n      \"attributes\": [\n        {\n          \"customId\": \"cost-center\",\n          \"value\": \"Marketing\",\n          \"valueCustomId\": \"string\",\n          \"parentCustomId\": \"string\"\n        },\n        {\n          \"customId\": \"cost-center\",\n          \"value\": \"Marketing\",\n          \"valueCustomId\": \"string\",\n          \"parentCustomId\": \"string\"\n        }\n      ],\n      \"customId\": \"string\"\n    },\n    {\n      \"legalName\": \"Acme Supplies S.L.\",\n      \"type\": \"client-supplier\",\n      \"tradeName\": \"string\",\n      \"taxId\": \"string\",\n      \"contact\": {\n        \"phone\": \"string\",\n        \"email\": \"string\",\n        \"name\": \"string\",\n        \"surname\": \"string\"\n      },\n      \"address\": {\n        \"postalCode\": \"string\",\n        \"address\": \"string\",\n        \"province\": \"string\",\n        \"city\": \"string\",\n        \"country\": \"string\"\n      },\n      \"contactType\": \"company\",\n      \"accounts\": [\n        {\n          \"swift\": \"string\",\n          \"iban\": \"string\",\n          \"default\": false\n        },\n        {\n          \"swift\": \"string\",\n          \"iban\": \"string\",\n          \"default\": true\n        }\n      ],\n      \"paymentsAccounts\": [\n        {\n          \"default\": false,\n          \"currency\": {\n            \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n          },\n          \"details\": {\n            \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n          }\n        },\n        {\n          \"default\": false,\n          \"currency\": {\n            \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n          },\n          \"details\": {\n            \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n          }\n        }\n      ],\n      \"additionalInfo\": {\n        \"key_0\": \"string\"\n      },\n      \"accountingCode\": \"string\",\n      \"paymentMethod\": \"string\",\n      \"paymentTerms\": 8341,\n      \"attributes\": [\n        {\n          \"customId\": \"cost-center\",\n          \"value\": \"Marketing\",\n          \"valueCustomId\": \"string\",\n          \"parentCustomId\": \"string\"\n        },\n        {\n          \"customId\": \"cost-center\",\n          \"value\": \"Marketing\",\n          \"valueCustomId\": \"string\",\n          \"parentCustomId\": \"string\"\n        }\n      ],\n      \"customId\": \"string\"\n    }\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": \"user not authorized\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "1e6aa2ec-3e7d-49ab-ab33-a8b023b46c7d",
+              "name": "Not found. The requested resource or `companyId` does not exist.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "contacts",
+                    ":companyId",
+                    "bulk"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"data\": [\n    {\n      \"legalName\": \"Acme Supplies S.L.\",\n      \"type\": \"client-supplier\",\n      \"tradeName\": \"string\",\n      \"taxId\": \"string\",\n      \"contact\": {\n        \"phone\": \"string\",\n        \"email\": \"string\",\n        \"name\": \"string\",\n        \"surname\": \"string\"\n      },\n      \"address\": {\n        \"postalCode\": \"string\",\n        \"address\": \"string\",\n        \"province\": \"string\",\n        \"city\": \"string\",\n        \"country\": \"string\"\n      },\n      \"contactType\": \"company\",\n      \"accounts\": [\n        {\n          \"swift\": \"string\",\n          \"iban\": \"string\",\n          \"default\": true\n        },\n        {\n          \"swift\": \"string\",\n          \"iban\": \"string\",\n          \"default\": false\n        }\n      ],\n      \"paymentsAccounts\": [\n        {\n          \"default\": false,\n          \"currency\": {\n            \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n          },\n          \"details\": {\n            \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n          }\n        },\n        {\n          \"default\": false,\n          \"currency\": {\n            \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n          },\n          \"details\": {\n            \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n          }\n        }\n      ],\n      \"additionalInfo\": {\n        \"key_0\": \"string\",\n        \"key_1\": 6872.894127579655\n      },\n      \"accountingCode\": \"string\",\n      \"paymentMethod\": \"string\",\n      \"paymentTerms\": 2272,\n      \"attributes\": [\n        {\n          \"customId\": \"cost-center\",\n          \"value\": \"Marketing\",\n          \"valueCustomId\": \"string\",\n          \"parentCustomId\": \"string\"\n        },\n        {\n          \"customId\": \"cost-center\",\n          \"value\": \"Marketing\",\n          \"valueCustomId\": \"string\",\n          \"parentCustomId\": \"string\"\n        }\n      ],\n      \"customId\": \"string\"\n    },\n    {\n      \"legalName\": \"Acme Supplies S.L.\",\n      \"type\": \"client-supplier\",\n      \"tradeName\": \"string\",\n      \"taxId\": \"string\",\n      \"contact\": {\n        \"phone\": \"string\",\n        \"email\": \"string\",\n        \"name\": \"string\",\n        \"surname\": \"string\"\n      },\n      \"address\": {\n        \"postalCode\": \"string\",\n        \"address\": \"string\",\n        \"province\": \"string\",\n        \"city\": \"string\",\n        \"country\": \"string\"\n      },\n      \"contactType\": \"company\",\n      \"accounts\": [\n        {\n          \"swift\": \"string\",\n          \"iban\": \"string\",\n          \"default\": false\n        },\n        {\n          \"swift\": \"string\",\n          \"iban\": \"string\",\n          \"default\": true\n        }\n      ],\n      \"paymentsAccounts\": [\n        {\n          \"default\": false,\n          \"currency\": {\n            \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n          },\n          \"details\": {\n            \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n          }\n        },\n        {\n          \"default\": false,\n          \"currency\": {\n            \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n          },\n          \"details\": {\n            \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n          }\n        }\n      ],\n      \"additionalInfo\": {\n        \"key_0\": \"string\"\n      },\n      \"accountingCode\": \"string\",\n      \"paymentMethod\": \"string\",\n      \"paymentTerms\": 8341,\n      \"attributes\": [\n        {\n          \"customId\": \"cost-center\",\n          \"value\": \"Marketing\",\n          \"valueCustomId\": \"string\",\n          \"parentCustomId\": \"string\"\n        },\n        {\n          \"customId\": \"cost-center\",\n          \"value\": \"Marketing\",\n          \"valueCustomId\": \"string\",\n          \"parentCustomId\": \"string\"\n        }\n      ],\n      \"customId\": \"string\"\n    }\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Not Found",
+              "code": 404,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": \"0021 companyId not found\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "3ed1885e-7bb9-467c-86a5-28159cd5945b",
+              "name": "Validation Error",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "contacts",
+                    ":companyId",
+                    "bulk"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"data\": [\n    {\n      \"legalName\": \"Acme Supplies S.L.\",\n      \"type\": \"client-supplier\",\n      \"tradeName\": \"string\",\n      \"taxId\": \"string\",\n      \"contact\": {\n        \"phone\": \"string\",\n        \"email\": \"string\",\n        \"name\": \"string\",\n        \"surname\": \"string\"\n      },\n      \"address\": {\n        \"postalCode\": \"string\",\n        \"address\": \"string\",\n        \"province\": \"string\",\n        \"city\": \"string\",\n        \"country\": \"string\"\n      },\n      \"contactType\": \"company\",\n      \"accounts\": [\n        {\n          \"swift\": \"string\",\n          \"iban\": \"string\",\n          \"default\": true\n        },\n        {\n          \"swift\": \"string\",\n          \"iban\": \"string\",\n          \"default\": false\n        }\n      ],\n      \"paymentsAccounts\": [\n        {\n          \"default\": false,\n          \"currency\": {\n            \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n          },\n          \"details\": {\n            \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n          }\n        },\n        {\n          \"default\": false,\n          \"currency\": {\n            \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n          },\n          \"details\": {\n            \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n          }\n        }\n      ],\n      \"additionalInfo\": {\n        \"key_0\": \"string\",\n        \"key_1\": 6872.894127579655\n      },\n      \"accountingCode\": \"string\",\n      \"paymentMethod\": \"string\",\n      \"paymentTerms\": 2272,\n      \"attributes\": [\n        {\n          \"customId\": \"cost-center\",\n          \"value\": \"Marketing\",\n          \"valueCustomId\": \"string\",\n          \"parentCustomId\": \"string\"\n        },\n        {\n          \"customId\": \"cost-center\",\n          \"value\": \"Marketing\",\n          \"valueCustomId\": \"string\",\n          \"parentCustomId\": \"string\"\n        }\n      ],\n      \"customId\": \"string\"\n    },\n    {\n      \"legalName\": \"Acme Supplies S.L.\",\n      \"type\": \"client-supplier\",\n      \"tradeName\": \"string\",\n      \"taxId\": \"string\",\n      \"contact\": {\n        \"phone\": \"string\",\n        \"email\": \"string\",\n        \"name\": \"string\",\n        \"surname\": \"string\"\n      },\n      \"address\": {\n        \"postalCode\": \"string\",\n        \"address\": \"string\",\n        \"province\": \"string\",\n        \"city\": \"string\",\n        \"country\": \"string\"\n      },\n      \"contactType\": \"company\",\n      \"accounts\": [\n        {\n          \"swift\": \"string\",\n          \"iban\": \"string\",\n          \"default\": false\n        },\n        {\n          \"swift\": \"string\",\n          \"iban\": \"string\",\n          \"default\": true\n        }\n      ],\n      \"paymentsAccounts\": [\n        {\n          \"default\": false,\n          \"currency\": {\n            \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n          },\n          \"details\": {\n            \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n          }\n        },\n        {\n          \"default\": false,\n          \"currency\": {\n            \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n          },\n          \"details\": {\n            \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n          }\n        }\n      ],\n      \"additionalInfo\": {\n        \"key_0\": \"string\"\n      },\n      \"accountingCode\": \"string\",\n      \"paymentMethod\": \"string\",\n      \"paymentTerms\": 8341,\n      \"attributes\": [\n        {\n          \"customId\": \"cost-center\",\n          \"value\": \"Marketing\",\n          \"valueCustomId\": \"string\",\n          \"parentCustomId\": \"string\"\n        },\n        {\n          \"customId\": \"cost-center\",\n          \"value\": \"Marketing\",\n          \"valueCustomId\": \"string\",\n          \"parentCustomId\": \"string\"\n        }\n      ],\n      \"customId\": \"string\"\n    }\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Unprocessable Entity (WebDAV) (RFC 4918)",
+              "code": 422,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": [\n    {\n      \"loc\": [\n        \"string\",\n        \"string\"\n      ],\n      \"msg\": \"string\",\n      \"type\": \"string\",\n      \"input\": {},\n      \"ctx\": {}\n    },\n    {\n      \"loc\": [\n        \"string\",\n        \"string\"\n      ],\n      \"msg\": \"string\",\n      \"type\": \"string\",\n      \"input\": {},\n      \"ctx\": {}\n    }\n  ]\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "24b55a6e-e690-4dcb-802c-9cd7f10d71e9",
+              "name": "Unexpected error. Contact support if it persists.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "contacts",
+                    ":companyId",
+                    "bulk"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"data\": [\n    {\n      \"legalName\": \"Acme Supplies S.L.\",\n      \"type\": \"client-supplier\",\n      \"tradeName\": \"string\",\n      \"taxId\": \"string\",\n      \"contact\": {\n        \"phone\": \"string\",\n        \"email\": \"string\",\n        \"name\": \"string\",\n        \"surname\": \"string\"\n      },\n      \"address\": {\n        \"postalCode\": \"string\",\n        \"address\": \"string\",\n        \"province\": \"string\",\n        \"city\": \"string\",\n        \"country\": \"string\"\n      },\n      \"contactType\": \"company\",\n      \"accounts\": [\n        {\n          \"swift\": \"string\",\n          \"iban\": \"string\",\n          \"default\": true\n        },\n        {\n          \"swift\": \"string\",\n          \"iban\": \"string\",\n          \"default\": false\n        }\n      ],\n      \"paymentsAccounts\": [\n        {\n          \"default\": false,\n          \"currency\": {\n            \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n          },\n          \"details\": {\n            \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n          }\n        },\n        {\n          \"default\": false,\n          \"currency\": {\n            \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n          },\n          \"details\": {\n            \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n          }\n        }\n      ],\n      \"additionalInfo\": {\n        \"key_0\": \"string\",\n        \"key_1\": 6872.894127579655\n      },\n      \"accountingCode\": \"string\",\n      \"paymentMethod\": \"string\",\n      \"paymentTerms\": 2272,\n      \"attributes\": [\n        {\n          \"customId\": \"cost-center\",\n          \"value\": \"Marketing\",\n          \"valueCustomId\": \"string\",\n          \"parentCustomId\": \"string\"\n        },\n        {\n          \"customId\": \"cost-center\",\n          \"value\": \"Marketing\",\n          \"valueCustomId\": \"string\",\n          \"parentCustomId\": \"string\"\n        }\n      ],\n      \"customId\": \"string\"\n    },\n    {\n      \"legalName\": \"Acme Supplies S.L.\",\n      \"type\": \"client-supplier\",\n      \"tradeName\": \"string\",\n      \"taxId\": \"string\",\n      \"contact\": {\n        \"phone\": \"string\",\n        \"email\": \"string\",\n        \"name\": \"string\",\n        \"surname\": \"string\"\n      },\n      \"address\": {\n        \"postalCode\": \"string\",\n        \"address\": \"string\",\n        \"province\": \"string\",\n        \"city\": \"string\",\n        \"country\": \"string\"\n      },\n      \"contactType\": \"company\",\n      \"accounts\": [\n        {\n          \"swift\": \"string\",\n          \"iban\": \"string\",\n          \"default\": false\n        },\n        {\n          \"swift\": \"string\",\n          \"iban\": \"string\",\n          \"default\": true\n        }\n      ],\n      \"paymentsAccounts\": [\n        {\n          \"default\": false,\n          \"currency\": {\n            \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n          },\n          \"details\": {\n            \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n          }\n        },\n        {\n          \"default\": false,\n          \"currency\": {\n            \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n          },\n          \"details\": {\n            \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n          }\n        }\n      ],\n      \"additionalInfo\": {\n        \"key_0\": \"string\"\n      },\n      \"accountingCode\": \"string\",\n      \"paymentMethod\": \"string\",\n      \"paymentTerms\": 8341,\n      \"attributes\": [\n        {\n          \"customId\": \"cost-center\",\n          \"value\": \"Marketing\",\n          \"valueCustomId\": \"string\",\n          \"parentCustomId\": \"string\"\n        },\n        {\n          \"customId\": \"cost-center\",\n          \"value\": \"Marketing\",\n          \"valueCustomId\": \"string\",\n          \"parentCustomId\": \"string\"\n        }\n      ],\n      \"customId\": \"string\"\n    }\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Internal Server Error",
+              "code": 500,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": \"Internal server error\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        }
+      ],
+      "event": []
+    }
+  ],
+  "event": [],
+  "variable": [
+    {
+      "type": "string",
+      "value": "/",
+      "key": "baseUrl"
+    }
+  ],
+  "info": {
+    "_postman_id": "e872a683-e673-4456-8ae8-c7ff3d924d7f",
+    "name": "Embat AccountingAccounts Contacts API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": {
+      "content": "Embat API enables connections between any third party application and Embat. Is organized around REST principles, using HTTP responses code and returning data in JSON format. While testing the API, you have to request **sandbox credentials**.\n\nContact Support:\n Name: API Support\n Email: tech@embat.io",
+      "type": "text/plain"
+    }
+  }
+}

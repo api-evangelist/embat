@@ -1,0 +1,129 @@
+{
+  "opencollection": "1.0.0",
+  "info": {
+    "name": "Embat AccountingAccounts Files API",
+    "version": "2.120.3"
+  },
+  "items": [
+    {
+      "info": {
+        "name": "Files",
+        "type": "folder"
+      },
+      "items": [
+        {
+          "info": {
+            "name": "List file receptions",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "{{baseUrl}}/files/receptions",
+            "params": [
+              {
+                "name": "limit",
+                "value": "",
+                "type": "query",
+                "description": "Maximum number of file receptions to return. Defaults to 500, up to 2000."
+              },
+              {
+                "name": "nextPageToken",
+                "value": "",
+                "type": "query",
+                "description": "Token to fetch the next page of results, returned by a previous call to this endpoint."
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Returns the banking files received across every company accessible to the authenticated user (e.g. account statements or confirmation files sent by a bank). Results are paginated: use `limit` to control page size and pass the returned `nextPageToken` to fetch the next page. Download the content of a specific file with `GET /files/receptions/{fileId}`. Errors from the file service are reported with their original status code and message, so responses may include statuses other than the ones liste"
+        },
+        {
+          "info": {
+            "name": "Download file reception",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "{{baseUrl}}/files/receptions/:fileId",
+            "params": [
+              {
+                "name": "fileId",
+                "value": "",
+                "type": "path"
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Downloads the raw content of a file reception by `fileId`. The response content type matches the original file (e.g. XML, TXT, PDF). The `Content-Disposition` header names the file after `fileId`, not its original file name; use `fileName` from `GET /files/receptions` if you need the original name. Errors are reported with the same status code and message that occurred while retrieving the file, which may include statuses other than the ones listed here."
+        },
+        {
+          "info": {
+            "name": "List file emissions",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "{{baseUrl}}/files/emissions",
+            "params": [
+              {
+                "name": "limit",
+                "value": "",
+                "type": "query",
+                "description": "Maximum number of file emissions to return. Defaults to 500, up to 2000."
+              },
+              {
+                "name": "nextPageToken",
+                "value": "",
+                "type": "query",
+                "description": "Token to fetch the next page of results, returned by a previous call to this endpoint."
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Returns the banking files submitted to banks (e.g. payment order files) across every company accessible to the authenticated user. Results are paginated: use `limit` to control page size and pass the returned `nextPageToken` to fetch the next page. Errors from the file service are reported with their original status code and message, so responses may include statuses other than the ones listed here."
+        },
+        {
+          "info": {
+            "name": "Create file emission",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "{{baseUrl}}/files/:companyId/:bankId",
+            "params": [
+              {
+                "name": "companyId",
+                "value": "",
+                "type": "path"
+              },
+              {
+                "name": "bankId",
+                "value": "",
+                "type": "path"
+              }
+            ],
+            "body": {
+              "type": "multipart-form",
+              "data": []
+            },
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Submits a file to a bank (`bankId`) on behalf of a company, e.g. a payment order file. Returns the Embat ID of the created file emission; retrieve its status later with `GET /files/emissions`."
+        }
+      ]
+    }
+  ],
+  "bundled": true
+}

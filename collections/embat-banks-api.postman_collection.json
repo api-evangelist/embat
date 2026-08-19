@@ -1,0 +1,592 @@
+{
+  "item": [
+    {
+      "id": "d05665d2-b4c0-4b3e-a931-43012135311f",
+      "name": "Banks",
+      "description": {
+        "content": "`Bank` represents a banking relationship connected to your company in Embat — for example, an aggregated connection to a specific banking entity. Each bank relationship groups the `bankProducts` (checking accounts, credit lines, cards...) held at that entity, together with the oldest successful aggregation timestamp among them.\n\n`GET /banks/{companyId}` only returns relationships that have at least one product, and each relationship's `bankProducts` only lists its currently active products. Use `GET /banks/{companyId}/{id}` to retrieve a single relationship by its Embat `id` regardless of whether it currently has active products.\n\nTo read balances and transactions for a specific account, use the `id` of an entry in `bankProducts` with the `Products` and `Transactions` endpoints.\n",
+        "type": "text/plain"
+      },
+      "item": [
+        {
+          "id": "dde992a8-a1e0-4a9d-a00e-910fb0984160",
+          "name": "List banks",
+          "request": {
+            "name": "List banks",
+            "description": {
+              "content": "Returns the company's bank relationships. A bank relationship with no products at all is silently excluded from the results. For each relationship, `bankProducts` only lists its active products — products marked inactive, or that Embat can no longer match to an account, are silently excluded from that array.",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "banks",
+                ":companyId"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "<string>",
+                  "key": "companyId",
+                  "description": "(Required) "
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{bearerToken}}"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "id": "4dbdcb6d-e1f4-411e-984d-02645bcab916",
+              "name": "Successful Response",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "banks",
+                    ":companyId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"data\": [\n    {\n      \"id\": \"bank_5f2c1a\",\n      \"bankService\": \"bbva\",\n      \"companyId\": \"string\",\n      \"bankProducts\": [\n        {\n          \"id\": \"prod_8f3a1c\",\n          \"currency\": \"EUR\",\n          \"product\": \"Cuenta Corriente\",\n          \"type\": \"checking\",\n          \"alias\": \"string\",\n          \"balance\": 3194.933911118476,\n          \"hasTransactions\": true,\n          \"lastAggregationOK\": \"2019-09-27T22:26:40.622Z\",\n          \"accountNumber\": \"string\"\n        },\n        {\n          \"id\": \"prod_8f3a1c\",\n          \"currency\": \"EUR\",\n          \"product\": \"Cuenta Corriente\",\n          \"type\": \"checking\",\n          \"alias\": \"string\",\n          \"balance\": 654.5877648463194,\n          \"hasTransactions\": false,\n          \"lastAggregationOK\": \"2021-09-14T23:40:53.081Z\",\n          \"accountNumber\": \"string\"\n        }\n      ],\n      \"bankFullName\": \"string\",\n      \"lastAggregationOK\": \"1957-09-20T08:38:56.995Z\",\n      \"updatedAt\": \"1991-06-22T03:10:05.115Z\",\n      \"createdAt\": \"2008-05-16T16:13:46.391Z\",\n      \"additionalInfo\": {}\n    },\n    {\n      \"id\": \"bank_5f2c1a\",\n      \"bankService\": \"bbva\",\n      \"companyId\": \"string\",\n      \"bankProducts\": [\n        {\n          \"id\": \"prod_8f3a1c\",\n          \"currency\": \"EUR\",\n          \"product\": \"Cuenta Corriente\",\n          \"type\": \"checking\",\n          \"alias\": \"string\",\n          \"balance\": 1629.4919340497927,\n          \"hasTransactions\": true,\n          \"lastAggregationOK\": \"1997-08-03T03:22:49.465Z\",\n          \"accountNumber\": \"string\"\n        },\n        {\n          \"id\": \"prod_8f3a1c\",\n          \"currency\": \"EUR\",\n          \"product\": \"Cuenta Corriente\",\n          \"type\": \"checking\",\n          \"alias\": \"string\",\n          \"balance\": 4621.160963846393,\n          \"hasTransactions\": true,\n          \"lastAggregationOK\": \"2001-02-18T08:35:46.488Z\",\n          \"accountNumber\": \"string\"\n        }\n      ],\n      \"bankFullName\": \"string\",\n      \"lastAggregationOK\": \"2000-11-14T07:26:04.260Z\",\n      \"updatedAt\": \"1986-03-18T03:53:38.613Z\",\n      \"createdAt\": \"1972-08-05T17:57:18.159Z\",\n      \"additionalInfo\": {}\n    }\n  ]\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "cc3587b8-0f6f-4b1a-93a7-0c4ec2e3e82d",
+              "name": "Unauthorized. The bearer token is missing, invalid or expired.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "banks",
+                    ":companyId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": \"user not authorized\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "1df42f1c-53ac-44fc-95ba-13da4dc63302",
+              "name": "Not found. The requested resource or `companyId` does not exist.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "banks",
+                    ":companyId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "Not Found",
+              "code": 404,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": \"0021 companyId not found\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "3a5e4932-c8b8-4611-a09e-a51f9d04f9ed",
+              "name": "Validation Error",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "banks",
+                    ":companyId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "Unprocessable Entity (WebDAV) (RFC 4918)",
+              "code": 422,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": [\n    {\n      \"loc\": [\n        \"string\",\n        \"string\"\n      ],\n      \"msg\": \"string\",\n      \"type\": \"string\",\n      \"input\": {},\n      \"ctx\": {}\n    },\n    {\n      \"loc\": [\n        \"string\",\n        \"string\"\n      ],\n      \"msg\": \"string\",\n      \"type\": \"string\",\n      \"input\": {},\n      \"ctx\": {}\n    }\n  ]\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "1b0ccb9f-fb2f-4763-94d5-b12e18492bc6",
+          "name": "Retrieve bank",
+          "request": {
+            "name": "Retrieve bank",
+            "description": {
+              "content": "Returns a single bank relationship by its Embat `id`. Unlike the list endpoint, this always returns the relationship even when it currently has no active products, in which case `bankProducts` is an empty list.",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "banks",
+                ":companyId",
+                ":id"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "<string>",
+                  "key": "id",
+                  "description": "(Required) "
+                },
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "<string>",
+                  "key": "companyId",
+                  "description": "(Required) "
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{bearerToken}}"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "id": "5314dc16-cc04-41ee-afe6-791ceadcf652",
+              "name": "Successful Response",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "banks",
+                    ":companyId",
+                    ":id"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "id",
+                      "description": "(Required) "
+                    },
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"id\": \"bank_5f2c1a\",\n  \"bankService\": \"bbva\",\n  \"companyId\": \"string\",\n  \"bankProducts\": [\n    {\n      \"id\": \"prod_8f3a1c\",\n      \"currency\": \"EUR\",\n      \"product\": \"Cuenta Corriente\",\n      \"type\": \"checking\",\n      \"alias\": \"string\",\n      \"balance\": 7183.678935877429,\n      \"hasTransactions\": false,\n      \"lastAggregationOK\": \"2001-04-22T15:19:38.804Z\",\n      \"accountNumber\": \"string\"\n    },\n    {\n      \"id\": \"prod_8f3a1c\",\n      \"currency\": \"EUR\",\n      \"product\": \"Cuenta Corriente\",\n      \"type\": \"checking\",\n      \"alias\": \"string\",\n      \"balance\": 8947.227526366998,\n      \"hasTransactions\": true,\n      \"lastAggregationOK\": \"1951-12-16T11:14:14.603Z\",\n      \"accountNumber\": \"string\"\n    }\n  ],\n  \"bankFullName\": \"string\",\n  \"lastAggregationOK\": \"1991-08-09T06:01:09.307Z\",\n  \"updatedAt\": \"1978-11-17T03:53:42.351Z\",\n  \"createdAt\": \"1951-01-03T18:55:28.168Z\",\n  \"additionalInfo\": {}\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "cc22d72c-ba7f-4f35-810b-3e21055f0705",
+              "name": "Unauthorized. The bearer token is missing, invalid or expired.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "banks",
+                    ":companyId",
+                    ":id"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "id",
+                      "description": "(Required) "
+                    },
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": \"user not authorized\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "072a8f78-16bb-46bb-a4b2-2997e7a4f2f6",
+              "name": "Company not found, or no bank relationship matches the given `id`.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "banks",
+                    ":companyId",
+                    ":id"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "id",
+                      "description": "(Required) "
+                    },
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "Not Found",
+              "code": 404,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": \"0021 companyId not found\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "548f99cb-4cb0-49be-be94-a20fa6d3d8fa",
+              "name": "Validation Error",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "banks",
+                    ":companyId",
+                    ":id"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "id",
+                      "description": "(Required) "
+                    },
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "Unprocessable Entity (WebDAV) (RFC 4918)",
+              "code": 422,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": [\n    {\n      \"loc\": [\n        \"string\",\n        \"string\"\n      ],\n      \"msg\": \"string\",\n      \"type\": \"string\",\n      \"input\": {},\n      \"ctx\": {}\n    },\n    {\n      \"loc\": [\n        \"string\",\n        \"string\"\n      ],\n      \"msg\": \"string\",\n      \"type\": \"string\",\n      \"input\": {},\n      \"ctx\": {}\n    }\n  ]\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        }
+      ],
+      "event": []
+    }
+  ],
+  "event": [],
+  "variable": [
+    {
+      "type": "string",
+      "value": "/",
+      "key": "baseUrl"
+    }
+  ],
+  "info": {
+    "_postman_id": "6da41bc3-c256-42f9-87d9-5c74cfc73a02",
+    "name": "Embat AccountingAccounts Banks API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": {
+      "content": "Embat API enables connections between any third party application and Embat. Is organized around REST principles, using HTTP responses code and returning data in JSON format. While testing the API, you have to request **sandbox credentials**.\n\nContact Support:\n Name: API Support\n Email: tech@embat.io",
+      "type": "text/plain"
+    }
+  }
+}

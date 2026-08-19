@@ -1,0 +1,2599 @@
+{
+  "item": [
+    {
+      "id": "6f69983f-12fd-4023-b99a-7e8684c1bae5",
+      "name": "ReconcilingItems",
+      "description": {
+        "content": "<div style=\"background-color:#fff3cd; color:#856404; padding: 10px; border-left: 6px solid #ffeeba;\">\n<strong>⚠️ Warning:</strong> This API section is in BETA. It might undergo significant changes and may not be stable.\n</div>\n\n<code>ReconcilingItem</code> represents a single financial record — for example a POS sale, an order, or a settlement — that needs to be matched against a product `transaction`. `customId` is the unique identifier of a reconciling item: set your own value to use as your internal identifier.\n\nEvery reconciling item belongs to a <code>ReconcilingSource</code>, referenced by `reconcilingSourceCustomId`, which identifies the origin system the item comes from (e.g. a POS, an internal system, or a CRM) and can define a `matchingMetadataKey`. When set, Embat uses the value stored under that key in the item's `metadata` to automatically associate the item with a transaction. `reconciled` and `isMatched` reflect the state of that process and are set by Embat — they cannot be updated through this API.\n\n**Typical flow:**\n\n1. **Register a reconciling source** (see <code>ReconcilingSources</code>) if one does not already exist for the origin system.\n2. **Notify Embat of records to reconcile.** Create a reconciling item for each record, including the metadata your reconciling source uses for matching:\n\n```json\nPOST /reconcilingitems/{companyId}\n{\n  \"customId\": \"stripe-order-4821\",\n  \"reconcilingSourceCustomId\": \"stripe-orders\",\n  \"amount\": 199.90,\n  \"currency\": \"EUR\",\n  \"date\": \"2024-01-15T00:00:00Z\",\n  \"description\": \"Stripe order #4821\",\n  \"metadata\": { \"orderId\": \"ORD-48213\" }\n}\n```\n\nCalling this again with the same `customId` updates the existing item instead of creating a duplicate, unless it has already been matched to a transaction.\n\n3. **Track reconciliation status.** Retrieve or list items with `GET /reconcilingitems/{companyId}/{customId}` or `GET /reconcilingitems/{companyId}` — filter by `reconcilingSourceCustomId` or `reconciled` and check `isMatched`/`reconciled` on each item to see whether Embat has matched and reconciled it.\n4. **Correct or remove items** while they are still unmatched: use `PATCH`/`DELETE /reconcilingitems/{companyId}/{customId}` (or their bulk variants), or resend the item with `POST` — creation is an upsert, so an existing `customId` is updated instead of duplicated.\n",
+        "type": "text/plain"
+      },
+      "item": [
+        {
+          "id": "2cc3d62d-686b-4576-83ab-9c52128069dc",
+          "name": "List reconciling items",
+          "request": {
+            "name": "List reconciling items",
+            "description": {
+              "content": "Returns the reconciling items of a company, ordered by `date` (most recent first). Results are paginated: use `limit` to control page size and pass the returned `nextPageToken` to fetch the next page.",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "reconcilingitems",
+                ":companyId"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [
+                {
+                  "disabled": false,
+                  "key": "reconcilingSourceCustomId",
+                  "value": "<string>",
+                  "description": "Filter items belonging to a given reconciling source (`reconcilingSourceCustomId`)."
+                },
+                {
+                  "disabled": false,
+                  "key": "reconciled",
+                  "value": "<boolean>",
+                  "description": "Filter by reconciliation status. `false` also matches items where the value is not set."
+                },
+                {
+                  "disabled": false,
+                  "key": "startDate",
+                  "value": "<date>",
+                  "description": "Only return items dated on or after this date (inclusive)."
+                },
+                {
+                  "disabled": false,
+                  "key": "endDate",
+                  "value": "<date>",
+                  "description": "Only return items dated before this date (exclusive)."
+                },
+                {
+                  "disabled": false,
+                  "key": "limit",
+                  "value": "500",
+                  "description": "Maximum number of objects to return in the response. Default 500, maximum 2000."
+                },
+                {
+                  "disabled": false,
+                  "key": "nextPageToken",
+                  "value": "<string>",
+                  "description": "Token to fetch the next page of results, taken from the `nextPageToken` returned by the previous request with the same filters. Omit it to fetch the first page. An invalid or malformed token is rejected with `404`."
+                }
+              ],
+              "variable": [
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "<string>",
+                  "key": "companyId",
+                  "description": "(Required) "
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{bearerToken}}"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "id": "c3af5383-eb0e-4a0f-ac1e-5550d08c4f6e",
+              "name": "Successful Response",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "reconcilingitems",
+                    ":companyId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "reconcilingSourceCustomId",
+                      "value": "<string>"
+                    },
+                    {
+                      "key": "reconciled",
+                      "value": "<boolean>"
+                    },
+                    {
+                      "key": "startDate",
+                      "value": "<date>"
+                    },
+                    {
+                      "key": "endDate",
+                      "value": "<date>"
+                    },
+                    {
+                      "key": "limit",
+                      "value": "500"
+                    },
+                    {
+                      "key": "nextPageToken",
+                      "value": "<string>"
+                    }
+                  ],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"data\": [\n    {\n      \"amount\": 199.9,\n      \"currency\": \"EUR\",\n      \"date\": \"2024-01-15T00:00:00Z\",\n      \"description\": \"Stripe order #4821\",\n      \"customId\": \"stripe-order-4821\",\n      \"reconcilingSourceCustomId\": \"stripe-orders\",\n      \"id\": \"string\",\n      \"companyId\": \"string\",\n      \"updatedAt\": \"1963-12-26T20:25:12.513Z\",\n      \"createdAt\": \"1995-04-01T14:44:31.960Z\",\n      \"metadata\": {\n        \"key_0\": \"string\",\n        \"key_1\": 6199.07788363176\n      },\n      \"additionalInfo\": {\n        \"key_0\": false,\n        \"key_1\": 8655\n      },\n      \"reconciled\": false,\n      \"isMatched\": false\n    },\n    {\n      \"amount\": 199.9,\n      \"currency\": \"EUR\",\n      \"date\": \"2024-01-15T00:00:00Z\",\n      \"description\": \"Stripe order #4821\",\n      \"customId\": \"stripe-order-4821\",\n      \"reconcilingSourceCustomId\": \"stripe-orders\",\n      \"id\": \"string\",\n      \"companyId\": \"string\",\n      \"updatedAt\": \"1976-02-03T23:18:43.793Z\",\n      \"createdAt\": \"1960-01-23T03:39:54.657Z\",\n      \"metadata\": {\n        \"key_0\": \"string\"\n      },\n      \"additionalInfo\": {\n        \"key_0\": 4100\n      },\n      \"reconciled\": false,\n      \"isMatched\": false\n    }\n  ],\n  \"nextPageToken\": \"string\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "19e7af5a-5e1b-4bef-9e67-85814508d1eb",
+              "name": "Unauthorized. The bearer token is missing, invalid or expired.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "reconcilingitems",
+                    ":companyId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "reconcilingSourceCustomId",
+                      "value": "<string>"
+                    },
+                    {
+                      "key": "reconciled",
+                      "value": "<boolean>"
+                    },
+                    {
+                      "key": "startDate",
+                      "value": "<date>"
+                    },
+                    {
+                      "key": "endDate",
+                      "value": "<date>"
+                    },
+                    {
+                      "key": "limit",
+                      "value": "500"
+                    },
+                    {
+                      "key": "nextPageToken",
+                      "value": "<string>"
+                    }
+                  ],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": \"user not authorized\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "34b17e0b-82d7-4a1d-b8e0-c40aa4f6e095",
+              "name": "Company not found, or invalid `nextPageToken`.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "reconcilingitems",
+                    ":companyId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "reconcilingSourceCustomId",
+                      "value": "<string>"
+                    },
+                    {
+                      "key": "reconciled",
+                      "value": "<boolean>"
+                    },
+                    {
+                      "key": "startDate",
+                      "value": "<date>"
+                    },
+                    {
+                      "key": "endDate",
+                      "value": "<date>"
+                    },
+                    {
+                      "key": "limit",
+                      "value": "500"
+                    },
+                    {
+                      "key": "nextPageToken",
+                      "value": "<string>"
+                    }
+                  ],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "Not Found",
+              "code": 404,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": \"0021 companyId not found\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "a6ab87af-1cdb-408e-afe4-615b5e4fe7b2",
+              "name": "Validation Error",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "reconcilingitems",
+                    ":companyId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "reconcilingSourceCustomId",
+                      "value": "<string>"
+                    },
+                    {
+                      "key": "reconciled",
+                      "value": "<boolean>"
+                    },
+                    {
+                      "key": "startDate",
+                      "value": "<date>"
+                    },
+                    {
+                      "key": "endDate",
+                      "value": "<date>"
+                    },
+                    {
+                      "key": "limit",
+                      "value": "500"
+                    },
+                    {
+                      "key": "nextPageToken",
+                      "value": "<string>"
+                    }
+                  ],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "Unprocessable Entity (WebDAV) (RFC 4918)",
+              "code": 422,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": [\n    {\n      \"loc\": [\n        \"string\",\n        \"string\"\n      ],\n      \"msg\": \"string\",\n      \"type\": \"string\",\n      \"input\": {},\n      \"ctx\": {}\n    },\n    {\n      \"loc\": [\n        \"string\",\n        \"string\"\n      ],\n      \"msg\": \"string\",\n      \"type\": \"string\",\n      \"input\": {},\n      \"ctx\": {}\n    }\n  ]\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "7cd68035-50b3-4d77-8c0e-5236177a22a5",
+          "name": "Create reconciling item",
+          "request": {
+            "name": "Create reconciling item",
+            "description": {
+              "content": "Creates a reconciling item under the given `reconcilingSourceCustomId`. Calling this again with the same `customId` updates the existing item instead of creating a duplicate — except once the item has been matched to a transaction, in which case the call still returns `200` and the item is not modified by this request.",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "reconcilingitems",
+                ":companyId"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "<string>",
+                  "key": "companyId",
+                  "description": "(Required) "
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "POST",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{bearerToken}}"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": \"<number>\",\n  \"currency\": \"<string>\",\n  \"date\": \"<dateTime>\",\n  \"description\": \"<string>\",\n  \"customId\": \"<string>\",\n  \"reconcilingSourceCustomId\": \"<string>\",\n  \"metadata\": {\n    \"key_0\": 3283,\n    \"key_1\": \"string\",\n    \"key_2\": \"string\"\n  },\n  \"additionalInfo\": {\n    \"key_0\": 4959,\n    \"key_1\": 5425,\n    \"key_2\": 6913,\n    \"key_3\": 9474\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "id": "eb2b8229-15ce-4584-8e3b-2757c8391da8",
+              "name": "Successful Response",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "reconcilingitems",
+                    ":companyId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"amount\": 199.9,\n  \"currency\": \"EUR\",\n  \"date\": \"2024-01-15T00:00:00Z\",\n  \"description\": \"Stripe order #4821\",\n  \"customId\": \"stripe-order-4821\",\n  \"reconcilingSourceCustomId\": \"stripe-orders\",\n  \"metadata\": {\n    \"key_0\": \"string\",\n    \"key_1\": \"string\"\n  },\n  \"additionalInfo\": {\n    \"key_0\": 1864.5896700240937\n  }\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"id\": \"string\",\n  \"customId\": \"string\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "8f46a033-6121-4e95-9472-3953d16a5235",
+              "name": "Unauthorized. The bearer token is missing, invalid or expired.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "reconcilingitems",
+                    ":companyId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"amount\": 199.9,\n  \"currency\": \"EUR\",\n  \"date\": \"2024-01-15T00:00:00Z\",\n  \"description\": \"Stripe order #4821\",\n  \"customId\": \"stripe-order-4821\",\n  \"reconcilingSourceCustomId\": \"stripe-orders\",\n  \"metadata\": {\n    \"key_0\": \"string\",\n    \"key_1\": \"string\"\n  },\n  \"additionalInfo\": {\n    \"key_0\": 1864.5896700240937\n  }\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": \"user not authorized\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "b55f9de4-51d9-464e-9d18-403fcdda09a2",
+              "name": "Company not found.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "reconcilingitems",
+                    ":companyId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"amount\": 199.9,\n  \"currency\": \"EUR\",\n  \"date\": \"2024-01-15T00:00:00Z\",\n  \"description\": \"Stripe order #4821\",\n  \"customId\": \"stripe-order-4821\",\n  \"reconcilingSourceCustomId\": \"stripe-orders\",\n  \"metadata\": {\n    \"key_0\": \"string\",\n    \"key_1\": \"string\"\n  },\n  \"additionalInfo\": {\n    \"key_0\": 1864.5896700240937\n  }\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Not Found",
+              "code": 404,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": \"0021 companyId not found\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "c97fc8b5-5e2b-4f78-be7c-13d89da9806d",
+              "name": "Validation Error",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "reconcilingitems",
+                    ":companyId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"amount\": 199.9,\n  \"currency\": \"EUR\",\n  \"date\": \"2024-01-15T00:00:00Z\",\n  \"description\": \"Stripe order #4821\",\n  \"customId\": \"stripe-order-4821\",\n  \"reconcilingSourceCustomId\": \"stripe-orders\",\n  \"metadata\": {\n    \"key_0\": \"string\",\n    \"key_1\": \"string\"\n  },\n  \"additionalInfo\": {\n    \"key_0\": 1864.5896700240937\n  }\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Unprocessable Entity (WebDAV) (RFC 4918)",
+              "code": 422,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": [\n    {\n      \"loc\": [\n        \"string\",\n        \"string\"\n      ],\n      \"msg\": \"string\",\n      \"type\": \"string\",\n      \"input\": {},\n      \"ctx\": {}\n    },\n    {\n      \"loc\": [\n        \"string\",\n        \"string\"\n      ],\n      \"msg\": \"string\",\n      \"type\": \"string\",\n      \"input\": {},\n      \"ctx\": {}\n    }\n  ]\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "fd96ede3-daa4-446b-8d3b-32f90125cbdc",
+          "name": "Update reconciling items in bulk",
+          "request": {
+            "name": "Update reconciling items in bulk",
+            "description": {
+              "content": "Updates several reconciling items in a single call, identified by `customId`, following the same rules as the single item update endpoint. Entries whose `customId` does not match any existing item, or whose item has already been matched to a transaction, are silently skipped — the call returns `200` for the whole batch.",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "reconcilingitems",
+                ":companyId"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "<string>",
+                  "key": "companyId",
+                  "description": "(Required) "
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "PATCH",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{bearerToken}}"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"data\": [\n    {\n      \"customId\": \"<string>\",\n      \"amount\": \"<number>\",\n      \"currency\": \"<string>\",\n      \"date\": \"<dateTime>\",\n      \"description\": \"<string>\",\n      \"metadata\": {\n        \"key_0\": \"string\",\n        \"key_1\": 2617.5846569898886,\n        \"key_2\": 650.3091453511289\n      },\n      \"additionalInfo\": {\n        \"key_0\": \"string\",\n        \"key_1\": \"string\"\n      }\n    },\n    {\n      \"customId\": \"<string>\",\n      \"amount\": \"<number>\",\n      \"currency\": \"<string>\",\n      \"date\": \"<dateTime>\",\n      \"description\": \"<string>\",\n      \"metadata\": {\n        \"key_0\": true,\n        \"key_1\": false\n      },\n      \"additionalInfo\": {\n        \"key_0\": true\n      }\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "id": "31f8f5d9-45d7-446d-b894-d427b35a0ac0",
+              "name": "Successful Response",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "reconcilingitems",
+                    ":companyId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "PATCH",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"data\": [\n    {\n      \"customId\": \"stripe-order-4821\",\n      \"amount\": 851.4252895218722,\n      \"currency\": \"CHE\",\n      \"date\": \"1988-09-13T04:35:19.009Z\",\n      \"description\": \"string\",\n      \"metadata\": {\n        \"key_0\": 3407.602780001471,\n        \"key_1\": 1348,\n        \"key_2\": 9152.14652430062\n      },\n      \"additionalInfo\": {\n        \"key_0\": 4781\n      }\n    },\n    {\n      \"customId\": \"stripe-order-4821\",\n      \"amount\": 1425.4080793268686,\n      \"currency\": \"KWD\",\n      \"date\": \"2002-07-23T00:07:55.876Z\",\n      \"description\": \"string\",\n      \"metadata\": {\n        \"key_0\": true\n      },\n      \"additionalInfo\": {\n        \"key_0\": \"string\"\n      }\n    }\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"data\": [\n    {\n      \"id\": \"string\",\n      \"customId\": \"string\"\n    },\n    {\n      \"id\": \"string\",\n      \"customId\": \"string\"\n    }\n  ]\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "1511c713-7248-40e0-8d2c-e981b7f18817",
+              "name": "Unauthorized. The bearer token is missing, invalid or expired.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "reconcilingitems",
+                    ":companyId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "PATCH",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"data\": [\n    {\n      \"customId\": \"stripe-order-4821\",\n      \"amount\": 851.4252895218722,\n      \"currency\": \"CHE\",\n      \"date\": \"1988-09-13T04:35:19.009Z\",\n      \"description\": \"string\",\n      \"metadata\": {\n        \"key_0\": 3407.602780001471,\n        \"key_1\": 1348,\n        \"key_2\": 9152.14652430062\n      },\n      \"additionalInfo\": {\n        \"key_0\": 4781\n      }\n    },\n    {\n      \"customId\": \"stripe-order-4821\",\n      \"amount\": 1425.4080793268686,\n      \"currency\": \"KWD\",\n      \"date\": \"2002-07-23T00:07:55.876Z\",\n      \"description\": \"string\",\n      \"metadata\": {\n        \"key_0\": true\n      },\n      \"additionalInfo\": {\n        \"key_0\": \"string\"\n      }\n    }\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": \"user not authorized\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "d86ebcfd-947d-4480-82c2-c5d59abfdbe5",
+              "name": "Company not found.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "reconcilingitems",
+                    ":companyId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "PATCH",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"data\": [\n    {\n      \"customId\": \"stripe-order-4821\",\n      \"amount\": 851.4252895218722,\n      \"currency\": \"CHE\",\n      \"date\": \"1988-09-13T04:35:19.009Z\",\n      \"description\": \"string\",\n      \"metadata\": {\n        \"key_0\": 3407.602780001471,\n        \"key_1\": 1348,\n        \"key_2\": 9152.14652430062\n      },\n      \"additionalInfo\": {\n        \"key_0\": 4781\n      }\n    },\n    {\n      \"customId\": \"stripe-order-4821\",\n      \"amount\": 1425.4080793268686,\n      \"currency\": \"KWD\",\n      \"date\": \"2002-07-23T00:07:55.876Z\",\n      \"description\": \"string\",\n      \"metadata\": {\n        \"key_0\": true\n      },\n      \"additionalInfo\": {\n        \"key_0\": \"string\"\n      }\n    }\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Not Found",
+              "code": 404,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": \"0021 companyId not found\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "cad3be8c-180f-49a4-9ca8-92e4b3d245c4",
+              "name": "Validation Error",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "reconcilingitems",
+                    ":companyId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "PATCH",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"data\": [\n    {\n      \"customId\": \"stripe-order-4821\",\n      \"amount\": 851.4252895218722,\n      \"currency\": \"CHE\",\n      \"date\": \"1988-09-13T04:35:19.009Z\",\n      \"description\": \"string\",\n      \"metadata\": {\n        \"key_0\": 3407.602780001471,\n        \"key_1\": 1348,\n        \"key_2\": 9152.14652430062\n      },\n      \"additionalInfo\": {\n        \"key_0\": 4781\n      }\n    },\n    {\n      \"customId\": \"stripe-order-4821\",\n      \"amount\": 1425.4080793268686,\n      \"currency\": \"KWD\",\n      \"date\": \"2002-07-23T00:07:55.876Z\",\n      \"description\": \"string\",\n      \"metadata\": {\n        \"key_0\": true\n      },\n      \"additionalInfo\": {\n        \"key_0\": \"string\"\n      }\n    }\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Unprocessable Entity (WebDAV) (RFC 4918)",
+              "code": 422,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": [\n    {\n      \"loc\": [\n        \"string\",\n        \"string\"\n      ],\n      \"msg\": \"string\",\n      \"type\": \"string\",\n      \"input\": {},\n      \"ctx\": {}\n    },\n    {\n      \"loc\": [\n        \"string\",\n        \"string\"\n      ],\n      \"msg\": \"string\",\n      \"type\": \"string\",\n      \"input\": {},\n      \"ctx\": {}\n    }\n  ]\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "c1d3ab2e-6bbb-4a7c-aa4c-e18d69eeebaf",
+          "name": "Delete reconciling items in bulk",
+          "request": {
+            "name": "Delete reconciling items in bulk",
+            "description": {
+              "content": "Deletes several reconciling items in a single call, identified by `customId`. The call returns `200` listing every requested `customId` even if some (or all) do not match an existing item — deletion is idempotent and the response does not indicate which items were actually removed.",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "reconcilingitems",
+                ":companyId"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "<string>",
+                  "key": "companyId",
+                  "description": "(Required) "
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "DELETE",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{bearerToken}}"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"data\": [\n    {\n      \"customId\": \"<string>\"\n    },\n    {\n      \"customId\": \"<string>\"\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "id": "7bfea7a0-c38b-4ed2-b040-d2f0e3524d4b",
+              "name": "Successful Response",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "reconcilingitems",
+                    ":companyId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "DELETE",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"data\": [\n    {\n      \"customId\": \"stripe-order-4821\"\n    },\n    {\n      \"customId\": \"stripe-order-4821\"\n    }\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"data\": [\n    {\n      \"id\": \"string\"\n    },\n    {\n      \"id\": \"string\"\n    }\n  ]\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "fe8829b8-7e6c-4f55-a5b8-a4ad8bb4da08",
+              "name": "Unauthorized. The bearer token is missing, invalid or expired.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "reconcilingitems",
+                    ":companyId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "DELETE",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"data\": [\n    {\n      \"customId\": \"stripe-order-4821\"\n    },\n    {\n      \"customId\": \"stripe-order-4821\"\n    }\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": \"user not authorized\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "65b0e90f-4716-4eab-b78e-ea1ba47853b9",
+              "name": "Company not found.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "reconcilingitems",
+                    ":companyId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "DELETE",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"data\": [\n    {\n      \"customId\": \"stripe-order-4821\"\n    },\n    {\n      \"customId\": \"stripe-order-4821\"\n    }\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Not Found",
+              "code": 404,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": \"0021 companyId not found\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "a83c60df-ea77-4c37-9210-b3d9cf2b173d",
+              "name": "Validation Error",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "reconcilingitems",
+                    ":companyId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "DELETE",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"data\": [\n    {\n      \"customId\": \"stripe-order-4821\"\n    },\n    {\n      \"customId\": \"stripe-order-4821\"\n    }\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Unprocessable Entity (WebDAV) (RFC 4918)",
+              "code": 422,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": [\n    {\n      \"loc\": [\n        \"string\",\n        \"string\"\n      ],\n      \"msg\": \"string\",\n      \"type\": \"string\",\n      \"input\": {},\n      \"ctx\": {}\n    },\n    {\n      \"loc\": [\n        \"string\",\n        \"string\"\n      ],\n      \"msg\": \"string\",\n      \"type\": \"string\",\n      \"input\": {},\n      \"ctx\": {}\n    }\n  ]\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "19d3e203-1b2d-49e4-934c-2c9a0332da53",
+          "name": "Retrieve reconciling item",
+          "request": {
+            "name": "Retrieve reconciling item",
+            "description": {
+              "content": "Returns a single reconciling item by `customId`.",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "reconcilingitems",
+                ":companyId",
+                ":customId"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "<string>",
+                  "key": "customId",
+                  "description": "(Required) "
+                },
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "<string>",
+                  "key": "companyId",
+                  "description": "(Required) "
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{bearerToken}}"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "id": "7d98430f-e82f-4354-a53f-4138347e1f1e",
+              "name": "Successful Response",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "reconcilingitems",
+                    ":companyId",
+                    ":customId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "customId",
+                      "description": "(Required) "
+                    },
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"amount\": 199.9,\n  \"currency\": \"EUR\",\n  \"date\": \"2024-01-15T00:00:00Z\",\n  \"description\": \"Stripe order #4821\",\n  \"customId\": \"stripe-order-4821\",\n  \"reconcilingSourceCustomId\": \"stripe-orders\",\n  \"id\": \"string\",\n  \"companyId\": \"string\",\n  \"updatedAt\": \"1960-05-01T18:40:20.498Z\",\n  \"createdAt\": \"1994-06-14T05:15:25.744Z\",\n  \"metadata\": {\n    \"key_0\": \"string\"\n  },\n  \"additionalInfo\": {\n    \"key_0\": 4377,\n    \"key_1\": 2090.4630778141786\n  },\n  \"reconciled\": false,\n  \"isMatched\": false\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "b2bb0de9-c03c-4d27-a3ac-7e81c5262f44",
+              "name": "Unauthorized. The bearer token is missing, invalid or expired.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "reconcilingitems",
+                    ":companyId",
+                    ":customId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "customId",
+                      "description": "(Required) "
+                    },
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": \"user not authorized\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "98004881-3d85-4e69-9a49-36874f6b08be",
+              "name": "Company not found, or no reconciling item matches the given `customId`.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "reconcilingitems",
+                    ":companyId",
+                    ":customId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "customId",
+                      "description": "(Required) "
+                    },
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "Not Found",
+              "code": 404,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": \"0021 companyId not found\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "c7aaf259-b711-4d61-9f79-e3474814c5a5",
+              "name": "Validation Error",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "reconcilingitems",
+                    ":companyId",
+                    ":customId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "customId",
+                      "description": "(Required) "
+                    },
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "Unprocessable Entity (WebDAV) (RFC 4918)",
+              "code": 422,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": [\n    {\n      \"loc\": [\n        \"string\",\n        \"string\"\n      ],\n      \"msg\": \"string\",\n      \"type\": \"string\",\n      \"input\": {},\n      \"ctx\": {}\n    },\n    {\n      \"loc\": [\n        \"string\",\n        \"string\"\n      ],\n      \"msg\": \"string\",\n      \"type\": \"string\",\n      \"input\": {},\n      \"ctx\": {}\n    }\n  ]\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "9b64c68f-05f8-4764-8d9a-98dcce723d60",
+          "name": "Update reconciling item",
+          "request": {
+            "name": "Update reconciling item",
+            "description": {
+              "content": "Updates the amount, currency, date, description, metadata or additional info of a reconciling item identified by `customId`. Only the fields sent are changed; omitted or `null` fields keep their current value. If `customId` does not match any existing item, or the item has already been matched to a transaction, the call still returns `200` without applying any change.",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "reconcilingitems",
+                ":companyId",
+                ":customId"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "<string>",
+                  "key": "customId",
+                  "description": "(Required) "
+                },
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "<string>",
+                  "key": "companyId",
+                  "description": "(Required) "
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "PATCH",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{bearerToken}}"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": \"<number>\",\n  \"currency\": \"<string>\",\n  \"date\": \"<dateTime>\",\n  \"description\": \"<string>\",\n  \"metadata\": {\n    \"key_0\": true,\n    \"key_1\": 5666\n  },\n  \"additionalInfo\": {\n    \"key_0\": false\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "id": "5ffd02ea-0fb0-43db-8fb6-2bbe1432ae1f",
+              "name": "Successful Response",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "reconcilingitems",
+                    ":companyId",
+                    ":customId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "customId",
+                      "description": "(Required) "
+                    },
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "PATCH",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"amount\": \"<number>\",\n  \"currency\": \"COP\",\n  \"date\": \"<dateTime>\",\n  \"description\": \"<string>\",\n  \"metadata\": {\n    \"key_0\": 3016.680281659052,\n    \"key_1\": false\n  },\n  \"additionalInfo\": {\n    \"key_0\": 7374.326474094984,\n    \"key_1\": true\n  }\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"id\": \"string\",\n  \"customId\": \"string\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "272d7d46-848d-4118-9625-b7611f18f05a",
+              "name": "Unauthorized. The bearer token is missing, invalid or expired.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "reconcilingitems",
+                    ":companyId",
+                    ":customId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "customId",
+                      "description": "(Required) "
+                    },
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "PATCH",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"amount\": \"<number>\",\n  \"currency\": \"COP\",\n  \"date\": \"<dateTime>\",\n  \"description\": \"<string>\",\n  \"metadata\": {\n    \"key_0\": 3016.680281659052,\n    \"key_1\": false\n  },\n  \"additionalInfo\": {\n    \"key_0\": 7374.326474094984,\n    \"key_1\": true\n  }\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": \"user not authorized\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "30b61d9f-3fbe-4632-a850-89100ccbe27a",
+              "name": "Company not found.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "reconcilingitems",
+                    ":companyId",
+                    ":customId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "customId",
+                      "description": "(Required) "
+                    },
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "PATCH",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"amount\": \"<number>\",\n  \"currency\": \"COP\",\n  \"date\": \"<dateTime>\",\n  \"description\": \"<string>\",\n  \"metadata\": {\n    \"key_0\": 3016.680281659052,\n    \"key_1\": false\n  },\n  \"additionalInfo\": {\n    \"key_0\": 7374.326474094984,\n    \"key_1\": true\n  }\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Not Found",
+              "code": 404,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": \"0021 companyId not found\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "a00e16ac-b88f-4cf0-82d1-ffdb8d5440c0",
+              "name": "Validation Error",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "reconcilingitems",
+                    ":companyId",
+                    ":customId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "customId",
+                      "description": "(Required) "
+                    },
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "PATCH",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"amount\": \"<number>\",\n  \"currency\": \"COP\",\n  \"date\": \"<dateTime>\",\n  \"description\": \"<string>\",\n  \"metadata\": {\n    \"key_0\": 3016.680281659052,\n    \"key_1\": false\n  },\n  \"additionalInfo\": {\n    \"key_0\": 7374.326474094984,\n    \"key_1\": true\n  }\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Unprocessable Entity (WebDAV) (RFC 4918)",
+              "code": 422,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": [\n    {\n      \"loc\": [\n        \"string\",\n        \"string\"\n      ],\n      \"msg\": \"string\",\n      \"type\": \"string\",\n      \"input\": {},\n      \"ctx\": {}\n    },\n    {\n      \"loc\": [\n        \"string\",\n        \"string\"\n      ],\n      \"msg\": \"string\",\n      \"type\": \"string\",\n      \"input\": {},\n      \"ctx\": {}\n    }\n  ]\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "22a5a827-ebf7-48a1-80a5-f7e8e2de5289",
+          "name": "Delete reconciling item",
+          "request": {
+            "name": "Delete reconciling item",
+            "description": {
+              "content": "Deletes a reconciling item by `customId`. The call returns `200` even if no item matches the given `customId` — deletion is idempotent and the response does not indicate whether an item was actually removed.",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "reconcilingitems",
+                ":companyId",
+                ":customId"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "<string>",
+                  "key": "customId",
+                  "description": "(Required) "
+                },
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "<string>",
+                  "key": "companyId",
+                  "description": "(Required) "
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "DELETE",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{bearerToken}}"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "id": "cf9872a4-89c0-46e3-af8b-e568185709e5",
+              "name": "Successful Response",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "reconcilingitems",
+                    ":companyId",
+                    ":customId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "customId",
+                      "description": "(Required) "
+                    },
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "DELETE",
+                "body": {}
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"id\": \"string\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "601a61f6-cf74-47d2-b398-808201d3e781",
+              "name": "Unauthorized. The bearer token is missing, invalid or expired.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "reconcilingitems",
+                    ":companyId",
+                    ":customId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "customId",
+                      "description": "(Required) "
+                    },
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "DELETE",
+                "body": {}
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": \"user not authorized\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "2f70dcd6-77d5-421f-b16e-a8e52012cee7",
+              "name": "Company not found.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "reconcilingitems",
+                    ":companyId",
+                    ":customId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "customId",
+                      "description": "(Required) "
+                    },
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "DELETE",
+                "body": {}
+              },
+              "status": "Not Found",
+              "code": 404,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": \"0021 companyId not found\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "963d4339-4919-4019-beca-3bf7ba2f98e5",
+              "name": "Validation Error",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "reconcilingitems",
+                    ":companyId",
+                    ":customId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "customId",
+                      "description": "(Required) "
+                    },
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "DELETE",
+                "body": {}
+              },
+              "status": "Unprocessable Entity (WebDAV) (RFC 4918)",
+              "code": 422,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": [\n    {\n      \"loc\": [\n        \"string\",\n        \"string\"\n      ],\n      \"msg\": \"string\",\n      \"type\": \"string\",\n      \"input\": {},\n      \"ctx\": {}\n    },\n    {\n      \"loc\": [\n        \"string\",\n        \"string\"\n      ],\n      \"msg\": \"string\",\n      \"type\": \"string\",\n      \"input\": {},\n      \"ctx\": {}\n    }\n  ]\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "ea19d924-4617-4679-8e00-cb275ea12e9a",
+          "name": "Create reconciling items in bulk",
+          "request": {
+            "name": "Create reconciling items in bulk",
+            "description": {
+              "content": "Creates several reconciling items in a single call, following the same rules as the single item creation endpoint. Items sharing the same `customId` within the request are deduplicated and only the first occurrence is processed.",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "reconcilingitems",
+                ":companyId",
+                "bulk"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "<string>",
+                  "key": "companyId",
+                  "description": "(Required) "
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "POST",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{bearerToken}}"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"data\": [\n    {\n      \"amount\": \"<number>\",\n      \"currency\": \"<string>\",\n      \"date\": \"<dateTime>\",\n      \"description\": \"<string>\",\n      \"customId\": \"<string>\",\n      \"reconcilingSourceCustomId\": \"<string>\",\n      \"metadata\": {\n        \"key_0\": 8469\n      },\n      \"additionalInfo\": {\n        \"key_0\": 6768.988375003862,\n        \"key_1\": false,\n        \"key_2\": 6165.260874250943,\n        \"key_3\": 5967\n      }\n    },\n    {\n      \"amount\": \"<number>\",\n      \"currency\": \"<string>\",\n      \"date\": \"<dateTime>\",\n      \"description\": \"<string>\",\n      \"customId\": \"<string>\",\n      \"reconcilingSourceCustomId\": \"<string>\",\n      \"metadata\": {\n        \"key_0\": 9349,\n        \"key_1\": 1595\n      },\n      \"additionalInfo\": {\n        \"key_0\": false\n      }\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "id": "15612190-a1ab-41cc-9fe1-4016f3053444",
+              "name": "Successful Response",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "reconcilingitems",
+                    ":companyId",
+                    "bulk"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"data\": [\n    {\n      \"amount\": 199.9,\n      \"currency\": \"EUR\",\n      \"date\": \"2024-01-15T00:00:00Z\",\n      \"description\": \"Stripe order #4821\",\n      \"customId\": \"stripe-order-4821\",\n      \"reconcilingSourceCustomId\": \"stripe-orders\",\n      \"metadata\": {\n        \"key_0\": true,\n        \"key_1\": false,\n        \"key_2\": 9209.812058073485\n      },\n      \"additionalInfo\": {\n        \"key_0\": true,\n        \"key_1\": 9525\n      }\n    },\n    {\n      \"amount\": 199.9,\n      \"currency\": \"EUR\",\n      \"date\": \"2024-01-15T00:00:00Z\",\n      \"description\": \"Stripe order #4821\",\n      \"customId\": \"stripe-order-4821\",\n      \"reconcilingSourceCustomId\": \"stripe-orders\",\n      \"metadata\": {\n        \"key_0\": 8853.941766815613\n      },\n      \"additionalInfo\": {\n        \"key_0\": 4690.0361356092935,\n        \"key_1\": 1776.9798925653124\n      }\n    }\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"data\": [\n    {\n      \"id\": \"string\",\n      \"customId\": \"string\"\n    },\n    {\n      \"id\": \"string\",\n      \"customId\": \"string\"\n    }\n  ]\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "f366cf8f-5e2c-45a3-934e-7d0c749c9e07",
+              "name": "Unauthorized. The bearer token is missing, invalid or expired.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "reconcilingitems",
+                    ":companyId",
+                    "bulk"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"data\": [\n    {\n      \"amount\": 199.9,\n      \"currency\": \"EUR\",\n      \"date\": \"2024-01-15T00:00:00Z\",\n      \"description\": \"Stripe order #4821\",\n      \"customId\": \"stripe-order-4821\",\n      \"reconcilingSourceCustomId\": \"stripe-orders\",\n      \"metadata\": {\n        \"key_0\": true,\n        \"key_1\": false,\n        \"key_2\": 9209.812058073485\n      },\n      \"additionalInfo\": {\n        \"key_0\": true,\n        \"key_1\": 9525\n      }\n    },\n    {\n      \"amount\": 199.9,\n      \"currency\": \"EUR\",\n      \"date\": \"2024-01-15T00:00:00Z\",\n      \"description\": \"Stripe order #4821\",\n      \"customId\": \"stripe-order-4821\",\n      \"reconcilingSourceCustomId\": \"stripe-orders\",\n      \"metadata\": {\n        \"key_0\": 8853.941766815613\n      },\n      \"additionalInfo\": {\n        \"key_0\": 4690.0361356092935,\n        \"key_1\": 1776.9798925653124\n      }\n    }\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": \"user not authorized\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "9d5f4e4a-77fc-4528-a27c-85cdbe88db52",
+              "name": "Company not found.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "reconcilingitems",
+                    ":companyId",
+                    "bulk"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"data\": [\n    {\n      \"amount\": 199.9,\n      \"currency\": \"EUR\",\n      \"date\": \"2024-01-15T00:00:00Z\",\n      \"description\": \"Stripe order #4821\",\n      \"customId\": \"stripe-order-4821\",\n      \"reconcilingSourceCustomId\": \"stripe-orders\",\n      \"metadata\": {\n        \"key_0\": true,\n        \"key_1\": false,\n        \"key_2\": 9209.812058073485\n      },\n      \"additionalInfo\": {\n        \"key_0\": true,\n        \"key_1\": 9525\n      }\n    },\n    {\n      \"amount\": 199.9,\n      \"currency\": \"EUR\",\n      \"date\": \"2024-01-15T00:00:00Z\",\n      \"description\": \"Stripe order #4821\",\n      \"customId\": \"stripe-order-4821\",\n      \"reconcilingSourceCustomId\": \"stripe-orders\",\n      \"metadata\": {\n        \"key_0\": 8853.941766815613\n      },\n      \"additionalInfo\": {\n        \"key_0\": 4690.0361356092935,\n        \"key_1\": 1776.9798925653124\n      }\n    }\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Not Found",
+              "code": 404,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": \"0021 companyId not found\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "d88e8d96-7e97-4119-8b66-26c7b230fbc7",
+              "name": "Validation Error",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "reconcilingitems",
+                    ":companyId",
+                    "bulk"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "companyId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"data\": [\n    {\n      \"amount\": 199.9,\n      \"currency\": \"EUR\",\n      \"date\": \"2024-01-15T00:00:00Z\",\n      \"description\": \"Stripe order #4821\",\n      \"customId\": \"stripe-order-4821\",\n      \"reconcilingSourceCustomId\": \"stripe-orders\",\n      \"metadata\": {\n        \"key_0\": true,\n        \"key_1\": false,\n        \"key_2\": 9209.812058073485\n      },\n      \"additionalInfo\": {\n        \"key_0\": true,\n        \"key_1\": 9525\n      }\n    },\n    {\n      \"amount\": 199.9,\n      \"currency\": \"EUR\",\n      \"date\": \"2024-01-15T00:00:00Z\",\n      \"description\": \"Stripe order #4821\",\n      \"customId\": \"stripe-order-4821\",\n      \"reconcilingSourceCustomId\": \"stripe-orders\",\n      \"metadata\": {\n        \"key_0\": 8853.941766815613\n      },\n      \"additionalInfo\": {\n        \"key_0\": 4690.0361356092935,\n        \"key_1\": 1776.9798925653124\n      }\n    }\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Unprocessable Entity (WebDAV) (RFC 4918)",
+              "code": 422,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": [\n    {\n      \"loc\": [\n        \"string\",\n        \"string\"\n      ],\n      \"msg\": \"string\",\n      \"type\": \"string\",\n      \"input\": {},\n      \"ctx\": {}\n    },\n    {\n      \"loc\": [\n        \"string\",\n        \"string\"\n      ],\n      \"msg\": \"string\",\n      \"type\": \"string\",\n      \"input\": {},\n      \"ctx\": {}\n    }\n  ]\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        }
+      ],
+      "event": []
+    }
+  ],
+  "event": [],
+  "variable": [
+    {
+      "type": "string",
+      "value": "/",
+      "key": "baseUrl"
+    }
+  ],
+  "info": {
+    "_postman_id": "ad7b70e7-c881-4149-b8e9-ebe59d4897af",
+    "name": "Embat AccountingAccounts ReconcilingItems API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": {
+      "content": "Embat API enables connections between any third party application and Embat. Is organized around REST principles, using HTTP responses code and returning data in JSON format. While testing the API, you have to request **sandbox credentials**.\n\nContact Support:\n Name: API Support\n Email: tech@embat.io",
+      "type": "text/plain"
+    }
+  }
+}

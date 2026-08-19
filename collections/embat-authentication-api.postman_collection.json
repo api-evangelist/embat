@@ -1,0 +1,301 @@
+{
+  "item": [
+    {
+      "id": "0eaeeaff-b6ef-4f0f-91e8-7e9fd6b349a3",
+      "name": "Authentication",
+      "description": {
+        "content": "`Authentication` provides the credentials Embat issues to access the rest of the public API. Every other endpoint requires a JWT `idToken` in the `Authorization: Bearer <idToken>` header; requests with no token, or with an invalid or expired one, are rejected with `401`.\n\nAn `email`/`password` pair identifies a service user with access to a group of companies in Embat. Keep these credentials secret: never commit them to a repository, embed them in client-side code, or expose them in publicly accessible logs.\n\n**Typical flow:**\n\n1. Exchange your `email`/`password` for a bearer token:\n\n```json\nPOST /authentication/token\n{\n  \"email\": \"erp-integration@acme-corp.com\",\n  \"password\": \"your-service-password\"\n}\n```\n\nwhich returns:\n\n```json\n{ \"idToken\": \"eyJhbGciOiJSUzI1NiIsImtpZCI6IjE5YzY4In0...\" }\n```\n\n2. Send that token as `Authorization: Bearer <idToken>` on every subsequent request.\n3. The token expires **60 minutes** after issuance. Call `/authentication/token` again with the same credentials to get a new one; there is no separate refresh endpoint.\n4. Accounts with multi-factor authentication enabled cannot authenticate through this endpoint.\n5. If `email` or `password` is missing or malformed, the validation error response never echoes back the submitted values, so credentials are never reflected in error output.\n\nAll requests must be made over **HTTPS**.\n",
+        "type": "text/plain"
+      },
+      "item": [
+        {
+          "id": "2b75dbc4-4bff-4e17-97e5-a0e7ecd36e13",
+          "name": "Generate access token",
+          "request": {
+            "name": "Generate access token",
+            "description": {
+              "content": "Authenticates with `email`/`password` and returns a JWT `idToken` to use as a Bearer token in the `Authorization` header for every other request. The token expires 60 minutes after issuance; call this endpoint again with the same credentials to obtain a new one — there is no separate refresh endpoint. If `email` or `password` is missing or malformed, the validation error response never echoes back the submitted values.",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "authentication",
+                "token"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "POST",
+            "auth": null,
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"<string>\",\n  \"password\": \"<string>\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "id": "42cbf6eb-a8ea-450a-a79b-0f64abbd98cc",
+              "name": "Successful Response",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "authentication",
+                    "token"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"erp-integration@acme-corp.com\",\n  \"password\": \"your-service-password\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"idToken\": \"eyJhbGciOiJSUzI1NiIsImtpZCI6IjE5YzY4In0...\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "e1dde82f-2191-4fb1-a306-2755bdf92cff",
+              "name": "The credentials could not be validated: unknown email, wrong password, disabled account, or too many failed attempts.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "authentication",
+                    "token"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"erp-integration@acme-corp.com\",\n  \"password\": \"your-service-password\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": \"startDate is a date after endDate\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "67103bd4-a188-475c-aa1b-d9817a83c829",
+              "name": "The account has multi-factor authentication enabled, which this endpoint does not support.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "authentication",
+                    "token"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"erp-integration@acme-corp.com\",\n  \"password\": \"your-service-password\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": \"user not authorized\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "4f29457d-a708-4027-a02d-b1885d101e5f",
+              "name": "Validation Error",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "authentication",
+                    "token"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"erp-integration@acme-corp.com\",\n  \"password\": \"your-service-password\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Unprocessable Entity (WebDAV) (RFC 4918)",
+              "code": 422,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": [\n    {\n      \"loc\": [\n        \"string\",\n        \"string\"\n      ],\n      \"msg\": \"string\",\n      \"type\": \"string\",\n      \"input\": {},\n      \"ctx\": {}\n    },\n    {\n      \"loc\": [\n        \"string\",\n        \"string\"\n      ],\n      \"msg\": \"string\",\n      \"type\": \"string\",\n      \"input\": {},\n      \"ctx\": {}\n    }\n  ]\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "04f5a511-72e2-4c75-b523-f85f8eeab937",
+              "name": "Unexpected error. Contact support if it persists.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "authentication",
+                    "token"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"erp-integration@acme-corp.com\",\n  \"password\": \"your-service-password\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Internal Server Error",
+              "code": 500,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": \"Internal server error\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        }
+      ],
+      "event": []
+    }
+  ],
+  "event": [],
+  "variable": [
+    {
+      "type": "string",
+      "value": "/",
+      "key": "baseUrl"
+    }
+  ],
+  "info": {
+    "_postman_id": "9988dca8-250a-4adc-98be-ef2865658e07",
+    "name": "Embat AccountingAccounts Authentication API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": {
+      "content": "Embat API enables connections between any third party application and Embat. Is organized around REST principles, using HTTP responses code and returning data in JSON format. While testing the API, you have to request **sandbox credentials**.\n\nContact Support:\n Name: API Support\n Email: tech@embat.io",
+      "type": "text/plain"
+    }
+  }
+}

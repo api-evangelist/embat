@@ -1,0 +1,309 @@
+{
+  "opencollection": "1.0.0",
+  "info": {
+    "name": "Embat AccountingAccounts AccountingEntries API",
+    "version": "2.120.3"
+  },
+  "items": [
+    {
+      "info": {
+        "name": "AccountingEntries",
+        "type": "folder"
+      },
+      "items": [
+        {
+          "info": {
+            "name": "List accounting entries",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "{{baseUrl}}/accountingentries/:companyId",
+            "params": [
+              {
+                "name": "companyId",
+                "value": "",
+                "type": "path"
+              },
+              {
+                "name": "reconciled",
+                "value": "",
+                "type": "query",
+                "description": "Filter by reconciliation status. `false` also matches entries that are not yet reconciled or have no status set."
+              },
+              {
+                "name": "accountingCode",
+                "value": "",
+                "type": "query",
+                "description": "Filter by ledger account code (`accountingCode`)."
+              },
+              {
+                "name": "accountingEntryCode",
+                "value": "",
+                "type": "query",
+                "description": "Filter by `accountingEntryCode` (does not match `accountingEntryCodeId`)."
+              },
+              {
+                "name": "startDate",
+                "value": "",
+                "type": "query",
+                "description": "Only return entries dated on or after this date (inclusive). The range cannot exceed 90 days: if `endDate` is also given, the span between the two cannot exceed 90 days; if `endDate` is omitted, `startDate` cannot be more than 90 days in the past."
+              },
+              {
+                "name": "endDate",
+                "value": "",
+                "type": "query",
+                "description": "Only return entries dated before this date (exclusive). Combined with `startDate`, the range cannot exceed 90 days. If used without `startDate`, results start 90 days before this date."
+              },
+              {
+                "name": "startUpdatedAt",
+                "value": "",
+                "type": "query",
+                "description": "Only return entries last modified on or after this timestamp (inclusive). The range cannot exceed 90 days: if `endUpdatedAt` is also given, the span between the two cannot exceed 90 days; if `endUpdatedAt` is omitted, `startUpdatedAt` cannot be more than 90 days in the past."
+              },
+              {
+                "name": "endUpdatedAt",
+                "value": "",
+                "type": "query",
+                "description": "Only return entries last modified before this timestamp (exclusive). Combined with `startUpdatedAt`, the range cannot exceed 90 days. If used without `startUpdatedAt`, results start 90 days before this timestamp."
+              },
+              {
+                "name": "limit",
+                "value": "",
+                "type": "query",
+                "description": "Maximum number of objects to return in the response. Default 500, maximum 2000."
+              },
+              {
+                "name": "nextPageToken",
+                "value": "",
+                "type": "query",
+                "description": "Token to fetch the next page of results, taken from the `nextPageToken` returned by the previous request with the same filters. Omit it to fetch the first page. An invalid or malformed token is rejected with `404`."
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Returns the accounting entries of a company, ordered by accounting date (most recent first). Results are paginated: use `limit` to control page size and pass the returned `nextPageToken` to fetch the next page. `startDate`/`endDate` filter by accounting date, and `startUpdatedAt`/`endUpdatedAt` filter by last modification time, useful for incremental synchronization. `startDate`/`startUpdatedAt` are inclusive, `endDate`/`endUpdatedAt` are exclusive, and each date range spans at most 90 days. If "
+        },
+        {
+          "info": {
+            "name": "Create accounting entry",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "{{baseUrl}}/accountingentries/:companyId",
+            "params": [
+              {
+                "name": "companyId",
+                "value": "",
+                "type": "path"
+              }
+            ],
+            "body": {
+              "type": "json",
+              "data": "{}"
+            },
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Creates a single accounting entry (one line of a general ledger journal). If `customId` is omitted, Embat auto-generates one; if the `customId` already exists, the entry is updated instead of duplicated (upsert). An entry always carries both an outflow side (`assetAmount`, stored with its sign inverted so negative means money out) and an inflow side (`liabilityAmount`, stored as sent); if you only send one, the other defaults to 0. If `description` is omitted, Embat generates one from the entry'"
+        },
+        {
+          "info": {
+            "name": "Update accounting entries in bulk",
+            "type": "http"
+          },
+          "http": {
+            "method": "PATCH",
+            "url": "{{baseUrl}}/accountingentries/:companyId",
+            "params": [
+              {
+                "name": "companyId",
+                "value": "",
+                "type": "path"
+              }
+            ],
+            "body": {
+              "type": "json",
+              "data": "{}"
+            },
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Updates one or more fields of several accounting entries, identified by `customId`, following the same rules as the single-entry update endpoint — including the `description` reset-when-omitted behavior. Entries whose `customId` does not match any existing entry are silently skipped; the call still returns `200` for the whole batch."
+        },
+        {
+          "info": {
+            "name": "Delete accounting entries in bulk",
+            "type": "http"
+          },
+          "http": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/accountingentries/:companyId",
+            "params": [
+              {
+                "name": "companyId",
+                "value": "",
+                "type": "path"
+              }
+            ],
+            "body": {
+              "type": "json",
+              "data": "{}"
+            },
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Deletes several accounting entries in a single call, identified by `customId`. The call returns `200` immediately — even for `customId` values that do not match any existing entry — and entries may still briefly appear in `GET` results right after deletion."
+        },
+        {
+          "info": {
+            "name": "Retrieve accounting entry",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "{{baseUrl}}/accountingentries/:companyId/:customId",
+            "params": [
+              {
+                "name": "customId",
+                "value": "",
+                "type": "path"
+              },
+              {
+                "name": "companyId",
+                "value": "",
+                "type": "path"
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Returns a single accounting entry by `customId`."
+        },
+        {
+          "info": {
+            "name": "Update accounting entry",
+            "type": "http"
+          },
+          "http": {
+            "method": "PATCH",
+            "url": "{{baseUrl}}/accountingentries/:companyId/:customId",
+            "params": [
+              {
+                "name": "customId",
+                "value": "",
+                "type": "path"
+              },
+              {
+                "name": "companyId",
+                "value": "",
+                "type": "path"
+              }
+            ],
+            "body": {
+              "type": "json",
+              "data": "{}"
+            },
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Updates one or more fields of an accounting entry identified by `customId`. Only the fields you send are changed — except `description`: if it is omitted, Embat resets it to an auto-generated value derived from the entry's identifier, overwriting any previously set custom description; resend the current value to keep it unchanged. Updating a `customId` that does not match any existing entry is a no-op: the call still returns `200` without creating or changing anything, and no `404` is raised."
+        },
+        {
+          "info": {
+            "name": "Delete accounting entry",
+            "type": "http"
+          },
+          "http": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/accountingentries/:companyId/:customId",
+            "params": [
+              {
+                "name": "customId",
+                "value": "",
+                "type": "path"
+              },
+              {
+                "name": "companyId",
+                "value": "",
+                "type": "path"
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Deletes an accounting entry by `customId`. The call returns `200` immediately — even if `customId` does not match any existing entry — and the entry may still briefly appear in `GET` results right after deletion."
+        },
+        {
+          "info": {
+            "name": "Create accounting entries in bulk",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "{{baseUrl}}/accountingentries/:companyId/bulk",
+            "params": [
+              {
+                "name": "companyId",
+                "value": "",
+                "type": "path"
+              }
+            ],
+            "body": {
+              "type": "json",
+              "data": "{}"
+            },
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Creates several accounting entries in a single call, following the same rules as the single entry creation endpoint. Entries sharing the same `customId` within the request are deduplicated and only the first occurrence is processed."
+        },
+        {
+          "info": {
+            "name": "Delete accounting entries in bulk by entry code",
+            "type": "http"
+          },
+          "http": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/accountingentries/accountingentrycode/:companyId",
+            "params": [
+              {
+                "name": "companyId",
+                "value": "",
+                "type": "path"
+              }
+            ],
+            "body": {
+              "type": "json",
+              "data": "{}"
+            },
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Deletes every accounting entry whose `accountingEntryCode` or `accountingEntryCodeId` matches one of the given codes. The call returns `200` immediately; matching entries may still briefly appear in `GET` results right after deletion."
+        }
+      ]
+    }
+  ],
+  "bundled": true
+}
