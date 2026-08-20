@@ -542,6 +542,8 @@ apis:
   humanURL: https://api.embat.io/docs
   baseURL: https://api.embat.io
   tags:
+  - File
+  tags_raw:
   - Files
   properties:
   - type: OpenAPI
@@ -585,6 +587,8 @@ apis:
   humanURL: https://api.embat.io/docs
   baseURL: https://api.embat.io
   tags:
+  - Forecast
+  tags_raw:
   - Forecasts
   properties:
   - type: OpenAPI
@@ -764,7 +768,8 @@ apis:
     an operation that no longer applies.
   humanURL: https://api.embat.io/docs
   baseURL: https://api.embat.io
-  tags:
+  tags: []
+  tags_raw:
   - Operations
   properties:
   - type: OpenAPI
@@ -796,6 +801,8 @@ apis:
   humanURL: https://api.embat.io/docs
   baseURL: https://api.embat.io
   tags:
+  - Payment Orders
+  tags_raw:
   - PaymentOrders
   properties:
   - type: OpenAPI
@@ -886,6 +893,8 @@ apis:
   humanURL: https://api.embat.io/docs
   baseURL: https://api.embat.io
   tags:
+  - Product
+  tags_raw:
   - Products
   properties:
   - type: OpenAPI
@@ -1090,6 +1099,8 @@ apis:
   humanURL: https://api.embat.io/docs
   baseURL: https://api.embat.io
   tags:
+  - Transaction
+  tags_raw:
   - Transactions
   properties:
   - type: OpenAPI
