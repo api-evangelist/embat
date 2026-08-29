@@ -1,0 +1,53 @@
+slug: embat
+provider: Embat
+generated_by: planning/capability-mapping/scripts/classify_capabilities.py
+model: claude-opus-5
+frame:
+- Banking & Capital Markets
+min_confidence: 0.7
+capability_model:
+  source: https://github.com/vincentmakes/turbo-ea-capabilities
+  license: CC-BY-4.0
+  attribution: Turbo EA Capabilities by Vincent Verdet — Turbo EA, https://github.com/vincentmakes/turbo-ea-capabilities,
+    CC BY 4.0
+  notice: NOTICE
+edge_count: 4
+edges:
+- tag: AccountingEntries
+  spec_file: embat-accountingentries-api-openapi.yml
+  capability_id: BC-200.10
+  capability_id_l1: BC-200
+  capability_name: General Ledger Management
+  confidence: 0.78
+  evidence: POST /accountingentries/{companyId} create_accounting_entry Create accounting entry
+  reason: Creation, update and bulk deletion of accounting entries (journal postings) with accounting
+    type and currency — general ledger journal management.
+- tag: Forecasts
+  spec_file: embat-forecasts-api-openapi.yml
+  capability_id: BC-210.20
+  capability_id_l1: BC-210
+  capability_name: Liquidity Management
+  confidence: 0.78
+  evidence: '''List forecasts'', ''Update forecasts in bulk'', ScenarioSchema, PeriodicityEnum; vendor:
+    ''cash-flow forecasting, scenarios'''
+  reason: Forecast objects with scenarios and periodicity in a treasury platform realise cash/liquidity
+    forecasting; some chance the intended fit is generic FP&A forecasting.
+- tag: DebtScheduleConfigs
+  spec_file: embat-debtscheduleconfigs-api-openapi.yml
+  capability_id: BC-210.30
+  capability_id_l1: BC-210
+  capability_name: Funding & Debt Management
+  confidence: 0.75
+  evidence: '''List debt schedule configs'', DebtScheduleConfigSchema, InterestTypeEnum, AmortisingFrequencyEnum,
+    DebtSchedulePaymentSchema'
+  reason: Debt schedules with interest type, amortisation frequency and scheduled payments are corporate
+    debt/facility management within treasury.
+- tag: AccountingAccounts
+  spec_file: embat-accountingaccounts-api-openapi.yml
+  capability_id: BC-200.10
+  capability_id_l1: BC-200
+  capability_name: General Ledger Management
+  confidence: 0.7
+  evidence: POST /accountingaccounts/{companyId} Create accounting account; AccountingTypeEnum
+  reason: CRUD over a company's accounting account codes — effectively chart-of-accounts maintenance feeding
+    the general ledger from a treasury/ERP integration platform.

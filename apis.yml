@@ -1127,6 +1127,9 @@ maintainers:
 - FN: APIs.json
   email: info@apis.io
 common:
+- type: CapabilityMap
+  url: capabilities/embat-capability-edges.yml
+  name: Embat Business Capability Map
 - type: Website
   url: https://www.embat.io/
 - type: Login
