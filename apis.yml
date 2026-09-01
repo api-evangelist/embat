@@ -813,7 +813,7 @@ apis:
   humanURL: https://api.embat.io/docs
   baseURL: https://api.embat.io
   tags:
-  - PaymentOrders
+  - Payment Orders
   tags_raw:
   - PaymentOrders
   properties:
