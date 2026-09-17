@@ -100,69 +100,6 @@ apis:
     url: https://api.embat.io/docs
   - type: APIReference
     url: https://api.embat.io/docs
-- aid: embat:embat-accountingentries-api
-  name: Embat AccountingEntries API
-  description: >-
-    `AccountingEntry` represents a single line of a company's general accounting journal — an outflow
-    (`assetAmount`) or inflow (`liabilityAmount`) movement posted to a ledger account (`accountingCode`).
-    `customId` is the unique identifier of an entry: set your own value to use as your ERP accounting
-    entry ID, or let Embat auto-generate one. Entries that belong to the same journal document (e.g. all
-    the lines of one invoice posting) can share the same `accountingEntryCode`.
-
-
-    Accounting entries are the accounting side of Embat's reconciliation process with `Transactions` (bank
-    movements): Embat matches entries against transactions and exposes the outcome here through `reconciled`
-    and `reconciliationsIds`. An entry can also reference a `Contact` (client/supplier, via `contactCustomId`,
-    when `accountingCode` is a contacts account), a `Payment` it relates to (`paymentId`), or a source
-    document (`documentId`).
-
-
-    **Typical flow:** accounting entries synchronize your general ledger in both directions between your
-    ERP and Embat.
-
-
-    1. **Notify Embat of entries posted in your ERP.** When a journal line is recorded in your ERP, create
-    it in Embat with `POST /accountingentries/{companyId}` (or the bulk variant):
-
-
-    ```json
-
-    POST /accountingentries/{companyId}
-
-    {
-      "customId": "erp-entry-2024-001",
-      "accountingEntryCode": "invoice-2024-001",
-      "accountingCode": "4300001",
-      "accountingName": "Trade debtors",
-      "date": "2024-01-15T00:00:00Z",
-      "assetAmount": 1250.50,
-      "liabilityAmount": 0,
-      "currency": "EUR"
-    }
-
-    ```
-
-
-    2. **Read entries and their reconciliation status.** Use `GET /accountingentries/{companyId}` with
-    the `reconciled` filter and `startUpdatedAt`/`endUpdatedAt` for incremental reads since your last
-    poll, or `GET /accountingentries/{companyId}/{customId}` to retrieve a single entry.
-
-    3. **Correct or remove entries as your ledger changes.** Use `PATCH /accountingentries/{companyId}/{customId}`
-    (or the bulk variant) to update fields — resend the current `description` if you want to keep it,
-    since omitting it resets it to an auto-generated value. You can also resend the full entry with `POST`:
-    creation is an upsert, so an existing `customId` is updated instead of duplicated. Use `DELETE` to
-    remove entries individually or in bulk, by `customId` or by `accountingEntryCode`/`accountingEntryCodeId`.
-  humanURL: https://api.embat.io/docs
-  baseURL: https://api.embat.io
-  tags:
-  - AccountingEntries
-  properties:
-  - type: OpenAPI
-    url: openapi/embat-accountingentries-api-openapi.yml
-  - type: Documentation
-    url: https://api.embat.io/docs
-  - type: APIReference
-    url: https://api.embat.io/docs
 - aid: embat:embat-attributes-api
   name: Embat Attributes API
   description: >-
@@ -792,39 +729,6 @@ apis:
     url: https://api.embat.io/docs
   - type: APIReference
     url: https://api.embat.io/docs
-- aid: embat:embat-paymentorders-api
-  name: Embat PaymentOrders API
-  description: >-
-    <div style="background-color:#fff3cd; color:#856404; padding: 10px; border-left: 6px solid #ffeeba;">
-
-    <strong>⚠️ Warning:</strong> This API section is in BETA. It might undergo significant changes and
-    may not be stable.
-
-    </div>
-
-
-    A <code>PaymentOrder</code> represents a payment executed through Embat, such as a wire transfer or
-    SEPA payment sent to a bank on behalf of a company. It can reference a `documentId` identifying the
-    invoice or operation it settles, a <code>Product</code> used to fund it, and the <code>Bank</code>
-    it was executed through.
-
-
-    **Typical flow:** poll `GET /paymentorders/{companyId}` to track the payment orders created in Embat
-    and their execution `status` (`IN_PROGRESS`, `COMPLETED`, `REJECTED`, `ON_HOLD`). Once a payment order
-    is executed, download its signed receipt with `GET /paymentorders/{id}/receipt`.
-  humanURL: https://api.embat.io/docs
-  baseURL: https://api.embat.io
-  tags:
-  - Payment Orders
-  tags_raw:
-  - PaymentOrders
-  properties:
-  - type: OpenAPI
-    url: openapi/embat-paymentorders-api-openapi.yml
-  - type: Documentation
-    url: https://api.embat.io/docs
-  - type: APIReference
-    url: https://api.embat.io/docs
 - aid: embat:embat-payments-api
   name: Embat Payments API
   description: >-
@@ -1119,6 +1023,36 @@ apis:
   properties:
   - type: OpenAPI
     url: openapi/embat-transactions-api-openapi.yml
+  - type: Documentation
+    url: https://api.embat.io/docs
+  - type: APIReference
+    url: https://api.embat.io/docs
+- aid: embat:embat-accounting-entries-api
+  name: Embat Accounting Entries API
+  description: >-
+    `AccountingEntry` represents a single line of a company's general accounting journal — an outflow
+    (`assetAmount`) or inflow (`liabilityAmount`) movement posted to a ledger account (`accountingCode`).
+  humanURL: https://api.embat.io/docs
+  baseURL: https://api.embat.io
+  tags:
+  - Accounting Entries
+  properties:
+  - type: OpenAPI
+    url: openapi/embat-accounting-entries-api-openapi.yml
+  - type: Documentation
+    url: https://api.embat.io/docs
+  - type: APIReference
+    url: https://api.embat.io/docs
+- aid: embat:embat-payment-orders-api
+  name: Embat Payment Orders API
+  description: '⚠️ Warning: This API section is in BETA.'
+  humanURL: https://api.embat.io/docs
+  baseURL: https://api.embat.io
+  tags:
+  - Payment Orders
+  properties:
+  - type: OpenAPI
+    url: openapi/embat-payment-orders-api-openapi.yml
   - type: Documentation
     url: https://api.embat.io/docs
   - type: APIReference
