@@ -1035,6 +1035,8 @@ apis:
   humanURL: https://api.embat.io/docs
   baseURL: https://api.embat.io
   tags:
+  - AccountingEntries
+  tags_raw:
   - Accounting Entries
   properties:
   - type: OpenAPI
