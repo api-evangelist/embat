@@ -14,7 +14,8 @@ capability_model:
 edge_count: 4
 edges:
 - tag: AccountingEntries
-  spec_file: embat-accountingentries-api-openapi.yml
+  spec_file: embat-accounting-entries-api-openapi.yml
+  reanchored_from: embat-accountingentries-api-openapi.yml
   capability_id: BC-200.10
   capability_id_l1: BC-200
   capability_name: General Ledger Management
