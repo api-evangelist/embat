@@ -1,6 +1,6 @@
-openapi: 3.1.0
+openapi: 3.2.0
 info:
-  title: Embat AccountingAccounts ReconcilingSources API
+  title: Embat Reconciling Sources API
   description: Embat API enables connections between any third party application and Embat. Is organized around REST principles, using HTTP responses code and returning data in JSON format. While testing the API, you have to request **sandbox credentials**.
   contact:
     name: API Support
@@ -11,7 +11,7 @@ info:
     url: https://storage.googleapis.com/embat-production.appspot.com/assets/embat_dark.svg
 tags:
 - name: ReconcilingSources
-  description: "<div style=\"background-color:#fff3cd; color:#856404; padding: 10px; border-left: 6px solid #ffeeba;\">\n<strong>⚠️ Warning:</strong> This API section is in BETA. It might undergo significant changes and may not be stable.\n</div>\n\n<code>ReconcilingSource</code> represents the origin of financial records that need to be matched against product transactions — for example a point-of-sale system, an internal financial system, or a CRM. <code>customId</code> is the unique identifier of a reconciling source: set your own value to use as your internal source ID.\n\nA reconciling source is the parent of one or more <code>ReconcilingItems</code>: each item references its source through <code>reconcilingSourceCustomId</code>. The source's <code>matchingMetadataKey</code> names the field within its items' <code>metadata</code> that Embat uses to associate each item with a product transaction. A reconciling source does not carry financial data itself — amounts, currencies and dates live on its <code>ReconcilingItems</code>.\n\n**Typical flow:**\n\n1. **Register a reconciling source.** Create one for each origin system you want to reconcile from, defining the metadata key used to match its items to transactions:\n\n```json\nPOST /reconcilingsources/{companyId}\n{\n  \"customId\": \"stripe-orders\",\n  \"name\": \"Stripe orders feed\",\n  \"matchingMetadataKey\": \"orderId\"\n}\n```\n\nCalling this again with the same `customId` updates the existing source instead of creating a duplicate.\n\n2. **Create the reconciling items** for that source (see <code>ReconcilingItems</code>), each carrying the metadata value that will later be matched against product transactions.\n3. **Retrieve or list sources** with `GET /reconcilingsources/{companyId}/{customId}` or `GET /reconcilingsources/{companyId}`.\n4. **Update or delete a source** as your origin systems change: use `PATCH`/`DELETE /reconcilingsources/{companyId}/{customId}`, or resend the source with `POST` — creation is an upsert, so an existing `customId` is updated instead of duplicated.\n"
+  description: '⚠️ Warning: This API section is in BETA.'
 paths:
   /reconcilingsources/{companyId}:
     get:
@@ -267,6 +267,66 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
 components:
   schemas:
+    ValidationError:
+      properties:
+        loc:
+          items:
+            anyOf:
+            - type: string
+            - type: integer
+          type: array
+          title: Location
+        msg:
+          type: string
+          title: Message
+        type:
+          type: string
+          title: Error Type
+        input:
+          title: Input
+        ctx:
+          type: object
+          title: Context
+      type: object
+      required:
+      - loc
+      - msg
+      - type
+      title: ValidationError
+    ErrorResponse:
+      properties:
+        detail:
+          type: string
+          title: Detail
+          description: Human-readable explanation of the error.
+          examples:
+          - user not authorized
+      type: object
+      required:
+      - detail
+      title: ErrorResponse
+      description: Error payload returned by the API (FastAPI `detail` convention).
+    ListReconcilingSourcesResponseSchema:
+      properties:
+        data:
+          items:
+            $ref: '#/components/schemas/GetReconcilingSourceResponseSchema'
+          type: array
+          title: Data
+          description: Reconciling sources configured for the company.
+      type: object
+      required:
+      - data
+      title: ListReconcilingSourcesResponseSchema
+    HTTPValidationError:
+      properties:
+        detail:
+          items:
+            $ref: '#/components/schemas/ValidationError'
+          type: array
+          title: Detail
+      type: object
+      title: HTTPValidationError
     PostReconcilingSourceSchema:
       properties:
         name:
@@ -301,64 +361,33 @@ components:
       - name
       - customId
       title: PostReconcilingSourceSchema
-    ModifyReconcilingSourceResponseSchema:
+    PatchReconcilingSourceSchema:
       properties:
-        id:
-          type: string
-          title: Id
-          description: Embat resource ID
-      type: object
-      required:
-      - id
-      title: ModifyReconcilingSourceResponseSchema
-    ErrorResponse:
-      properties:
-        detail:
-          type: string
-          title: Detail
-          description: Human-readable explanation of the error.
+        name:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Name
+          description: Name of the reconciling source. Omitted or `null` values leave the current name unchanged.
           examples:
-          - user not authorized
+          - Stripe orders feed
+        additionalInfo:
+          anyOf:
+          - additionalProperties: true
+            type: object
+          - type: 'null'
+          title: Additionalinfo
+          description: Free-form key/value metadata to attach to the reconciling source. Replaces the previously stored value entirely (not merged). Omitted or `null` values leave the current metadata unchanged.
+        matchingMetadataKey:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Matchingmetadatakey
+          description: Key within a reconciling item's `metadata` used to associate it with a product transaction. Omitted or `null` values leave the current key unchanged.
+          examples:
+          - orderId
       type: object
-      required:
-      - detail
-      title: ErrorResponse
-      description: Error payload returned by the API (FastAPI `detail` convention).
-    HTTPValidationError:
-      properties:
-        detail:
-          items:
-            $ref: '#/components/schemas/ValidationError'
-          type: array
-          title: Detail
-      type: object
-      title: HTTPValidationError
-    ValidationError:
-      properties:
-        loc:
-          items:
-            anyOf:
-            - type: string
-            - type: integer
-          type: array
-          title: Location
-        msg:
-          type: string
-          title: Message
-        type:
-          type: string
-          title: Error Type
-        input:
-          title: Input
-        ctx:
-          type: object
-          title: Context
-      type: object
-      required:
-      - loc
-      - msg
-      - type
-      title: ValidationError
+      title: PatchReconcilingSourceSchema
     GetReconcilingSourceResponseSchema:
       properties:
         name:
@@ -415,45 +444,16 @@ components:
       - updatedAt
       - createdAt
       title: GetReconcilingSourceResponseSchema
-    ListReconcilingSourcesResponseSchema:
+    ModifyReconcilingSourceResponseSchema:
       properties:
-        data:
-          items:
-            $ref: '#/components/schemas/GetReconcilingSourceResponseSchema'
-          type: array
-          title: Data
-          description: Reconciling sources configured for the company.
+        id:
+          type: string
+          title: Id
+          description: Embat resource ID
       type: object
       required:
-      - data
-      title: ListReconcilingSourcesResponseSchema
-    PatchReconcilingSourceSchema:
-      properties:
-        name:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Name
-          description: Name of the reconciling source. Omitted or `null` values leave the current name unchanged.
-          examples:
-          - Stripe orders feed
-        additionalInfo:
-          anyOf:
-          - additionalProperties: true
-            type: object
-          - type: 'null'
-          title: Additionalinfo
-          description: Free-form key/value metadata to attach to the reconciling source. Replaces the previously stored value entirely (not merged). Omitted or `null` values leave the current metadata unchanged.
-        matchingMetadataKey:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Matchingmetadatakey
-          description: Key within a reconciling item's `metadata` used to associate it with a product transaction. Omitted or `null` values leave the current key unchanged.
-          examples:
-          - orderId
-      type: object
-      title: PatchReconcilingSourceSchema
+      - id
+      title: ModifyReconcilingSourceResponseSchema
   securitySchemes:
     HTTPBearer:
       type: http

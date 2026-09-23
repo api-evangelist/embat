@@ -1,6 +1,6 @@
-openapi: 3.1.0
+openapi: 3.2.0
 info:
-  title: Embat AccountingAccounts Balances API
+  title: Embat Balances API
   description: Embat API enables connections between any third party application and Embat. Is organized around REST principles, using HTTP responses code and returning data in JSON format. While testing the API, you have to request **sandbox credentials**.
   contact:
     name: API Support
@@ -11,15 +11,7 @@ info:
     url: https://storage.googleapis.com/embat-production.appspot.com/assets/embat_dark.svg
 tags:
 - name: Balances
-  description: '`Balance` represents the end-of-day balance of a bank product (account) for a given calendar day. Embat records one balance per product per day, expressed both in the product''s own currency (`balance`) and, when available, in the company accounting currency (`accountingBalance`, converted using the exchange rate as of that day).
-
-
-    Each balance is linked to a `Product` (a bank account, credit line, card...) held at one of the company''s connected `Banks`. Balances whose linked product no longer exists in Embat are not returned.
-
-
-    **Typical flow:** use `GET /balances/{companyId}` to read the daily balance history of a company''s bank products, filtering by `productId` and by date range, or `GET /balances/{companyId}/{id}` to retrieve a single balance you already know the `id` of — for example after obtaining it from a previous list call.
-
-    '
+  description: '`Balance` represents the end-of-day balance of a bank product (account) for a given calendar day.'
 paths:
   /balances/{companyId}:
     get:
@@ -171,6 +163,50 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
 components:
   schemas:
+    ValidationError:
+      properties:
+        loc:
+          items:
+            anyOf:
+            - type: string
+            - type: integer
+          type: array
+          title: Location
+        msg:
+          type: string
+          title: Message
+        type:
+          type: string
+          title: Error Type
+        input:
+          title: Input
+        ctx:
+          type: object
+          title: Context
+      type: object
+      required:
+      - loc
+      - msg
+      - type
+      title: ValidationError
+    ListBalancesResponseSchema:
+      properties:
+        data:
+          items:
+            $ref: '#/components/schemas/GetBalancesResponseSchema'
+          type: array
+          title: Data
+          description: Balances matching the query.
+        nextPageToken:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Nextpagetoken
+          description: Token to fetch the next page of results. `null` when there are no more pages.
+      type: object
+      required:
+      - data
+      title: ListBalancesResponseSchema
     ErrorResponse:
       properties:
         detail:
@@ -184,6 +220,131 @@ components:
       - detail
       title: ErrorResponse
       description: Error payload returned by the API (FastAPI `detail` convention).
+    GetBalancesResponseSchema:
+      properties:
+        id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Id
+          description: Embat balance ID. Use it with `GET /balances/{companyId}/{id}` to retrieve this balance directly.
+          examples:
+          - 65a1f9c2e4b0a1b2c3d4e5f6
+        balance:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Balance
+          description: Balance of the bank product at the end of `date`, in the product's own currency.
+          examples:
+          - 125430.75
+        date:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Date
+          description: Calendar day this end-of-day balance corresponds to.
+        companyId:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Companyid
+          description: Embat company ID. You can get them from "companies" endpoints.
+        product:
+          anyOf:
+          - $ref: '#/components/schemas/ProductBaseSchema'
+          - type: 'null'
+          description: Bank product (account) this balance belongs to.
+        accountingCurrency:
+          anyOf:
+          - $ref: '#/components/schemas/CurrencyEnum'
+          - type: 'null'
+          description: Currency `accountingBalance` is expressed in. When not provided by the balance source, Embat computes it and defaults to `EUR`.
+          examples:
+          - EUR
+        accountingBalance:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Accountingbalance
+          description: Balance converted to the company accounting currency. When not provided by the balance source, Embat computes it using the exchange rate as of `date`; it can be `null` if no exchange rate is available for that date and currency.
+          examples:
+          - 128500.2
+        exchangeRate:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Exchangerate
+          description: Exchange rate applied between the product currency and `accountingCurrency`. When not provided by the balance source, Embat computes it as of `date`; it can be `null` if no exchange rate is available for that date and currency.
+          examples:
+          - 1.0245
+        createdAt:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Createdat
+          description: Created date of the entity in the database.
+        updatedAt:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Updatedat
+          description: Last updated date of the entity in the database.
+      type: object
+      title: GetBalancesResponseSchema
+    HTTPValidationError:
+      properties:
+        detail:
+          items:
+            $ref: '#/components/schemas/ValidationError'
+          type: array
+          title: Detail
+      type: object
+      title: HTTPValidationError
+    ProductBaseSchema:
+      properties:
+        id:
+          type: string
+          title: Id
+          description: Embat product ID.
+          examples:
+          - prod_8f3a1c
+        currency:
+          $ref: '#/components/schemas/CurrencyEnum'
+          description: ISO currency code of the product.
+          examples:
+          - EUR
+        product:
+          type: string
+          title: Product
+          description: Product name as reported by the bank.
+          examples:
+          - Cuenta Corriente
+        bankFullName:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Bankfullname
+          description: Full legal name of the bank this product belongs to, if known.
+          examples:
+          - Banco Bilbao Vizcaya Argentaria
+        alias:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Alias
+          description: Custom alias given to the product in Embat, if any.
+          examples:
+          - Main checking account
+      type: object
+      required:
+      - id
+      - currency
+      - product
+      title: ProductBaseSchema
     CurrencyEnum:
       type: string
       enum:
@@ -377,175 +538,6 @@ components:
       - ZWG
       - ZWL
       title: CurrencyEnum
-    GetBalancesResponseSchema:
-      properties:
-        id:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Id
-          description: Embat balance ID. Use it with `GET /balances/{companyId}/{id}` to retrieve this balance directly.
-          examples:
-          - 65a1f9c2e4b0a1b2c3d4e5f6
-        balance:
-          anyOf:
-          - type: number
-          - type: 'null'
-          title: Balance
-          description: Balance of the bank product at the end of `date`, in the product's own currency.
-          examples:
-          - 125430.75
-        date:
-          anyOf:
-          - type: string
-            format: date-time
-          - type: 'null'
-          title: Date
-          description: Calendar day this end-of-day balance corresponds to.
-        companyId:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Companyid
-          description: Embat company ID. You can get them from "companies" endpoints.
-        product:
-          anyOf:
-          - $ref: '#/components/schemas/ProductBaseSchema'
-          - type: 'null'
-          description: Bank product (account) this balance belongs to.
-        accountingCurrency:
-          anyOf:
-          - $ref: '#/components/schemas/CurrencyEnum'
-          - type: 'null'
-          description: Currency `accountingBalance` is expressed in. When not provided by the balance source, Embat computes it and defaults to `EUR`.
-          examples:
-          - EUR
-        accountingBalance:
-          anyOf:
-          - type: number
-          - type: 'null'
-          title: Accountingbalance
-          description: Balance converted to the company accounting currency. When not provided by the balance source, Embat computes it using the exchange rate as of `date`; it can be `null` if no exchange rate is available for that date and currency.
-          examples:
-          - 128500.2
-        exchangeRate:
-          anyOf:
-          - type: number
-          - type: 'null'
-          title: Exchangerate
-          description: Exchange rate applied between the product currency and `accountingCurrency`. When not provided by the balance source, Embat computes it as of `date`; it can be `null` if no exchange rate is available for that date and currency.
-          examples:
-          - 1.0245
-        createdAt:
-          anyOf:
-          - type: string
-            format: date-time
-          - type: 'null'
-          title: Createdat
-          description: Created date of the entity in the database.
-        updatedAt:
-          anyOf:
-          - type: string
-            format: date-time
-          - type: 'null'
-          title: Updatedat
-          description: Last updated date of the entity in the database.
-      type: object
-      title: GetBalancesResponseSchema
-    HTTPValidationError:
-      properties:
-        detail:
-          items:
-            $ref: '#/components/schemas/ValidationError'
-          type: array
-          title: Detail
-      type: object
-      title: HTTPValidationError
-    ValidationError:
-      properties:
-        loc:
-          items:
-            anyOf:
-            - type: string
-            - type: integer
-          type: array
-          title: Location
-        msg:
-          type: string
-          title: Message
-        type:
-          type: string
-          title: Error Type
-        input:
-          title: Input
-        ctx:
-          type: object
-          title: Context
-      type: object
-      required:
-      - loc
-      - msg
-      - type
-      title: ValidationError
-    ProductBaseSchema:
-      properties:
-        id:
-          type: string
-          title: Id
-          description: Embat product ID.
-          examples:
-          - prod_8f3a1c
-        currency:
-          $ref: '#/components/schemas/CurrencyEnum'
-          description: ISO currency code of the product.
-          examples:
-          - EUR
-        product:
-          type: string
-          title: Product
-          description: Product name as reported by the bank.
-          examples:
-          - Cuenta Corriente
-        bankFullName:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Bankfullname
-          description: Full legal name of the bank this product belongs to, if known.
-          examples:
-          - Banco Bilbao Vizcaya Argentaria
-        alias:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Alias
-          description: Custom alias given to the product in Embat, if any.
-          examples:
-          - Main checking account
-      type: object
-      required:
-      - id
-      - currency
-      - product
-      title: ProductBaseSchema
-    ListBalancesResponseSchema:
-      properties:
-        data:
-          items:
-            $ref: '#/components/schemas/GetBalancesResponseSchema'
-          type: array
-          title: Data
-          description: Balances matching the query.
-        nextPageToken:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Nextpagetoken
-          description: Token to fetch the next page of results. `null` when there are no more pages.
-      type: object
-      required:
-      - data
-      title: ListBalancesResponseSchema
   securitySchemes:
     HTTPBearer:
       type: http

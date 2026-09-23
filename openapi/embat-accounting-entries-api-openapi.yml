@@ -1,6 +1,6 @@
-openapi: 3.1.0
+openapi: 3.2.0
 info:
-  title: Embat AccountingAccounts AccountingEntries API
+  title: Embat Accounting Entries API
   description: Embat API enables connections between any third party application and Embat. Is organized around REST principles, using HTTP responses code and returning data in JSON format. While testing the API, you have to request **sandbox credentials**.
   contact:
     name: API Support
@@ -10,13 +10,13 @@ info:
   x-logo:
     url: https://storage.googleapis.com/embat-production.appspot.com/assets/embat_dark.svg
 tags:
-- name: AccountingEntries
-  description: "`AccountingEntry` represents a single line of a company's general accounting journal — an outflow (`assetAmount`) or inflow (`liabilityAmount`) movement posted to a ledger account (`accountingCode`). `customId` is the unique identifier of an entry: set your own value to use as your ERP accounting entry ID, or let Embat auto-generate one. Entries that belong to the same journal document (e.g. all the lines of one invoice posting) can share the same `accountingEntryCode`.\n\nAccounting entries are the accounting side of Embat's reconciliation process with `Transactions` (bank movements): Embat matches entries against transactions and exposes the outcome here through `reconciled` and `reconciliationsIds`. An entry can also reference a `Contact` (client/supplier, via `contactCustomId`, when `accountingCode` is a contacts account), a `Payment` it relates to (`paymentId`), or a source document (`documentId`).\n\n**Typical flow:** accounting entries synchronize your general ledger in both directions between your ERP and Embat.\n\n1. **Notify Embat of entries posted in your ERP.** When a journal line is recorded in your ERP, create it in Embat with `POST /accountingentries/{companyId}` (or the bulk variant):\n\n```json\nPOST /accountingentries/{companyId}\n{\n  \"customId\": \"erp-entry-2024-001\",\n  \"accountingEntryCode\": \"invoice-2024-001\",\n  \"accountingCode\": \"4300001\",\n  \"accountingName\": \"Trade debtors\",\n  \"date\": \"2024-01-15T00:00:00Z\",\n  \"assetAmount\": 1250.50,\n  \"liabilityAmount\": 0,\n  \"currency\": \"EUR\"\n}\n```\n\n2. **Read entries and their reconciliation status.** Use `GET /accountingentries/{companyId}` with the `reconciled` filter and `startUpdatedAt`/`endUpdatedAt` for incremental reads since your last poll, or `GET /accountingentries/{companyId}/{customId}` to retrieve a single entry.\n3. **Correct or remove entries as your ledger changes.** Use `PATCH /accountingentries/{companyId}/{customId}` (or the bulk variant) to update fields — resend the current `description` if you want to keep it, since omitting it resets it to an auto-generated value. You can also resend the full entry with `POST`: creation is an upsert, so an existing `customId` is updated instead of duplicated. Use `DELETE` to remove entries individually or in bulk, by `customId` or by `accountingEntryCode`/`accountingEntryCodeId`.\n"
+- name: Accounting Entries
+  description: '`AccountingEntry` represents a single line of a company''s general accounting journal — an outflow (`assetAmount`) or inflow (`liabilityAmount`) movement posted to a ledger account (`accountingCode`).'
 paths:
   /accountingentries/{companyId}:
     get:
       tags:
-      - AccountingEntries
+      - Accounting Entries
       summary: List accounting entries
       description: 'Returns the accounting entries of a company, ordered by accounting date (most recent first). Results are paginated: use `limit` to control page size and pass the returned `nextPageToken` to fetch the next page. `startDate`/`endDate` filter by accounting date, and `startUpdatedAt`/`endUpdatedAt` filter by last modification time, useful for incremental synchronization. `startDate`/`startUpdatedAt` are inclusive, `endDate`/`endUpdatedAt` are exclusive, and each date range spans at most 90 days. If neither `startDate` nor `endDate` is given, only entries dated up to today are returned.'
       operationId: list_accounting_entries_accountingentries__companyId__get
@@ -146,7 +146,7 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
     post:
       tags:
-      - AccountingEntries
+      - Accounting Entries
       summary: Create accounting entry
       description: Creates a single accounting entry (one line of a general ledger journal). If `customId` is omitted, Embat auto-generates one; if the `customId` already exists, the entry is updated instead of duplicated (upsert). An entry always carries both an outflow side (`assetAmount`, stored with its sign inverted so negative means money out) and an inflow side (`liabilityAmount`, stored as sent); if you only send one, the other defaults to 0. If `description` is omitted, Embat generates one from the entry's identifier. Entries dated before the ledger account's configured start date are excluded from reconciliation matching.
       operationId: create_accounting_entry_accountingentries__companyId__post
@@ -204,7 +204,7 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
     patch:
       tags:
-      - AccountingEntries
+      - Accounting Entries
       summary: Update accounting entries in bulk
       description: Updates one or more fields of several accounting entries, identified by `customId`, following the same rules as the single-entry update endpoint — including the `description` reset-when-omitted behavior. Entries whose `customId` does not match any existing entry are silently skipped; the call still returns `200` for the whole batch.
       operationId: update_accounting_entries_bulk_accountingentries__companyId__patch
@@ -262,7 +262,7 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
     delete:
       tags:
-      - AccountingEntries
+      - Accounting Entries
       summary: Delete accounting entries in bulk
       description: Deletes several accounting entries in a single call, identified by `customId`. The call returns `200` immediately — even for `customId` values that do not match any existing entry — and entries may still briefly appear in `GET` results right after deletion.
       operationId: delete_accounting_entries_bulk_accountingentries__companyId__delete
@@ -321,7 +321,7 @@ paths:
   /accountingentries/{companyId}/{customId}:
     get:
       tags:
-      - AccountingEntries
+      - Accounting Entries
       summary: Retrieve accounting entry
       description: Returns a single accounting entry by `customId`.
       operationId: retrieve_accounting_entry_accountingentries__companyId___customId__get
@@ -371,7 +371,7 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
     patch:
       tags:
-      - AccountingEntries
+      - Accounting Entries
       summary: Update accounting entry
       description: 'Updates one or more fields of an accounting entry identified by `customId`. Only the fields you send are changed — except `description`: if it is omitted, Embat resets it to an auto-generated value derived from the entry''s identifier, overwriting any previously set custom description; resend the current value to keep it unchanged. Updating a `customId` that does not match any existing entry is a no-op: the call still returns `200` without creating or changing anything, and no `404` is raised.'
       operationId: update_accounting_entry_accountingentries__companyId___customId__patch
@@ -435,7 +435,7 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
     delete:
       tags:
-      - AccountingEntries
+      - Accounting Entries
       summary: Delete accounting entry
       description: Deletes an accounting entry by `customId`. The call returns `200` immediately — even if `customId` does not match any existing entry — and the entry may still briefly appear in `GET` results right after deletion.
       operationId: delete_accounting_entry_accountingentries__companyId___customId__delete
@@ -494,7 +494,7 @@ paths:
   /accountingentries/{companyId}/bulk:
     post:
       tags:
-      - AccountingEntries
+      - Accounting Entries
       summary: Create accounting entries in bulk
       description: Creates several accounting entries in a single call, following the same rules as the single entry creation endpoint. Entries sharing the same `customId` within the request are deduplicated and only the first occurrence is processed.
       operationId: create_accounting_entries_bulk_accountingentries__companyId__bulk_post
@@ -553,7 +553,7 @@ paths:
   /accountingentries/accountingentrycode/{companyId}:
     delete:
       tags:
-      - AccountingEntries
+      - Accounting Entries
       summary: Delete accounting entries in bulk by entry code
       description: Deletes every accounting entry whose `accountingEntryCode` or `accountingEntryCodeId` matches one of the given codes. The call returns `200` immediately; matching entries may still briefly appear in `GET` results right after deletion.
       operationId: delete_accounting_entries_bulk_by_entry_code_accountingentries_accountingentrycode__companyId__delete
@@ -611,199 +611,6 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
 components:
   schemas:
-    CurrencyEnum:
-      type: string
-      enum:
-      - AED
-      - AFN
-      - ALL
-      - AMD
-      - ANG
-      - AOA
-      - ARS
-      - AUD
-      - AWG
-      - AZN
-      - BAM
-      - BBD
-      - BDT
-      - BGN
-      - BHD
-      - BIF
-      - BMD
-      - BND
-      - BOB
-      - BOV
-      - BRL
-      - BSD
-      - BTC
-      - BTN
-      - BWP
-      - BYN
-      - BZD
-      - CAD
-      - CDF
-      - CHE
-      - CHF
-      - CHW
-      - CLF
-      - CLP
-      - CNH
-      - CNY
-      - COP
-      - COU
-      - CRC
-      - CUP
-      - CVE
-      - CZK
-      - DJF
-      - DKK
-      - DOP
-      - DZD
-      - EEK
-      - EGP
-      - ERN
-      - ETB
-      - ETH
-      - EUR
-      - FJD
-      - FKP
-      - GBP
-      - GEL
-      - GHS
-      - GIP
-      - GMD
-      - GNF
-      - GTQ
-      - GYD
-      - HKD
-      - HNL
-      - HRK
-      - HTG
-      - HUF
-      - IDR
-      - ILS
-      - INR
-      - IQD
-      - IRR
-      - ISK
-      - JMD
-      - JOD
-      - JPY
-      - KES
-      - KGS
-      - KHR
-      - KMF
-      - KPW
-      - KRW
-      - KWD
-      - KYD
-      - KZT
-      - LAK
-      - LBP
-      - LKR
-      - LRD
-      - LSL
-      - LTC
-      - LTL
-      - LVL
-      - LYD
-      - MAD
-      - MDL
-      - MGA
-      - MKD
-      - MMK
-      - MNT
-      - MOP
-      - MRU
-      - MUR
-      - MVR
-      - MWK
-      - MXN
-      - MXV
-      - MYR
-      - MZN
-      - NAD
-      - NGN
-      - NIO
-      - NOK
-      - NPR
-      - NZD
-      - OMR
-      - PAB
-      - PEN
-      - PGK
-      - PHP
-      - PKR
-      - PLN
-      - PYG
-      - QAR
-      - RON
-      - RSD
-      - RUB
-      - RWF
-      - SAR
-      - SBD
-      - SCR
-      - SDG
-      - SEK
-      - SGD
-      - SHP
-      - SLE
-      - SOS
-      - SRD
-      - SSP
-      - STN
-      - SVC
-      - SYP
-      - SZL
-      - THB
-      - TJS
-      - TMT
-      - TND
-      - TOP
-      - TRY
-      - TTD
-      - TWD
-      - TZS
-      - UAH
-      - UGX
-      - USD
-      - USN
-      - UYI
-      - UYU
-      - UYW
-      - UZS
-      - VED
-      - VEF
-      - VES
-      - VND
-      - VUV
-      - WST
-      - XAF
-      - XAG
-      - XAU
-      - XBA
-      - XBB
-      - XBC
-      - XBD
-      - XCD
-      - XDR
-      - XOF
-      - XPD
-      - XPF
-      - XPT
-      - XSU
-      - XTS
-      - XUA
-      - XXX
-      - YER
-      - ZAR
-      - ZMK
-      - ZMW
-      - ZWG
-      - ZWL
-      title: CurrencyEnum
     ValidationError:
       properties:
         loc:
@@ -830,6 +637,25 @@ components:
       - msg
       - type
       title: ValidationError
+    BulkDeleteAccountingEntriesEntryCodeRequestSchema:
+      properties:
+        data:
+          items:
+            $ref: '#/components/schemas/DeleteAccountingEntriesEntryCodeRequestSchema'
+          type: array
+          title: Data
+          description: Entry codes to delete by.
+      type: object
+      required:
+      - data
+      title: BulkDeleteAccountingEntriesEntryCodeRequestSchema
+    AccountingTypeEnum:
+      type: string
+      enum:
+      - banks
+      - analytics
+      - accountings
+      title: AccountingTypeEnum
     PatchAccountingEntriesRequestSchema:
       properties:
         accountingCode:
@@ -978,18 +804,174 @@ components:
           description: Custom attribute values to attach to the entry. Duplicate values and attributes flagged as internal-only are omitted when the entry is returned.
       type: object
       title: PatchAccountingEntriesRequestSchema
-    BulkPatchAccountingEntriesRequestSchema:
+    PostAccountingEntriesRequestSchema:
       properties:
-        data:
-          items:
-            $ref: '#/components/schemas/AuxBulkPatchAccountingEntriesRequestSchema'
-          type: array
-          title: Data
-          description: Accounting entries to update, identified by `customId`.
+        accountingCode:
+          type: string
+          minLength: 1
+          title: Accountingcode
+          description: Ledger account code the entry is posted to.
+          examples:
+          - '4300001'
+        counterpartAccountingCode:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Counterpartaccountingcode
+          description: Ledger account code of the counterpart side of the entry, when applicable.
+          examples:
+          - '5720001'
+        accountingName:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Accountingname
+          description: Display name of the ledger account (`accountingCode`).
+          examples:
+          - Trade debtors
+        assetAmount:
+          type: number
+          title: Assetamount
+          description: 'Outflow side of the entry, in `currency` (money leaving the account). An entry always has both sides: if you only send `liabilityAmount`, `assetAmount` defaults to 0. The sign is inverted on storage (0 always stays 0): a positive value you send is stored and returned as negative, following the convention that negative amounts are outflows.'
+          examples:
+          - 1250.5
+        accountingAssetAmount:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Accountingassetamount
+          description: Outflow side expressed in the company accounting currency (`accountingCurrency`). Subject to the same sign convention as `assetAmount`.
+          examples:
+          - 1250.5
+        balance:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Balance
+          description: Running balance of the ledger account (`accountingCode`) after this entry, typically calculated by Embat rather than provided by you.
+        liabilityAmount:
+          type: number
+          title: Liabilityamount
+          description: 'Inflow side of the entry, in `currency` (money entering the account), stored with the sign you send. An entry always has both sides: if you only send `assetAmount`, `liabilityAmount` defaults to 0.'
+          examples:
+          - 0.0
+        accountingLiabilityAmount:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Accountingliabilityamount
+          description: Inflow side expressed in the company accounting currency (`accountingCurrency`).
+          examples:
+          - 0.0
+        currency:
+          anyOf:
+          - $ref: '#/components/schemas/CurrencyEnum'
+          - type: 'null'
+          description: ISO currency code of `assetAmount`/`liabilityAmount`.
+          examples:
+          - EUR
+        accountingCurrency:
+          anyOf:
+          - $ref: '#/components/schemas/CurrencyEnum'
+          - type: 'null'
+          description: ISO currency code of `accountingAssetAmount`/`accountingLiabilityAmount`.
+          examples:
+          - EUR
+        contactCustomId:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Contactcustomid
+          description: Custom ID of the contact (client/supplier), used when `accountingCode` is a contacts ledger account.
+          examples:
+          - contact-001
+        exchangeRate:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Exchangerate
+          description: Exchange rate applied between `currency` and `accountingCurrency`.
+          examples:
+          - 1.0
+        additionalInfo:
+          anyOf:
+          - additionalProperties: true
+            type: object
+          - type: 'null'
+          title: Additionalinfo
+          description: Free-form key/value metadata to attach to the entry. Sending an empty object (`{}`) has no effect and does not clear previously stored metadata.
+        description:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Description
+          description: 'Free-text description of the entry. If omitted, Embat generates one: `"Asiento "` followed by `accountingEntryCode` if set, otherwise by `customId`.'
+          examples:
+          - 'Invoice #2024-001 posting'
+        documentId:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Documentid
+          description: Identifier of the source document (e.g. invoice) this entry relates to.
+        transactionsIds:
+          anyOf:
+          - items:
+              type: string
+            type: array
+          - type: 'null'
+          title: Transactionsids
+          description: Embat IDs of the bank transactions related to this entry.
+        paymentId:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Paymentid
+          description: Embat ID of the payment related to this entry.
+        date:
+          type: string
+          format: date-time
+          title: Date
+          description: Accounting date of the entry. Send a plain date at midnight (e.g. `2024-01-15T00:00:00Z`) — sending a different time of day can shift the stored calendar date and is not fully normalized to midnight.
+          examples:
+          - '2024-01-15T00:00:00Z'
+        attributes:
+          anyOf:
+          - items:
+              $ref: '#/components/schemas/AttributeValueRequestSchema'
+            type: array
+          - type: 'null'
+          title: Attributes
+          description: Custom attribute values to attach to the entry. Duplicate values and attributes flagged as internal-only are omitted when the entry is returned.
+        customId:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Customid
+          description: Your own unique ID for the entry, to use as your ERP accounting entry ID. If omitted, Embat auto-generates one.
+          examples:
+          - erp-entry-2024-001
+        accountingEntryCode:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Accountingentrycode
+          description: Your own ID grouping the entries that form a single journal/document (e.g. all lines of one invoice posting). Several entries can share the same `accountingEntryCode`.
+          examples:
+          - invoice-2024-001
+        accountingEntryCodeId:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Accountingentrycodeid
+          description: Alternate grouping code for the entry. Bulk deletion by entry code (`DELETE /accountingentries/accountingentrycode/{companyId}`) matches entries by either `accountingEntryCode` or `accountingEntryCodeId`.
       type: object
       required:
-      - data
-      title: BulkPatchAccountingEntriesRequestSchema
+      - accountingCode
+      - assetAmount
+      - liabilityAmount
+      - date
+      title: PostAccountingEntriesRequestSchema
     BulkDeleteAccountingEntriesRequestSchema:
       properties:
         data:
@@ -1002,28 +984,28 @@ components:
       required:
       - data
       title: BulkDeleteAccountingEntriesRequestSchema
-    UpsertAccountingEntriesResponseSchema:
+    BulkUpsertAccountingEntriesResponseSchema:
       properties:
-        id:
-          type: string
-          title: Id
-          description: Embat resource ID
+        data:
+          items:
+            $ref: '#/components/schemas/UpsertAccountingEntriesResponseSchema'
+          type: array
+          title: Data
+          description: Result of the bulk creation/update, one entry per accounting entry.
+      type: object
+      required:
+      - data
+      title: BulkUpsertAccountingEntriesResponseSchema
+    DeleteAccountingEntriesRequestSchema:
+      properties:
         customId:
           type: string
           title: Customid
-          description: Client-provided custom ID
+          description: Custom ID of the accounting entry to delete.
       type: object
       required:
-      - id
       - customId
-      title: UpsertAccountingEntriesResponseSchema
-    AccountingTypeEnum:
-      type: string
-      enum:
-      - banks
-      - analytics
-      - accountings
-      title: AccountingTypeEnum
+      title: DeleteAccountingEntriesRequestSchema
     GetAccountingEntriesResponseSchema:
       properties:
         accountingCode:
@@ -1234,330 +1216,6 @@ components:
       - updatedAt
       - createdAt
       title: GetAccountingEntriesResponseSchema
-    ModifyAccountingEntriesResponseSchema:
-      properties:
-        id:
-          type: string
-          title: Id
-          description: Embat resource ID
-      type: object
-      required:
-      - id
-      title: ModifyAccountingEntriesResponseSchema
-    BulkDeleteAccountingEntriesEntryCodeRequestSchema:
-      properties:
-        data:
-          items:
-            $ref: '#/components/schemas/DeleteAccountingEntriesEntryCodeRequestSchema'
-          type: array
-          title: Data
-          description: Entry codes to delete by.
-      type: object
-      required:
-      - data
-      title: BulkDeleteAccountingEntriesEntryCodeRequestSchema
-    PostAccountingEntriesRequestSchema:
-      properties:
-        accountingCode:
-          type: string
-          minLength: 1
-          title: Accountingcode
-          description: Ledger account code the entry is posted to.
-          examples:
-          - '4300001'
-        counterpartAccountingCode:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Counterpartaccountingcode
-          description: Ledger account code of the counterpart side of the entry, when applicable.
-          examples:
-          - '5720001'
-        accountingName:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Accountingname
-          description: Display name of the ledger account (`accountingCode`).
-          examples:
-          - Trade debtors
-        assetAmount:
-          type: number
-          title: Assetamount
-          description: 'Outflow side of the entry, in `currency` (money leaving the account). An entry always has both sides: if you only send `liabilityAmount`, `assetAmount` defaults to 0. The sign is inverted on storage (0 always stays 0): a positive value you send is stored and returned as negative, following the convention that negative amounts are outflows.'
-          examples:
-          - 1250.5
-        accountingAssetAmount:
-          anyOf:
-          - type: number
-          - type: 'null'
-          title: Accountingassetamount
-          description: Outflow side expressed in the company accounting currency (`accountingCurrency`). Subject to the same sign convention as `assetAmount`.
-          examples:
-          - 1250.5
-        balance:
-          anyOf:
-          - type: number
-          - type: 'null'
-          title: Balance
-          description: Running balance of the ledger account (`accountingCode`) after this entry, typically calculated by Embat rather than provided by you.
-        liabilityAmount:
-          type: number
-          title: Liabilityamount
-          description: 'Inflow side of the entry, in `currency` (money entering the account), stored with the sign you send. An entry always has both sides: if you only send `assetAmount`, `liabilityAmount` defaults to 0.'
-          examples:
-          - 0.0
-        accountingLiabilityAmount:
-          anyOf:
-          - type: number
-          - type: 'null'
-          title: Accountingliabilityamount
-          description: Inflow side expressed in the company accounting currency (`accountingCurrency`).
-          examples:
-          - 0.0
-        currency:
-          anyOf:
-          - $ref: '#/components/schemas/CurrencyEnum'
-          - type: 'null'
-          description: ISO currency code of `assetAmount`/`liabilityAmount`.
-          examples:
-          - EUR
-        accountingCurrency:
-          anyOf:
-          - $ref: '#/components/schemas/CurrencyEnum'
-          - type: 'null'
-          description: ISO currency code of `accountingAssetAmount`/`accountingLiabilityAmount`.
-          examples:
-          - EUR
-        contactCustomId:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Contactcustomid
-          description: Custom ID of the contact (client/supplier), used when `accountingCode` is a contacts ledger account.
-          examples:
-          - contact-001
-        exchangeRate:
-          anyOf:
-          - type: number
-          - type: 'null'
-          title: Exchangerate
-          description: Exchange rate applied between `currency` and `accountingCurrency`.
-          examples:
-          - 1.0
-        additionalInfo:
-          anyOf:
-          - additionalProperties: true
-            type: object
-          - type: 'null'
-          title: Additionalinfo
-          description: Free-form key/value metadata to attach to the entry. Sending an empty object (`{}`) has no effect and does not clear previously stored metadata.
-        description:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Description
-          description: 'Free-text description of the entry. If omitted, Embat generates one: `"Asiento "` followed by `accountingEntryCode` if set, otherwise by `customId`.'
-          examples:
-          - 'Invoice #2024-001 posting'
-        documentId:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Documentid
-          description: Identifier of the source document (e.g. invoice) this entry relates to.
-        transactionsIds:
-          anyOf:
-          - items:
-              type: string
-            type: array
-          - type: 'null'
-          title: Transactionsids
-          description: Embat IDs of the bank transactions related to this entry.
-        paymentId:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Paymentid
-          description: Embat ID of the payment related to this entry.
-        date:
-          type: string
-          format: date-time
-          title: Date
-          description: Accounting date of the entry. Send a plain date at midnight (e.g. `2024-01-15T00:00:00Z`) — sending a different time of day can shift the stored calendar date and is not fully normalized to midnight.
-          examples:
-          - '2024-01-15T00:00:00Z'
-        attributes:
-          anyOf:
-          - items:
-              $ref: '#/components/schemas/AttributeValueRequestSchema'
-            type: array
-          - type: 'null'
-          title: Attributes
-          description: Custom attribute values to attach to the entry. Duplicate values and attributes flagged as internal-only are omitted when the entry is returned.
-        customId:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Customid
-          description: Your own unique ID for the entry, to use as your ERP accounting entry ID. If omitted, Embat auto-generates one.
-          examples:
-          - erp-entry-2024-001
-        accountingEntryCode:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Accountingentrycode
-          description: Your own ID grouping the entries that form a single journal/document (e.g. all lines of one invoice posting). Several entries can share the same `accountingEntryCode`.
-          examples:
-          - invoice-2024-001
-        accountingEntryCodeId:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Accountingentrycodeid
-          description: Alternate grouping code for the entry. Bulk deletion by entry code (`DELETE /accountingentries/accountingentrycode/{companyId}`) matches entries by either `accountingEntryCode` or `accountingEntryCodeId`.
-      type: object
-      required:
-      - accountingCode
-      - assetAmount
-      - liabilityAmount
-      - date
-      title: PostAccountingEntriesRequestSchema
-    BulkUpsertAccountingEntriesResponseSchema:
-      properties:
-        data:
-          items:
-            $ref: '#/components/schemas/UpsertAccountingEntriesResponseSchema'
-          type: array
-          title: Data
-          description: Result of the bulk creation/update, one entry per accounting entry.
-      type: object
-      required:
-      - data
-      title: BulkUpsertAccountingEntriesResponseSchema
-    DeleteAccountingEntriesRequestSchema:
-      properties:
-        customId:
-          type: string
-          title: Customid
-          description: Custom ID of the accounting entry to delete.
-      type: object
-      required:
-      - customId
-      title: DeleteAccountingEntriesRequestSchema
-    AttributeValueRequestSchema:
-      properties:
-        customId:
-          type: string
-          title: Customid
-          description: Custom ID of the attribute (see the Attributes endpoints) being set.
-          examples:
-          - cost-center
-        value:
-          type: string
-          title: Value
-          description: Display text of the value being set on this entity.
-          examples:
-          - Marketing
-        valueCustomId:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Valuecustomid
-          description: Custom ID of one of the attribute's predefined `values`, when the attribute is of type `list`. Leave unset for free-form `string`/`number` attributes.
-          examples:
-          - marketing
-        parentCustomId:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Parentcustomid
-          description: Not used when attaching an attribute value to an entity.
-      type: object
-      required:
-      - customId
-      - value
-      title: AttributeValueRequestSchema
-      description: 'Attaches an attribute value to another entity (payment, contact, operation,
-
-        transaction, accounting entry...).'
-    DeleteAccountingEntriesEntryCodeRequestSchema:
-      properties:
-        accountingEntryCode:
-          type: string
-          title: Accountingentrycode
-          description: Entry code to delete by. Matches entries whose `accountingEntryCode` or `accountingEntryCodeId` equals this value.
-          examples:
-          - invoice-2024-001
-      type: object
-      required:
-      - accountingEntryCode
-      title: DeleteAccountingEntriesEntryCodeRequestSchema
-    BulkModifyAccountingEntriesResponseSchema:
-      properties:
-        data:
-          items:
-            $ref: '#/components/schemas/ModifyAccountingEntriesResponseSchema'
-          type: array
-          title: Data
-          description: Result of the bulk operation, one entry per accounting entry.
-      type: object
-      required:
-      - data
-      title: BulkModifyAccountingEntriesResponseSchema
-    ErrorResponse:
-      properties:
-        detail:
-          type: string
-          title: Detail
-          description: Human-readable explanation of the error.
-          examples:
-          - user not authorized
-      type: object
-      required:
-      - detail
-      title: ErrorResponse
-      description: Error payload returned by the API (FastAPI `detail` convention).
-    HTTPValidationError:
-      properties:
-        detail:
-          items:
-            $ref: '#/components/schemas/ValidationError'
-          type: array
-          title: Detail
-      type: object
-      title: HTTPValidationError
-    BulkPostAccountingEntriesRequestSchema:
-      properties:
-        data:
-          items:
-            $ref: '#/components/schemas/PostAccountingEntriesRequestSchema'
-          type: array
-          title: Data
-          description: Accounting entries to create.
-      type: object
-      required:
-      - data
-      title: BulkPostAccountingEntriesRequestSchema
-    ListAccountingEntriesResponseSchema:
-      properties:
-        data:
-          items:
-            $ref: '#/components/schemas/GetAccountingEntriesResponseSchema'
-          type: array
-          title: Data
-          description: Accounting entries matching the query.
-        nextPageToken:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Nextpagetoken
-          description: Token to fetch the next page of results. `null` when there are no more pages.
-      type: object
-      required:
-      - data
-      title: ListAccountingEntriesResponseSchema
     AuxBulkPatchAccountingEntriesRequestSchema:
       properties:
         accountingCode:
@@ -1714,6 +1372,348 @@ components:
       required:
       - customId
       title: AuxBulkPatchAccountingEntriesRequestSchema
+    AttributeValueRequestSchema:
+      properties:
+        customId:
+          type: string
+          title: Customid
+          description: Custom ID of the attribute (see the Attributes endpoints) being set.
+          examples:
+          - cost-center
+        value:
+          type: string
+          title: Value
+          description: Display text of the value being set on this entity.
+          examples:
+          - Marketing
+        valueCustomId:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Valuecustomid
+          description: Custom ID of one of the attribute's predefined `values`, when the attribute is of type `list`. Leave unset for free-form `string`/`number` attributes.
+          examples:
+          - marketing
+        parentCustomId:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Parentcustomid
+          description: Not used when attaching an attribute value to an entity.
+      type: object
+      required:
+      - customId
+      - value
+      title: AttributeValueRequestSchema
+      description: 'Attaches an attribute value to another entity (payment, contact, operation,
+
+        transaction, accounting entry...).'
+    ListAccountingEntriesResponseSchema:
+      properties:
+        data:
+          items:
+            $ref: '#/components/schemas/GetAccountingEntriesResponseSchema'
+          type: array
+          title: Data
+          description: Accounting entries matching the query.
+        nextPageToken:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Nextpagetoken
+          description: Token to fetch the next page of results. `null` when there are no more pages.
+      type: object
+      required:
+      - data
+      title: ListAccountingEntriesResponseSchema
+    BulkPatchAccountingEntriesRequestSchema:
+      properties:
+        data:
+          items:
+            $ref: '#/components/schemas/AuxBulkPatchAccountingEntriesRequestSchema'
+          type: array
+          title: Data
+          description: Accounting entries to update, identified by `customId`.
+      type: object
+      required:
+      - data
+      title: BulkPatchAccountingEntriesRequestSchema
+    UpsertAccountingEntriesResponseSchema:
+      properties:
+        id:
+          type: string
+          title: Id
+          description: Embat resource ID
+        customId:
+          type: string
+          title: Customid
+          description: Client-provided custom ID
+      type: object
+      required:
+      - id
+      - customId
+      title: UpsertAccountingEntriesResponseSchema
+    BulkModifyAccountingEntriesResponseSchema:
+      properties:
+        data:
+          items:
+            $ref: '#/components/schemas/ModifyAccountingEntriesResponseSchema'
+          type: array
+          title: Data
+          description: Result of the bulk operation, one entry per accounting entry.
+      type: object
+      required:
+      - data
+      title: BulkModifyAccountingEntriesResponseSchema
+    BulkPostAccountingEntriesRequestSchema:
+      properties:
+        data:
+          items:
+            $ref: '#/components/schemas/PostAccountingEntriesRequestSchema'
+          type: array
+          title: Data
+          description: Accounting entries to create.
+      type: object
+      required:
+      - data
+      title: BulkPostAccountingEntriesRequestSchema
+    ErrorResponse:
+      properties:
+        detail:
+          type: string
+          title: Detail
+          description: Human-readable explanation of the error.
+          examples:
+          - user not authorized
+      type: object
+      required:
+      - detail
+      title: ErrorResponse
+      description: Error payload returned by the API (FastAPI `detail` convention).
+    HTTPValidationError:
+      properties:
+        detail:
+          items:
+            $ref: '#/components/schemas/ValidationError'
+          type: array
+          title: Detail
+      type: object
+      title: HTTPValidationError
+    DeleteAccountingEntriesEntryCodeRequestSchema:
+      properties:
+        accountingEntryCode:
+          type: string
+          title: Accountingentrycode
+          description: Entry code to delete by. Matches entries whose `accountingEntryCode` or `accountingEntryCodeId` equals this value.
+          examples:
+          - invoice-2024-001
+      type: object
+      required:
+      - accountingEntryCode
+      title: DeleteAccountingEntriesEntryCodeRequestSchema
+    CurrencyEnum:
+      type: string
+      enum:
+      - AED
+      - AFN
+      - ALL
+      - AMD
+      - ANG
+      - AOA
+      - ARS
+      - AUD
+      - AWG
+      - AZN
+      - BAM
+      - BBD
+      - BDT
+      - BGN
+      - BHD
+      - BIF
+      - BMD
+      - BND
+      - BOB
+      - BOV
+      - BRL
+      - BSD
+      - BTC
+      - BTN
+      - BWP
+      - BYN
+      - BZD
+      - CAD
+      - CDF
+      - CHE
+      - CHF
+      - CHW
+      - CLF
+      - CLP
+      - CNH
+      - CNY
+      - COP
+      - COU
+      - CRC
+      - CUP
+      - CVE
+      - CZK
+      - DJF
+      - DKK
+      - DOP
+      - DZD
+      - EEK
+      - EGP
+      - ERN
+      - ETB
+      - ETH
+      - EUR
+      - FJD
+      - FKP
+      - GBP
+      - GEL
+      - GHS
+      - GIP
+      - GMD
+      - GNF
+      - GTQ
+      - GYD
+      - HKD
+      - HNL
+      - HRK
+      - HTG
+      - HUF
+      - IDR
+      - ILS
+      - INR
+      - IQD
+      - IRR
+      - ISK
+      - JMD
+      - JOD
+      - JPY
+      - KES
+      - KGS
+      - KHR
+      - KMF
+      - KPW
+      - KRW
+      - KWD
+      - KYD
+      - KZT
+      - LAK
+      - LBP
+      - LKR
+      - LRD
+      - LSL
+      - LTC
+      - LTL
+      - LVL
+      - LYD
+      - MAD
+      - MDL
+      - MGA
+      - MKD
+      - MMK
+      - MNT
+      - MOP
+      - MRU
+      - MUR
+      - MVR
+      - MWK
+      - MXN
+      - MXV
+      - MYR
+      - MZN
+      - NAD
+      - NGN
+      - NIO
+      - NOK
+      - NPR
+      - NZD
+      - OMR
+      - PAB
+      - PEN
+      - PGK
+      - PHP
+      - PKR
+      - PLN
+      - PYG
+      - QAR
+      - RON
+      - RSD
+      - RUB
+      - RWF
+      - SAR
+      - SBD
+      - SCR
+      - SDG
+      - SEK
+      - SGD
+      - SHP
+      - SLE
+      - SOS
+      - SRD
+      - SSP
+      - STN
+      - SVC
+      - SYP
+      - SZL
+      - THB
+      - TJS
+      - TMT
+      - TND
+      - TOP
+      - TRY
+      - TTD
+      - TWD
+      - TZS
+      - UAH
+      - UGX
+      - USD
+      - USN
+      - UYI
+      - UYU
+      - UYW
+      - UZS
+      - VED
+      - VEF
+      - VES
+      - VND
+      - VUV
+      - WST
+      - XAF
+      - XAG
+      - XAU
+      - XBA
+      - XBB
+      - XBC
+      - XBD
+      - XCD
+      - XDR
+      - XOF
+      - XPD
+      - XPF
+      - XPT
+      - XSU
+      - XTS
+      - XUA
+      - XXX
+      - YER
+      - ZAR
+      - ZMK
+      - ZMW
+      - ZWG
+      - ZWL
+      title: CurrencyEnum
+    ModifyAccountingEntriesResponseSchema:
+      properties:
+        id:
+          type: string
+          title: Id
+          description: Embat resource ID
+      type: object
+      required:
+      - id
+      title: ModifyAccountingEntriesResponseSchema
   securitySchemes:
     HTTPBearer:
       type: http

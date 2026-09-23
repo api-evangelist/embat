@@ -1,6 +1,6 @@
-openapi: 3.1.0
+openapi: 3.2.0
 info:
-  title: Embat AccountingAccounts Files API
+  title: Embat Files API
   description: Embat API enables connections between any third party application and Embat. Is organized around REST principles, using HTTP responses code and returning data in JSON format. While testing the API, you have to request **sandbox credentials**.
   contact:
     name: API Support
@@ -11,24 +11,7 @@ info:
     url: https://storage.googleapis.com/embat-production.appspot.com/assets/embat_dark.svg
 tags:
 - name: Files
-  description: '`File` represents a banking file exchanged between Embat and a bank: either a file **received** from a bank (a reception, e.g. an account statement or a confirmation file) or a file **submitted** to a bank (an emission, e.g. a payment order file). Files are identified by an Embat-generated `id` and, when the bank could be identified, carry the related `Bank`.
-
-
-    Files list endpoints are not scoped by `companyId`: they return the files across every company accessible to the authenticated user. `companyId` is only used when creating a file emission.
-
-
-    **Typical flow:**
-
-
-    1. **Discover new receptions.** Poll `GET /files/receptions` periodically; each entry reports whether it has already been `downloaded`. Use `nextPageToken` to page through results.
-
-    2. **Download a reception''s content.** Once you have identified a file of interest, fetch its raw content with `GET /files/receptions/{fileId}`.
-
-    3. **Submit a file to a bank.** To send a file to a bank on behalf of a company (e.g. a payment order), call `POST /files/{companyId}/{bankId}` with the file content and its format.
-
-    4. **Track emissions.** List the files you have submitted, and any submitted on your behalf, with `GET /files/emissions`.
-
-    '
+  description: '`File` represents a banking file exchanged between Embat and a bank: either a file **received** from a bank (a reception, e.g.'
 paths:
   /files/receptions:
     get:
@@ -238,6 +221,179 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
 components:
   schemas:
+    ValidationError:
+      properties:
+        loc:
+          items:
+            anyOf:
+            - type: string
+            - type: integer
+          type: array
+          title: Location
+        msg:
+          type: string
+          title: Message
+        type:
+          type: string
+          title: Error Type
+        input:
+          title: Input
+        ctx:
+          type: object
+          title: Context
+      type: object
+      required:
+      - loc
+      - msg
+      - type
+      title: ValidationError
+    ErrorResponse:
+      properties:
+        detail:
+          type: string
+          title: Detail
+          description: Human-readable explanation of the error.
+          examples:
+          - user not authorized
+      type: object
+      required:
+      - detail
+      title: ErrorResponse
+      description: Error payload returned by the API (FastAPI `detail` convention).
+    FileFormatsEnum:
+      type: string
+      enum:
+      - sepa34
+      - sepa19
+      - confir
+      - dev019
+      - n19_financiada
+      - omfpag
+      - rec019
+      - sctdiv
+      - sepint
+      title: FileFormatsEnum
+    ListFilesReceptionsResponseSchema:
+      properties:
+        data:
+          items:
+            $ref: '#/components/schemas/GetFilesReceptionResponseSchema'
+          type: array
+          title: Data
+          description: File receptions matching the query.
+        nextPageToken:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Nextpagetoken
+          description: Token to fetch the next page of results. `null` when there are no more pages.
+      type: object
+      required:
+      - data
+      title: ListFilesReceptionsResponseSchema
+    ListFilesEmissionsResponseSchema:
+      properties:
+        data:
+          items:
+            $ref: '#/components/schemas/GetFilesEmissionResponseSchema'
+          type: array
+          title: Data
+          description: File emissions matching the query.
+        nextPageToken:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Nextpagetoken
+          description: Token to fetch the next page of results. `null` when there are no more pages.
+      type: object
+      required:
+      - data
+      title: ListFilesEmissionsResponseSchema
+    HTTPValidationError:
+      properties:
+        detail:
+          items:
+            $ref: '#/components/schemas/ValidationError'
+          type: array
+          title: Detail
+      type: object
+      title: HTTPValidationError
+    Body_create_file_emission_files__companyId___bankId__post:
+      properties:
+        file:
+          type: string
+          contentMediaType: application/octet-stream
+          title: File
+          description: Binary content of the file to submit to the bank.
+        format:
+          $ref: '#/components/schemas/FileFormatsEnum'
+          description: Format of the submitted file.
+      type: object
+      required:
+      - file
+      - format
+      title: Body_create_file_emission_files__companyId___bankId__post
+    BankFileSchema:
+      properties:
+        id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Id
+          description: Identifier of the bank associated with the file.
+          examples:
+          - bank-001
+        fullName:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Fullname
+          description: Full name of the bank.
+          examples:
+          - Banco Santander
+        service:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Service
+          description: Banking service or channel used to exchange the file with the bank.
+          examples:
+          - h2h
+        countryCode:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Countrycode
+          description: ISO country code of the bank.
+          examples:
+          - ES
+      type: object
+      title: BankFileSchema
+    UserFileSchema:
+      properties:
+        id:
+          type: string
+          title: Id
+          description: Embat ID of the user who requested the file emission.
+        name:
+          type: string
+          title: Name
+          description: First name of the user.
+          examples:
+          - Maria
+        surname:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Surname
+          description: Last name of the user.
+          examples:
+          - Garcia
+      type: object
+      required:
+      - id
+      - name
+      title: UserFileSchema
     GetFilesEmissionResponseSchema:
       properties:
         id:
@@ -310,189 +466,6 @@ components:
       - updatedAt
       title: GetFilesEmissionResponseSchema
       description: Files response data schema
-    ErrorResponse:
-      properties:
-        detail:
-          type: string
-          title: Detail
-          description: Human-readable explanation of the error.
-          examples:
-          - user not authorized
-      type: object
-      required:
-      - detail
-      title: ErrorResponse
-      description: Error payload returned by the API (FastAPI `detail` convention).
-    HTTPValidationError:
-      properties:
-        detail:
-          items:
-            $ref: '#/components/schemas/ValidationError'
-          type: array
-          title: Detail
-      type: object
-      title: HTTPValidationError
-    ValidationError:
-      properties:
-        loc:
-          items:
-            anyOf:
-            - type: string
-            - type: integer
-          type: array
-          title: Location
-        msg:
-          type: string
-          title: Message
-        type:
-          type: string
-          title: Error Type
-        input:
-          title: Input
-        ctx:
-          type: object
-          title: Context
-      type: object
-      required:
-      - loc
-      - msg
-      - type
-      title: ValidationError
-    UserFileSchema:
-      properties:
-        id:
-          type: string
-          title: Id
-          description: Embat ID of the user who requested the file emission.
-        name:
-          type: string
-          title: Name
-          description: First name of the user.
-          examples:
-          - Maria
-        surname:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Surname
-          description: Last name of the user.
-          examples:
-          - Garcia
-      type: object
-      required:
-      - id
-      - name
-      title: UserFileSchema
-    BankFileSchema:
-      properties:
-        id:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Id
-          description: Identifier of the bank associated with the file.
-          examples:
-          - bank-001
-        fullName:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Fullname
-          description: Full name of the bank.
-          examples:
-          - Banco Santander
-        service:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Service
-          description: Banking service or channel used to exchange the file with the bank.
-          examples:
-          - h2h
-        countryCode:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Countrycode
-          description: ISO country code of the bank.
-          examples:
-          - ES
-      type: object
-      title: BankFileSchema
-    FileFormatsEnum:
-      type: string
-      enum:
-      - sepa34
-      - sepa19
-      - confir
-      - dev019
-      - n19_financiada
-      - omfpag
-      - rec019
-      - sctdiv
-      - sepint
-      title: FileFormatsEnum
-    Body_create_file_emission_files__companyId___bankId__post:
-      properties:
-        file:
-          type: string
-          contentMediaType: application/octet-stream
-          title: File
-          description: Binary content of the file to submit to the bank.
-        format:
-          $ref: '#/components/schemas/FileFormatsEnum'
-          description: Format of the submitted file.
-      type: object
-      required:
-      - file
-      - format
-      title: Body_create_file_emission_files__companyId___bankId__post
-    PostFilesEmissionResponseSchema:
-      properties:
-        id:
-          type: string
-          title: Id
-          description: Embat ID of the created file emission.
-      type: object
-      required:
-      - id
-      title: PostFilesEmissionResponseSchema
-    ListFilesReceptionsResponseSchema:
-      properties:
-        data:
-          items:
-            $ref: '#/components/schemas/GetFilesReceptionResponseSchema'
-          type: array
-          title: Data
-          description: File receptions matching the query.
-        nextPageToken:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Nextpagetoken
-          description: Token to fetch the next page of results. `null` when there are no more pages.
-      type: object
-      required:
-      - data
-      title: ListFilesReceptionsResponseSchema
-    ListFilesEmissionsResponseSchema:
-      properties:
-        data:
-          items:
-            $ref: '#/components/schemas/GetFilesEmissionResponseSchema'
-          type: array
-          title: Data
-          description: File emissions matching the query.
-        nextPageToken:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Nextpagetoken
-          description: Token to fetch the next page of results. `null` when there are no more pages.
-      type: object
-      required:
-      - data
-      title: ListFilesEmissionsResponseSchema
     GetFilesReceptionResponseSchema:
       properties:
         id:
@@ -557,6 +530,16 @@ components:
       - updatedAt
       title: GetFilesReceptionResponseSchema
       description: Files response data schema
+    PostFilesEmissionResponseSchema:
+      properties:
+        id:
+          type: string
+          title: Id
+          description: Embat ID of the created file emission.
+      type: object
+      required:
+      - id
+      title: PostFilesEmissionResponseSchema
   securitySchemes:
     HTTPBearer:
       type: http

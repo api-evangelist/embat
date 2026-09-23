@@ -1,6 +1,6 @@
-openapi: 3.1.0
+openapi: 3.2.0
 info:
-  title: Embat AccountingAccounts Products API
+  title: Embat Products API
   description: Embat API enables connections between any third party application and Embat. Is organized around REST principles, using HTTP responses code and returning data in JSON format. While testing the API, you have to request **sandbox credentials**.
   contact:
     name: API Support
@@ -11,15 +11,7 @@ info:
     url: https://storage.googleapis.com/embat-production.appspot.com/assets/embat_dark.svg
 tags:
 - name: Products
-  description: '`Product` represents a bank account, credit line, card or wallet held by the company — either aggregated automatically from a bank connection, or added manually in Embat. A product can optionally be linked to an accounting account via `accountingCode`, used to reconcile its balance against Embat''s chart of accounts.
-
-
-    Products are grouped under a `Bank` relationship (`bankId`), hold the end-of-day snapshots reported by `Balances` and the movements reported by `Transactions`, and are referenced by `Payments` (`productId`) to resolve the accounting code used for classification.
-
-
-    **Typical flow:** retrieve the products of a company with `GET /products/{companyId}` (or a single one with `GET /products/{companyId}/{id}`) to obtain the `id` values used across other endpoints — for example to filter `Transactions` or `Balances`, or to set `productId` on a `Payment`. Once a product''s accounting account is known, set it with `PATCH /products/{companyId}/{id}` (or the bulk variant `PATCH /products/{companyId}`).
-
-    '
+  description: '`Product` represents a bank account, credit line, card or wallet held by the company — either aggregated automatically from a bank connection, or added manually in Embat.'
 paths:
   /products/{companyId}:
     get:
@@ -233,6 +225,130 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
 components:
   schemas:
+    AuxBulkPatchProductsRequestSchema:
+      properties:
+        additionalInfo:
+          additionalProperties: true
+          type: object
+          title: Additionalinfo
+          description: Free-form key/value metadata to attach to the product. Replaces the existing value entirely.
+          default: {}
+        accountingCode:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Accountingcode
+          description: Accounting account code to link the product to.
+          examples:
+          - '5720001'
+        id:
+          type: string
+          title: Id
+          description: Embat product ID
+      type: object
+      required:
+      - id
+      title: AuxBulkPatchProductsRequestSchema
+    ValidationError:
+      properties:
+        loc:
+          items:
+            anyOf:
+            - type: string
+            - type: integer
+          type: array
+          title: Location
+        msg:
+          type: string
+          title: Message
+        type:
+          type: string
+          title: Error Type
+        input:
+          title: Input
+        ctx:
+          type: object
+          title: Context
+      type: object
+      required:
+      - loc
+      - msg
+      - type
+      title: ValidationError
+    ErrorResponse:
+      properties:
+        detail:
+          type: string
+          title: Detail
+          description: Human-readable explanation of the error.
+          examples:
+          - user not authorized
+      type: object
+      required:
+      - detail
+      title: ErrorResponse
+      description: Error payload returned by the API (FastAPI `detail` convention).
+    PatchProductsRequestSchema:
+      properties:
+        additionalInfo:
+          additionalProperties: true
+          type: object
+          title: Additionalinfo
+          description: Free-form key/value metadata to attach to the product. Replaces the existing value entirely.
+          default: {}
+        accountingCode:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Accountingcode
+          description: Accounting account code to link the product to.
+          examples:
+          - '5720001'
+      type: object
+      title: PatchProductsRequestSchema
+    ModifyProductsResponseSchema:
+      properties:
+        id:
+          type: string
+          title: Id
+          description: Embat product ID
+      type: object
+      required:
+      - id
+      title: ModifyProductsResponseSchema
+    HTTPValidationError:
+      properties:
+        detail:
+          items:
+            $ref: '#/components/schemas/ValidationError'
+          type: array
+          title: Detail
+      type: object
+      title: HTTPValidationError
+    BulkModifyProductsResponseSchema:
+      properties:
+        data:
+          items:
+            $ref: '#/components/schemas/ModifyProductsResponseSchema'
+          type: array
+          title: Data
+          description: Result of the bulk operation, one entry per product.
+      type: object
+      required:
+      - data
+      title: BulkModifyProductsResponseSchema
+    BulkPatchProductsRequestSchema:
+      properties:
+        data:
+          items:
+            $ref: '#/components/schemas/AuxBulkPatchProductsRequestSchema'
+          type: array
+          title: Data
+          description: Products to update, identified by `id`.
+      type: object
+      required:
+      - data
+      title: BulkPatchProductsRequestSchema
     ReconciliationSchema:
       properties:
         accountingCode:
@@ -254,24 +370,18 @@ components:
           - '2024-01-01T00:00:00Z'
       type: object
       title: ReconciliationSchema
-    PatchProductsRequestSchema:
+    ListProductsResponseSchema:
       properties:
-        additionalInfo:
-          additionalProperties: true
-          type: object
-          title: Additionalinfo
-          description: Free-form key/value metadata to attach to the product. Replaces the existing value entirely.
-          default: {}
-        accountingCode:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Accountingcode
-          description: Accounting account code to link the product to.
-          examples:
-          - '5720001'
+        data:
+          items:
+            $ref: '#/components/schemas/GetProductsResponseSchema'
+          type: array
+          title: Data
+          description: Products of the company.
       type: object
-      title: PatchProductsRequestSchema
+      required:
+      - data
+      title: ListProductsResponseSchema
     CurrencyEnum:
       type: string
       enum:
@@ -465,88 +575,6 @@ components:
       - ZWG
       - ZWL
       title: CurrencyEnum
-    ModifyProductsResponseSchema:
-      properties:
-        id:
-          type: string
-          title: Id
-          description: Embat product ID
-      type: object
-      required:
-      - id
-      title: ModifyProductsResponseSchema
-    HTTPValidationError:
-      properties:
-        detail:
-          items:
-            $ref: '#/components/schemas/ValidationError'
-          type: array
-          title: Detail
-      type: object
-      title: HTTPValidationError
-    BulkPatchProductsRequestSchema:
-      properties:
-        data:
-          items:
-            $ref: '#/components/schemas/AuxBulkPatchProductsRequestSchema'
-          type: array
-          title: Data
-          description: Products to update, identified by `id`.
-      type: object
-      required:
-      - data
-      title: BulkPatchProductsRequestSchema
-    ValidationError:
-      properties:
-        loc:
-          items:
-            anyOf:
-            - type: string
-            - type: integer
-          type: array
-          title: Location
-        msg:
-          type: string
-          title: Message
-        type:
-          type: string
-          title: Error Type
-        input:
-          title: Input
-        ctx:
-          type: object
-          title: Context
-      type: object
-      required:
-      - loc
-      - msg
-      - type
-      title: ValidationError
-    ErrorResponse:
-      properties:
-        detail:
-          type: string
-          title: Detail
-          description: Human-readable explanation of the error.
-          examples:
-          - user not authorized
-      type: object
-      required:
-      - detail
-      title: ErrorResponse
-      description: Error payload returned by the API (FastAPI `detail` convention).
-    BulkModifyProductsResponseSchema:
-      properties:
-        data:
-          items:
-            $ref: '#/components/schemas/ModifyProductsResponseSchema'
-          type: array
-          title: Data
-          description: Result of the bulk operation, one entry per product.
-      type: object
-      required:
-      - data
-      title: BulkModifyProductsResponseSchema
     GetProductsResponseSchema:
       properties:
         id:
@@ -724,42 +752,6 @@ components:
       - type
       - bank
       title: GetProductsResponseSchema
-    AuxBulkPatchProductsRequestSchema:
-      properties:
-        additionalInfo:
-          additionalProperties: true
-          type: object
-          title: Additionalinfo
-          description: Free-form key/value metadata to attach to the product. Replaces the existing value entirely.
-          default: {}
-        accountingCode:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Accountingcode
-          description: Accounting account code to link the product to.
-          examples:
-          - '5720001'
-        id:
-          type: string
-          title: Id
-          description: Embat product ID
-      type: object
-      required:
-      - id
-      title: AuxBulkPatchProductsRequestSchema
-    ListProductsResponseSchema:
-      properties:
-        data:
-          items:
-            $ref: '#/components/schemas/GetProductsResponseSchema'
-          type: array
-          title: Data
-          description: Products of the company.
-      type: object
-      required:
-      - data
-      title: ListProductsResponseSchema
   securitySchemes:
     HTTPBearer:
       type: http

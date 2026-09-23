@@ -1,6 +1,6 @@
-openapi: 3.1.0
+openapi: 3.2.0
 info:
-  title: Embat AccountingAccounts Companies API
+  title: Embat Companies API
   description: Embat API enables connections between any third party application and Embat. Is organized around REST principles, using HTTP responses code and returning data in JSON format. While testing the API, you have to request **sandbox credentials**.
   contact:
     name: API Support
@@ -11,22 +11,7 @@ info:
     url: https://storage.googleapis.com/embat-production.appspot.com/assets/embat_dark.svg
 tags:
 - name: Companies
-  description: 'A `Company` represents a legal entity configured in your Embat workspace. Its `id` is the `companyId` used throughout this API: almost every other endpoint is scoped by `companyId` and requires it as a path parameter.
-
-
-    `Company` is the parent entity of the API: it has no dependency on any other entity, while every other entity (Payments, Operations, Transactions, Contacts, Accounting Accounts, etc.) belongs to one. A company also has `Users` with access to it, retrievable with `GET /companies/{companyId}/users`.
-
-
-    **Typical flow:**
-
-
-    1. **Resolve the `companyId`.** Call `GET /companies` to list the companies your credentials have access to and pick the `id` of the one you want to work with.
-
-    2. **Use it everywhere.** Pass that `id` as `companyId` in the path of any other endpoint in this API.
-
-    3. **Optionally inspect the company.** `GET /companies/{companyId}` returns its legal name, administrative contact, tags and configuration (e.g. accounting currency).
-
-    '
+  description: A `Company` represents a legal entity configured in your Embat workspace.
 paths:
   /companies:
     get:
@@ -144,6 +129,32 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
 components:
   schemas:
+    ValidationError:
+      properties:
+        loc:
+          items:
+            anyOf:
+            - type: string
+            - type: integer
+          type: array
+          title: Location
+        msg:
+          type: string
+          title: Message
+        type:
+          type: string
+          title: Error Type
+        input:
+          title: Input
+        ctx:
+          type: object
+          title: Context
+      type: object
+      required:
+      - loc
+      - msg
+      - type
+      title: ValidationError
     ErrorResponse:
       properties:
         detail:
@@ -157,6 +168,196 @@ components:
       - detail
       title: ErrorResponse
       description: Error payload returned by the API (FastAPI `detail` convention).
+    ListCompaniesResponseSchema:
+      properties:
+        data:
+          items:
+            $ref: '#/components/schemas/CompanyResponseSchema'
+          type: array
+          title: Data
+          description: Companies your credentials have access to.
+      type: object
+      required:
+      - data
+      title: ListCompaniesResponseSchema
+    CompanyResponseSchema:
+      properties:
+        id:
+          type: string
+          title: Id
+          description: Embat company ID. Use it as `companyId` in the rest of the API.
+          examples:
+          - company_5f2c1a
+        legalName:
+          type: string
+          title: Legalname
+          description: Company legal name.
+          examples:
+          - Acme Corporation S.L.
+        updatedAt:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Updatedat
+          description: Last updated date of the entity in the database
+        createdAt:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Createdat
+          description: Created date of the entity in the database
+        contact:
+          anyOf:
+          - $ref: '#/components/schemas/app__schemas__companies__ContactSchema'
+          - type: 'null'
+          description: Company's administrative contact.
+        tags:
+          anyOf:
+          - items:
+              $ref: '#/components/schemas/TagsSchema'
+            type: array
+          - type: 'null'
+          title: Tags
+          description: Tags assigned to the company, used for classification in Embat.
+        config:
+          anyOf:
+          - $ref: '#/components/schemas/CompanyConfigSchema'
+          - type: 'null'
+          description: Company-level configuration, such as the accounting currency.
+      type: object
+      required:
+      - id
+      - legalName
+      title: CompanyResponseSchema
+    HTTPValidationError:
+      properties:
+        detail:
+          items:
+            $ref: '#/components/schemas/ValidationError'
+          type: array
+          title: Detail
+      type: object
+      title: HTTPValidationError
+    TagsSchema:
+      properties:
+        id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Id
+          description: Embat tag ID.
+          examples:
+          - tag_4d2f1a
+        updatedAt:
+          type: string
+          format: date-time
+          title: Updatedat
+          description: Last updated date of the entity in the database
+        createdAt:
+          type: string
+          format: date-time
+          title: Createdat
+          description: Created date of the entity in the database
+        name:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Name
+          description: Tag name.
+          examples:
+          - VIP
+      type: object
+      required:
+      - updatedAt
+      - createdAt
+      title: TagsSchema
+    app__schemas__companies__ContactSchema:
+      properties:
+        phone:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Phone
+          description: Phone number of the company's administrative contact.
+          examples:
+          - '+34600123456'
+        name:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Name
+          description: First name of the company's administrative contact.
+          examples:
+          - Laura
+        surname:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Surname
+          description: Last name of the company's administrative contact.
+          examples:
+          - Fernández
+        email:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Email
+          description: Email address of the company's administrative contact.
+          examples:
+          - laura.fernandez@acme.com
+      type: object
+      title: ContactSchema
+    CompanyUserSchema:
+      properties:
+        id:
+          type: string
+          title: Id
+          description: Embat user ID.
+          examples:
+          - user_8f3a1c
+        email:
+          type: string
+          title: Email
+          description: User's email address.
+          examples:
+          - laura.fernandez@acme.com
+        updatedAt:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Updatedat
+          description: Last updated date of the entity in the database
+        createdAt:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Createdat
+          description: Created date of the entity in the database
+        name:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Name
+          description: User's first name.
+          examples:
+          - Laura
+        surname:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Surname
+          description: User's last name.
+          examples:
+          - Fernández
+      type: object
+      required:
+      - id
+      - email
+      title: CompanyUserSchema
     CurrencyEnum:
       type: string
       enum:
@@ -350,141 +551,16 @@ components:
       - ZWG
       - ZWL
       title: CurrencyEnum
-    HTTPValidationError:
+    CompanyConfigSchema:
       properties:
-        detail:
-          items:
-            $ref: '#/components/schemas/ValidationError'
-          type: array
-          title: Detail
+        currency:
+          $ref: '#/components/schemas/CurrencyEnum'
+          description: Company's accounting currency. Defaults to `EUR` when not configured.
+          default: EUR
+          examples:
+          - EUR
       type: object
-      title: HTTPValidationError
-    ValidationError:
-      properties:
-        loc:
-          items:
-            anyOf:
-            - type: string
-            - type: integer
-          type: array
-          title: Location
-        msg:
-          type: string
-          title: Message
-        type:
-          type: string
-          title: Error Type
-        input:
-          title: Input
-        ctx:
-          type: object
-          title: Context
-      type: object
-      required:
-      - loc
-      - msg
-      - type
-      title: ValidationError
-    CompanyResponseSchema:
-      properties:
-        id:
-          type: string
-          title: Id
-          description: Embat company ID. Use it as `companyId` in the rest of the API.
-          examples:
-          - company_5f2c1a
-        legalName:
-          type: string
-          title: Legalname
-          description: Company legal name.
-          examples:
-          - Acme Corporation S.L.
-        updatedAt:
-          anyOf:
-          - type: string
-            format: date-time
-          - type: 'null'
-          title: Updatedat
-          description: Last updated date of the entity in the database
-        createdAt:
-          anyOf:
-          - type: string
-            format: date-time
-          - type: 'null'
-          title: Createdat
-          description: Created date of the entity in the database
-        contact:
-          anyOf:
-          - $ref: '#/components/schemas/app__schemas__companies__ContactSchema'
-          - type: 'null'
-          description: Company's administrative contact.
-        tags:
-          anyOf:
-          - items:
-              $ref: '#/components/schemas/TagsSchema'
-            type: array
-          - type: 'null'
-          title: Tags
-          description: Tags assigned to the company, used for classification in Embat.
-        config:
-          anyOf:
-          - $ref: '#/components/schemas/CompanyConfigSchema'
-          - type: 'null'
-          description: Company-level configuration, such as the accounting currency.
-      type: object
-      required:
-      - id
-      - legalName
-      title: CompanyResponseSchema
-    CompanyUserSchema:
-      properties:
-        id:
-          type: string
-          title: Id
-          description: Embat user ID.
-          examples:
-          - user_8f3a1c
-        email:
-          type: string
-          title: Email
-          description: User's email address.
-          examples:
-          - laura.fernandez@acme.com
-        updatedAt:
-          anyOf:
-          - type: string
-            format: date-time
-          - type: 'null'
-          title: Updatedat
-          description: Last updated date of the entity in the database
-        createdAt:
-          anyOf:
-          - type: string
-            format: date-time
-          - type: 'null'
-          title: Createdat
-          description: Created date of the entity in the database
-        name:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Name
-          description: User's first name.
-          examples:
-          - Laura
-        surname:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Surname
-          description: User's last name.
-          examples:
-          - Fernández
-      type: object
-      required:
-      - id
-      - email
-      title: CompanyUserSchema
+      title: CompanyConfigSchema
     ListCompanyUsersResponseSchema:
       properties:
         data:
@@ -497,97 +573,6 @@ components:
       required:
       - data
       title: ListCompanyUsersResponseSchema
-    CompanyConfigSchema:
-      properties:
-        currency:
-          $ref: '#/components/schemas/CurrencyEnum'
-          description: Company's accounting currency. Defaults to `EUR` when not configured.
-          default: EUR
-          examples:
-          - EUR
-      type: object
-      title: CompanyConfigSchema
-    TagsSchema:
-      properties:
-        id:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Id
-          description: Embat tag ID.
-          examples:
-          - tag_4d2f1a
-        updatedAt:
-          type: string
-          format: date-time
-          title: Updatedat
-          description: Last updated date of the entity in the database
-        createdAt:
-          type: string
-          format: date-time
-          title: Createdat
-          description: Created date of the entity in the database
-        name:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Name
-          description: Tag name.
-          examples:
-          - VIP
-      type: object
-      required:
-      - updatedAt
-      - createdAt
-      title: TagsSchema
-    app__schemas__companies__ContactSchema:
-      properties:
-        phone:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Phone
-          description: Phone number of the company's administrative contact.
-          examples:
-          - '+34600123456'
-        name:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Name
-          description: First name of the company's administrative contact.
-          examples:
-          - Laura
-        surname:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Surname
-          description: Last name of the company's administrative contact.
-          examples:
-          - Fernández
-        email:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Email
-          description: Email address of the company's administrative contact.
-          examples:
-          - laura.fernandez@acme.com
-      type: object
-      title: ContactSchema
-    ListCompaniesResponseSchema:
-      properties:
-        data:
-          items:
-            $ref: '#/components/schemas/CompanyResponseSchema'
-          type: array
-          title: Data
-          description: Companies your credentials have access to.
-      type: object
-      required:
-      - data
-      title: ListCompaniesResponseSchema
   securitySchemes:
     HTTPBearer:
       type: http

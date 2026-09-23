@@ -1,6 +1,6 @@
-openapi: 3.1.0
+openapi: 3.2.0
 info:
-  title: Embat AccountingAccounts Logs API
+  title: Embat Logs API
   description: Embat API enables connections between any third party application and Embat. Is organized around REST principles, using HTTP responses code and returning data in JSON format. While testing the API, you have to request **sandbox credentials**.
   contact:
     name: API Support
@@ -11,7 +11,7 @@ info:
     url: https://storage.googleapis.com/embat-production.appspot.com/assets/embat_dark.svg
 tags:
 - name: Logs
-  description: "`Logs` let your integration report execution events, warnings or errors observed while interacting with the Embat API, so Embat's support team can diagnose integration issues.\n\nLogs are write-only: there is no endpoint to list or retrieve the logs you send. Use `code` to classify the event by severity and, where available, by the entity it relates to (for example `PAYMENTS_ERROR` for an issue involving `Payments`, or `AUTHORIZATION_WARNING` for an authentication issue). Use the generic `INFO`, `WARNING` or `ERROR` codes for events not tied to one of those entities.\n\n**Typical flow:** report a log whenever your integration completes, skips or fails a step of its synchronization with Embat, for example after `POST /payments/{companyId}` returns an error:\n\n```json\nPOST /logs/{companyId}\n{\n  \"erp\": \"netsuite\",\n  \"erpVersion\": \"2024.1\",\n  \"connectorVersion\": \"1.4.2\",\n  \"level\": \"ERROR\",\n  \"code\": \"PAYMENTS_ERROR\",\n  \"message\": \"Failed to post payment: missing accounting account\"\n}\n```\n\nLog delivery is best-effort: both endpoints return `204` as soon as the request is accepted, and any failure while recording a log afterwards is not reported back to the caller. To send several logs at once, use `POST /logs/{companyId}/bulk`.\n"
+  description: '`Logs` let your integration report execution events, warnings or errors observed while interacting with the Embat API, so Embat''s support team can diagnose integration issues.'
 paths:
   /logs/{companyId}:
     post:
@@ -109,79 +109,6 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
 components:
   schemas:
-    ErrorResponse:
-      properties:
-        detail:
-          type: string
-          title: Detail
-          description: Human-readable explanation of the error.
-          examples:
-          - user not authorized
-      type: object
-      required:
-      - detail
-      title: ErrorResponse
-      description: Error payload returned by the API (FastAPI `detail` convention).
-    HTTPValidationError:
-      properties:
-        detail:
-          items:
-            $ref: '#/components/schemas/ValidationError'
-          type: array
-          title: Detail
-      type: object
-      title: HTTPValidationError
-    ValidationError:
-      properties:
-        loc:
-          items:
-            anyOf:
-            - type: string
-            - type: integer
-          type: array
-          title: Location
-        msg:
-          type: string
-          title: Message
-        type:
-          type: string
-          title: Error Type
-        input:
-          title: Input
-        ctx:
-          type: object
-          title: Context
-      type: object
-      required:
-      - loc
-      - msg
-      - type
-      title: ValidationError
-    ErspEnum:
-      type: string
-      enum:
-      - netsuite
-      - sageX3
-      - odoo
-      - businessCentral
-      - navision
-      - libra
-      - distritoK
-      - fo
-      - zoho
-      - holded
-      - dynamicsAx
-      - a3
-      - businessOne
-      - openbravo
-      - sage200
-      - sage50
-      - r3
-      - ekon
-      - m3Rosetta
-      - sageIntacct
-      - datev
-      title: ErspEnum
     LogsCodesEnum:
       type: string
       enum:
@@ -210,6 +137,54 @@ components:
       - PAYMENTS_WARNING
       - PAYMENTS_ERROR
       title: LogsCodesEnum
+    ValidationError:
+      properties:
+        loc:
+          items:
+            anyOf:
+            - type: string
+            - type: integer
+          type: array
+          title: Location
+        msg:
+          type: string
+          title: Message
+        type:
+          type: string
+          title: Error Type
+        input:
+          title: Input
+        ctx:
+          type: object
+          title: Context
+      type: object
+      required:
+      - loc
+      - msg
+      - type
+      title: ValidationError
+    ErrorResponse:
+      properties:
+        detail:
+          type: string
+          title: Detail
+          description: Human-readable explanation of the error.
+          examples:
+          - user not authorized
+      type: object
+      required:
+      - detail
+      title: ErrorResponse
+      description: Error payload returned by the API (FastAPI `detail` convention).
+    HTTPValidationError:
+      properties:
+        detail:
+          items:
+            $ref: '#/components/schemas/ValidationError'
+          type: array
+          title: Detail
+      type: object
+      title: HTTPValidationError
     BulkPostLogsRequestSchema:
       properties:
         data:
@@ -222,13 +197,6 @@ components:
       required:
       - data
       title: BulkPostLogsRequestSchema
-    LogsLevelsEnum:
-      type: string
-      enum:
-      - INFO
-      - ERROR
-      - WARNING
-      title: LogsLevelsEnum
     PostLogRequestSchema:
       properties:
         erp:
@@ -273,6 +241,38 @@ components:
       - code
       - message
       title: PostLogRequestSchema
+    LogsLevelsEnum:
+      type: string
+      enum:
+      - INFO
+      - ERROR
+      - WARNING
+      title: LogsLevelsEnum
+    ErspEnum:
+      type: string
+      enum:
+      - netsuite
+      - sageX3
+      - odoo
+      - businessCentral
+      - navision
+      - libra
+      - distritoK
+      - fo
+      - zoho
+      - holded
+      - dynamicsAx
+      - a3
+      - businessOne
+      - openbravo
+      - sage200
+      - sage50
+      - r3
+      - ekon
+      - m3Rosetta
+      - sageIntacct
+      - datev
+      title: ErspEnum
   securitySchemes:
     HTTPBearer:
       type: http

@@ -1,6 +1,6 @@
-openapi: 3.1.0
+openapi: 3.2.0
 info:
-  title: Embat AccountingAccounts Scenarios API
+  title: Embat Scenarios API
   description: Embat API enables connections between any third party application and Embat. Is organized around REST principles, using HTTP responses code and returning data in JSON format. While testing the API, you have to request **sandbox credentials**.
   contact:
     name: API Support
@@ -11,15 +11,7 @@ info:
     url: https://storage.googleapis.com/embat-production.appspot.com/assets/embat_dark.svg
 tags:
 - name: Scenarios
-  description: 'A `Scenario` represents a forecasting hypothesis in Embat''s treasury forecast: a named, currency-denominated projection covering a defined horizon (`startPeriod` to `endPeriod`) at a given time granularity (`periodicity`). Only published scenarios are returned when listing scenarios.
-
-
-    Scenarios are the grouping unit for `Forecasts`: each forecast belongs to one scenario, and its figures are only meaningful in the context of that scenario''s currency, periodicity and horizon.
-
-
-    **Typical flow:** list the company''s published scenarios with `GET /scenarios/{companyId}` to discover which forecasting hypotheses are available, then use a scenario''s `id` to retrieve its details with `GET /scenarios/{companyId}/{id}` or to filter the related `Forecasts` endpoints.
-
-    '
+  description: 'A `Scenario` represents a forecasting hypothesis in Embat''s treasury forecast: a named, currency-denominated projection covering a defined horizon (`startPeriod` to `endPeriod`) at a given time granularity (`periodicity`).'
 paths:
   /scenarios/{companyId}:
     get:
@@ -119,18 +111,32 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
 components:
   schemas:
-    ListScenariosResponseSchema:
+    ValidationError:
       properties:
-        data:
+        loc:
           items:
-            $ref: '#/components/schemas/GetScenarioResponseSchema'
+            anyOf:
+            - type: string
+            - type: integer
           type: array
-          title: Data
-          description: Published scenarios of the company.
+          title: Location
+        msg:
+          type: string
+          title: Message
+        type:
+          type: string
+          title: Error Type
+        input:
+          title: Input
+        ctx:
+          type: object
+          title: Context
       type: object
       required:
-      - data
-      title: ListScenariosResponseSchema
+      - loc
+      - msg
+      - type
+      title: ValidationError
     ErrorResponse:
       properties:
         detail:
@@ -144,6 +150,93 @@ components:
       - detail
       title: ErrorResponse
       description: Error payload returned by the API (FastAPI `detail` convention).
+    PeriodicityEnum:
+      type: string
+      enum:
+      - monthly
+      - yearly
+      - weekly
+      - daily
+      title: PeriodicityEnum
+    HTTPValidationError:
+      properties:
+        detail:
+          items:
+            $ref: '#/components/schemas/ValidationError'
+          type: array
+          title: Detail
+      type: object
+      title: HTTPValidationError
+    GetScenarioResponseSchema:
+      properties:
+        id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Id
+          description: Embat scenario ID.
+        companyId:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Companyid
+          description: Embat company ID. You can get them from "companies" endpoints.
+        name:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Name
+          description: Name of the scenario.
+          examples:
+          - FY2024 Base Case
+        currency:
+          anyOf:
+          - $ref: '#/components/schemas/CurrencyEnum'
+          - type: 'null'
+          description: Currency the scenario's forecasted amounts are expressed in.
+          examples:
+          - EUR
+        description:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Description
+          description: Free-text description of the scenario.
+          examples:
+          - Baseline cash flow forecast for FY2024
+        periodicity:
+          anyOf:
+          - $ref: '#/components/schemas/PeriodicityEnum'
+          - type: 'null'
+          description: Time granularity of the scenario's forecasted periods.
+        createdAt:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Createdat
+          description: Created date of the entity.
+        updatedAt:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Updatedat
+          description: Last updated date of the entity.
+        startPeriod:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Startperiod
+          description: Numeric identifier of the first period covered by the scenario's forecast.
+        endPeriod:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Endperiod
+          description: Numeric identifier of the last period covered by the scenario's forecast.
+      type: object
+      title: GetScenarioResponseSchema
     CurrencyEnum:
       type: string
       enum:
@@ -337,119 +430,18 @@ components:
       - ZWG
       - ZWL
       title: CurrencyEnum
-    HTTPValidationError:
+    ListScenariosResponseSchema:
       properties:
-        detail:
+        data:
           items:
-            $ref: '#/components/schemas/ValidationError'
+            $ref: '#/components/schemas/GetScenarioResponseSchema'
           type: array
-          title: Detail
-      type: object
-      title: HTTPValidationError
-    ValidationError:
-      properties:
-        loc:
-          items:
-            anyOf:
-            - type: string
-            - type: integer
-          type: array
-          title: Location
-        msg:
-          type: string
-          title: Message
-        type:
-          type: string
-          title: Error Type
-        input:
-          title: Input
-        ctx:
-          type: object
-          title: Context
+          title: Data
+          description: Published scenarios of the company.
       type: object
       required:
-      - loc
-      - msg
-      - type
-      title: ValidationError
-    PeriodicityEnum:
-      type: string
-      enum:
-      - monthly
-      - yearly
-      - weekly
-      - daily
-      title: PeriodicityEnum
-    GetScenarioResponseSchema:
-      properties:
-        id:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Id
-          description: Embat scenario ID.
-        companyId:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Companyid
-          description: Embat company ID. You can get them from "companies" endpoints.
-        name:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Name
-          description: Name of the scenario.
-          examples:
-          - FY2024 Base Case
-        currency:
-          anyOf:
-          - $ref: '#/components/schemas/CurrencyEnum'
-          - type: 'null'
-          description: Currency the scenario's forecasted amounts are expressed in.
-          examples:
-          - EUR
-        description:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Description
-          description: Free-text description of the scenario.
-          examples:
-          - Baseline cash flow forecast for FY2024
-        periodicity:
-          anyOf:
-          - $ref: '#/components/schemas/PeriodicityEnum'
-          - type: 'null'
-          description: Time granularity of the scenario's forecasted periods.
-        createdAt:
-          anyOf:
-          - type: string
-            format: date-time
-          - type: 'null'
-          title: Createdat
-          description: Created date of the entity.
-        updatedAt:
-          anyOf:
-          - type: string
-            format: date-time
-          - type: 'null'
-          title: Updatedat
-          description: Last updated date of the entity.
-        startPeriod:
-          anyOf:
-          - type: integer
-          - type: 'null'
-          title: Startperiod
-          description: Numeric identifier of the first period covered by the scenario's forecast.
-        endPeriod:
-          anyOf:
-          - type: integer
-          - type: 'null'
-          title: Endperiod
-          description: Numeric identifier of the last period covered by the scenario's forecast.
-      type: object
-      title: GetScenarioResponseSchema
+      - data
+      title: ListScenariosResponseSchema
   securitySchemes:
     HTTPBearer:
       type: http

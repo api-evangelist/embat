@@ -1,6 +1,6 @@
-openapi: 3.1.0
+openapi: 3.2.0
 info:
-  title: Embat AccountingAccounts Categories API
+  title: Embat Categories API
   description: Embat API enables connections between any third party application and Embat. Is organized around REST principles, using HTTP responses code and returning data in JSON format. While testing the API, you have to request **sandbox credentials**.
   contact:
     name: API Support
@@ -11,7 +11,7 @@ info:
     url: https://storage.googleapis.com/embat-production.appspot.com/assets/embat_dark.svg
 tags:
 - name: Categories
-  description: "`Category` represents a treasury or cashflow classification in Embat, used to group transactions, forecasts and operations for reporting (e.g. \"Providers\", \"Payroll\", \"Subscriptions\"). Categories are created and managed in the Embat application; this API only lists and retrieves them. `parentId` is the Embat ID of the parent category, letting you build a category tree such as:\n\n- Payments\n    - Providers\n        - Europe\n        - Latam\n    - Payroll\n\n- Collections\n    - Subscriptions\n\nA category has no `parentId` when it is a top-level category.\n\nCategories are referenced by `categoryId` on `Transactions`, `Forecasts` and `Operations` to classify each movement. In the Embat application you can also map an ERP ledger account to a category, so operations posted against that account are categorized automatically.\n\n**Typical flow:** look up the categories configured for a company with `GET /categories/{companyId}` (or a single one with `GET /categories/{companyId}/{id}`) and use their `id` as the `categoryId` when creating or reading transactions, forecasts or operations through the corresponding endpoints.\n"
+  description: '`Category` represents a treasury or cashflow classification in Embat, used to group transactions, forecasts and operations for reporting (e.g.'
 paths:
   /categories/{companyId}:
     get:
@@ -111,40 +111,6 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
 components:
   schemas:
-    ListCategoriesResponseSchema:
-      properties:
-        data:
-          items:
-            $ref: '#/components/schemas/GetCategoriesResponseSchema'
-          type: array
-          title: Data
-          description: Categories matching the query.
-      type: object
-      required:
-      - data
-      title: ListCategoriesResponseSchema
-    ErrorResponse:
-      properties:
-        detail:
-          type: string
-          title: Detail
-          description: Human-readable explanation of the error.
-          examples:
-          - user not authorized
-      type: object
-      required:
-      - detail
-      title: ErrorResponse
-      description: Error payload returned by the API (FastAPI `detail` convention).
-    HTTPValidationError:
-      properties:
-        detail:
-          items:
-            $ref: '#/components/schemas/ValidationError'
-          type: array
-          title: Detail
-      type: object
-      title: HTTPValidationError
     ValidationError:
       properties:
         loc:
@@ -171,6 +137,40 @@ components:
       - msg
       - type
       title: ValidationError
+    ErrorResponse:
+      properties:
+        detail:
+          type: string
+          title: Detail
+          description: Human-readable explanation of the error.
+          examples:
+          - user not authorized
+      type: object
+      required:
+      - detail
+      title: ErrorResponse
+      description: Error payload returned by the API (FastAPI `detail` convention).
+    HTTPValidationError:
+      properties:
+        detail:
+          items:
+            $ref: '#/components/schemas/ValidationError'
+          type: array
+          title: Detail
+      type: object
+      title: HTTPValidationError
+    ListCategoriesResponseSchema:
+      properties:
+        data:
+          items:
+            $ref: '#/components/schemas/GetCategoriesResponseSchema'
+          type: array
+          title: Data
+          description: Categories matching the query.
+      type: object
+      required:
+      - data
+      title: ListCategoriesResponseSchema
     GetCategoriesResponseSchema:
       properties:
         id:
