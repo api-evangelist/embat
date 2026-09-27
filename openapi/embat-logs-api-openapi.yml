@@ -109,82 +109,6 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
 components:
   schemas:
-    LogsCodesEnum:
-      type: string
-      enum:
-      - INFO
-      - WARNING
-      - ERROR
-      - AUTHORIZATION_INFO
-      - AUTHORIZATION_WARNING
-      - AUTHORIZATION_ERROR
-      - ACCOUNTINGS_ACCOUNTS_INFO
-      - ACCOUNTINGS_ACCOUNTS_WARNING
-      - ACCOUNTINGS_ACCOUNTS_ERROR
-      - ACCOUNTINGS_ENTRIES_INFO
-      - ACCOUNTINGS_ENTRIES_WARNING
-      - ACCOUNTINGS_ENTRIES_ERROR
-      - ATTRIBUTES_INFO
-      - ATTRIBUTES_WARNING
-      - ATTRIBUTES_ERROR
-      - CONTACTS_INFO
-      - CONTACTS_WARNING
-      - CONTACTS_ERROR
-      - OPERATIONS_INFO
-      - OPERATIONS_WARNING
-      - OPERATIONS_ERROR
-      - PAYMENTS_INFO
-      - PAYMENTS_WARNING
-      - PAYMENTS_ERROR
-      title: LogsCodesEnum
-    ValidationError:
-      properties:
-        loc:
-          items:
-            anyOf:
-            - type: string
-            - type: integer
-          type: array
-          title: Location
-        msg:
-          type: string
-          title: Message
-        type:
-          type: string
-          title: Error Type
-        input:
-          title: Input
-        ctx:
-          type: object
-          title: Context
-      type: object
-      required:
-      - loc
-      - msg
-      - type
-      title: ValidationError
-    ErrorResponse:
-      properties:
-        detail:
-          type: string
-          title: Detail
-          description: Human-readable explanation of the error.
-          examples:
-          - user not authorized
-      type: object
-      required:
-      - detail
-      title: ErrorResponse
-      description: Error payload returned by the API (FastAPI `detail` convention).
-    HTTPValidationError:
-      properties:
-        detail:
-          items:
-            $ref: '#/components/schemas/ValidationError'
-          type: array
-          title: Detail
-      type: object
-      title: HTTPValidationError
     BulkPostLogsRequestSchema:
       properties:
         data:
@@ -197,6 +121,13 @@ components:
       required:
       - data
       title: BulkPostLogsRequestSchema
+    LogsLevelsEnum:
+      type: string
+      enum:
+      - INFO
+      - ERROR
+      - WARNING
+      title: LogsLevelsEnum
     PostLogRequestSchema:
       properties:
         erp:
@@ -241,13 +172,6 @@ components:
       - code
       - message
       title: PostLogRequestSchema
-    LogsLevelsEnum:
-      type: string
-      enum:
-      - INFO
-      - ERROR
-      - WARNING
-      title: LogsLevelsEnum
     ErspEnum:
       type: string
       enum:
@@ -273,6 +197,82 @@ components:
       - sageIntacct
       - datev
       title: ErspEnum
+    LogsCodesEnum:
+      type: string
+      enum:
+      - INFO
+      - WARNING
+      - ERROR
+      - AUTHORIZATION_INFO
+      - AUTHORIZATION_WARNING
+      - AUTHORIZATION_ERROR
+      - ACCOUNTINGS_ACCOUNTS_INFO
+      - ACCOUNTINGS_ACCOUNTS_WARNING
+      - ACCOUNTINGS_ACCOUNTS_ERROR
+      - ACCOUNTINGS_ENTRIES_INFO
+      - ACCOUNTINGS_ENTRIES_WARNING
+      - ACCOUNTINGS_ENTRIES_ERROR
+      - ATTRIBUTES_INFO
+      - ATTRIBUTES_WARNING
+      - ATTRIBUTES_ERROR
+      - CONTACTS_INFO
+      - CONTACTS_WARNING
+      - CONTACTS_ERROR
+      - OPERATIONS_INFO
+      - OPERATIONS_WARNING
+      - OPERATIONS_ERROR
+      - PAYMENTS_INFO
+      - PAYMENTS_WARNING
+      - PAYMENTS_ERROR
+      title: LogsCodesEnum
+    HTTPValidationError:
+      properties:
+        detail:
+          items:
+            $ref: '#/components/schemas/ValidationError'
+          type: array
+          title: Detail
+      type: object
+      title: HTTPValidationError
+    ValidationError:
+      properties:
+        loc:
+          items:
+            anyOf:
+            - type: string
+            - type: integer
+          type: array
+          title: Location
+        msg:
+          type: string
+          title: Message
+        type:
+          type: string
+          title: Error Type
+        input:
+          title: Input
+        ctx:
+          type: object
+          title: Context
+      type: object
+      required:
+      - loc
+      - msg
+      - type
+      title: ValidationError
+    ErrorResponse:
+      properties:
+        detail:
+          type: string
+          title: Detail
+          description: Human-readable explanation of the error.
+          examples:
+          - user not authorized
+      type: object
+      required:
+      - detail
+      title: ErrorResponse
+      description: Error payload returned by the API (FastAPI `detail` convention).
   securitySchemes:
     HTTPBearer:
       type: http

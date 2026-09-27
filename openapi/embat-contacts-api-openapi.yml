@@ -484,264 +484,28 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
 components:
   schemas:
-    AuxBulkPatchContactsRequestSchema:
+    ContactNewAccount:
       properties:
-        tradeName:
+        default:
+          type: boolean
+          title: Default
+          description: Marks this account as the default one for its `currency`.
+          default: false
+        currency:
           anyOf:
-          - type: string
+          - $ref: '#/components/schemas/CurrencyEnum'
           - type: 'null'
-          title: Tradename
-          description: Commercial/trade name of the contact. Defaults to `legalName` when omitted or blank.
+          description: ISO currency code this account is used for. An empty string is treated the same as omitting this field.
           examples:
-          - Acme Supplies
-        legalName:
+          - EUR
+        details:
           anyOf:
-          - type: string
+          - $ref: '#/components/schemas/ContactNewAccountDetails'
           - type: 'null'
-          title: Legalname
-          description: Legal (registered) name of the contact.
-          examples:
-          - Acme Supplies S.L.
-        taxId:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Taxid
-          description: Tax identification number (CIF/NIF/VAT) of the contact. Spaces are removed before storage.
-          examples:
-          - B12345678
-        contact:
-          anyOf:
-          - $ref: '#/components/schemas/ContactSchema-Input'
-          - type: 'null'
-          description: Contact person details (name, phone, email) for this contact.
-        address:
-          anyOf:
-          - $ref: '#/components/schemas/ContactAddressSchema'
-          - type: 'null'
-          description: Postal address of the contact.
-        contactType:
-          $ref: '#/components/schemas/ContactContactTypeEnum'
-          description: Whether the contact is a `company` or a `freelance` individual. Defaults to `company`.
-          default: company
-        type:
-          anyOf:
-          - $ref: '#/components/schemas/ContactTypeEnum'
-          - type: 'null'
-          description: 'Commercial relationship with the contact: `client`, `supplier` or `client-supplier`.'
-        accounts:
-          anyOf:
-          - items:
-              $ref: '#/components/schemas/ContactAccounts'
-            type: array
-          - type: 'null'
-          title: Accounts
-          description: 'Bank accounts of the contact. When omitted (or empty) and `paymentsAccounts` is provided, Embat derives one entry per payment account automatically: the derived `iban` holds the payment identifier resolved for the account''s currency (an IBAN for IBAN-based currencies, otherwise the local account number), `swift` takes the account''s `bic`, and `default` its `default` flag.'
-        paymentsAccounts:
-          anyOf:
-          - items:
-              $ref: '#/components/schemas/ContactNewAccount'
-            type: array
-          - type: 'null'
-          title: Paymentsaccounts
-          description: Bank accounts of the contact, one per currency/payment rail, with the identifiers required to pay it (IBAN, account number, routing number...). Each entry is validated independently and **silently discarded** when it has no usable account identifier for its `currency` (neither `iban` nor `accountNumber` set); format validity of the identifiers themselves is not enforced. Entries that resolve to the same account identifier are deduplicated, keeping only the first one.
-        additionalInfo:
-          anyOf:
-          - additionalProperties: true
-            type: object
-          - type: 'null'
-          title: Additionalinfo
-          description: Free-form key/value metadata to attach to the contact.
-        accountingCode:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Accountingcode
-          description: Accounting account code this contact is linked to.
-          examples:
-          - '4300001'
-        paymentMethod:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Paymentmethod
-          description: Preferred payment method for this contact.
-          examples:
-          - bank-transaction
-        paymentTerms:
-          anyOf:
-          - type: integer
-          - type: 'null'
-          title: Paymentterms
-          description: Payment terms granted to the contact, in days.
-          examples:
-          - 30
-        attributes:
-          anyOf:
-          - items:
-              $ref: '#/components/schemas/AttributeValueRequestSchema'
-            type: array
-          - type: 'null'
-          title: Attributes
-          description: Custom attribute values to attach to the contact.
-        customId:
-          type: string
-          title: Customid
-          description: Embat custom/auto-generated unique contact ID. You can use it as your own custom ERP contact ID.
-          examples:
-          - erp-contact-001
+          description: 'Bank account identifiers. Which fields are required depends on the `currency` and the destination country: IBAN-based currencies expect `iban`, others expect `accountNumber` plus the identifiers of the applicable payment rail (e.g. `routingNumber` for US accounts, `sortCode` for UK accounts).'
       type: object
-      required:
-      - customId
-      title: AuxBulkPatchContactsRequestSchema
-    ValidationError:
-      properties:
-        loc:
-          items:
-            anyOf:
-            - type: string
-            - type: integer
-          type: array
-          title: Location
-        msg:
-          type: string
-          title: Message
-        type:
-          type: string
-          title: Error Type
-        input:
-          title: Input
-        ctx:
-          type: object
-          title: Context
-      type: object
-      required:
-      - loc
-      - msg
-      - type
-      title: ValidationError
-    BulkModifyContactsResponseSchema:
-      properties:
-        data:
-          items:
-            $ref: '#/components/schemas/ModifyContactsResponseSchema'
-          type: array
-          title: Data
-          description: Result of the bulk operation, one entry per contact.
-      type: object
-      required:
-      - data
-      title: BulkModifyContactsResponseSchema
-    PostContactsRequestSchema:
-      properties:
-        tradeName:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Tradename
-          description: Commercial/trade name of the contact. Defaults to `legalName` when omitted or blank.
-          examples:
-          - Acme Supplies
-        legalName:
-          type: string
-          title: Legalname
-          description: Legal (registered) name of the contact.
-          examples:
-          - Acme Supplies S.L.
-        taxId:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Taxid
-          description: Tax identification number (CIF/NIF/VAT) of the contact. Spaces are removed before storage.
-          examples:
-          - B12345678
-        contact:
-          anyOf:
-          - $ref: '#/components/schemas/ContactSchema-Input'
-          - type: 'null'
-          description: Contact person details (name, phone, email) for this contact.
-        address:
-          anyOf:
-          - $ref: '#/components/schemas/ContactAddressSchema'
-          - type: 'null'
-          description: Postal address of the contact.
-        contactType:
-          $ref: '#/components/schemas/ContactContactTypeEnum'
-          description: Whether the contact is a `company` or a `freelance` individual. Defaults to `company`.
-          default: company
-        type:
-          $ref: '#/components/schemas/ContactTypeEnum'
-          description: 'Commercial relationship with the contact: `client`, `supplier` or `client-supplier`.'
-        accounts:
-          anyOf:
-          - items:
-              $ref: '#/components/schemas/ContactAccounts'
-            type: array
-          - type: 'null'
-          title: Accounts
-          description: 'Bank accounts of the contact. When omitted (or empty) and `paymentsAccounts` is provided, Embat derives one entry per payment account automatically: the derived `iban` holds the payment identifier resolved for the account''s currency (an IBAN for IBAN-based currencies, otherwise the local account number), `swift` takes the account''s `bic`, and `default` its `default` flag.'
-        paymentsAccounts:
-          anyOf:
-          - items:
-              $ref: '#/components/schemas/ContactNewAccount'
-            type: array
-          - type: 'null'
-          title: Paymentsaccounts
-          description: Bank accounts of the contact, one per currency/payment rail, with the identifiers required to pay it (IBAN, account number, routing number...). Each entry is validated independently and **silently discarded** when it has no usable account identifier for its `currency` (neither `iban` nor `accountNumber` set); format validity of the identifiers themselves is not enforced. Entries that resolve to the same account identifier are deduplicated, keeping only the first one.
-        additionalInfo:
-          anyOf:
-          - additionalProperties: true
-            type: object
-          - type: 'null'
-          title: Additionalinfo
-          description: Free-form key/value metadata to attach to the contact.
-        accountingCode:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Accountingcode
-          description: Accounting account code this contact is linked to.
-          examples:
-          - '4300001'
-        paymentMethod:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Paymentmethod
-          description: Preferred payment method for this contact.
-          examples:
-          - bank-transaction
-        paymentTerms:
-          anyOf:
-          - type: integer
-          - type: 'null'
-          title: Paymentterms
-          description: Payment terms granted to the contact, in days.
-          examples:
-          - 30
-        attributes:
-          anyOf:
-          - items:
-              $ref: '#/components/schemas/AttributeValueRequestSchema'
-            type: array
-          - type: 'null'
-          title: Attributes
-          description: Custom attribute values to attach to the contact.
-        customId:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Customid
-          description: Your own unique ID for the contact. If omitted, Embat auto-generates one.
-          examples:
-          - erp-contact-001
-      type: object
-      required:
-      - legalName
-      - type
-      title: PostContactsRequestSchema
-    app__schemas__contacts__ContactSchema:
+      title: ContactNewAccount
+    ContactSchema-Input:
       properties:
         phone:
           anyOf:
@@ -777,27 +541,292 @@ components:
           - Doe
       type: object
       title: ContactSchema
-    ContactNewAccount:
+    AttributeValueRequestSchema:
       properties:
-        default:
-          type: boolean
-          title: Default
-          description: Marks this account as the default one for its `currency`.
-          default: false
-        currency:
-          anyOf:
-          - $ref: '#/components/schemas/CurrencyEnum'
-          - type: 'null'
-          description: ISO currency code this account is used for. An empty string is treated the same as omitting this field.
+        customId:
+          type: string
+          title: Customid
+          description: Custom ID of the attribute (see the Attributes endpoints) being set.
           examples:
-          - EUR
-        details:
+          - cost-center
+        value:
+          type: string
+          title: Value
+          description: Display text of the value being set on this entity.
+          examples:
+          - Marketing
+        valueCustomId:
           anyOf:
-          - $ref: '#/components/schemas/ContactNewAccountDetails'
+          - type: string
           - type: 'null'
-          description: 'Bank account identifiers. Which fields are required depends on the `currency` and the destination country: IBAN-based currencies expect `iban`, others expect `accountNumber` plus the identifiers of the applicable payment rail (e.g. `routingNumber` for US accounts, `sortCode` for UK accounts).'
+          title: Valuecustomid
+          description: Custom ID of one of the attribute's predefined `values`, when the attribute is of type `list`. Leave unset for free-form `string`/`number` attributes.
+          examples:
+          - marketing
+        parentCustomId:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Parentcustomid
+          description: Not used when attaching an attribute value to an entity.
       type: object
-      title: ContactNewAccount
+      required:
+      - customId
+      - value
+      title: AttributeValueRequestSchema
+      description: 'Attaches an attribute value to another entity (payment, contact, operation,
+
+        transaction, accounting entry...).'
+    ListContactsResponseSchema:
+      properties:
+        nextPageToken:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Nextpagetoken
+          description: Token to fetch the next page of results. `null` when there are no more pages.
+        data:
+          items:
+            $ref: '#/components/schemas/GetContactsResponseSchema'
+          type: array
+          title: Data
+          description: Contacts matching the query.
+      type: object
+      required:
+      - data
+      title: ListContactsResponseSchema
+    ErrorResponse:
+      properties:
+        detail:
+          type: string
+          title: Detail
+          description: Human-readable explanation of the error.
+          examples:
+          - user not authorized
+      type: object
+      required:
+      - detail
+      title: ErrorResponse
+      description: Error payload returned by the API (FastAPI `detail` convention).
+    CurrencyEnum:
+      type: string
+      enum:
+      - AED
+      - AFN
+      - ALL
+      - AMD
+      - ANG
+      - AOA
+      - ARS
+      - AUD
+      - AWG
+      - AZN
+      - BAM
+      - BBD
+      - BDT
+      - BGN
+      - BHD
+      - BIF
+      - BMD
+      - BND
+      - BOB
+      - BOV
+      - BRL
+      - BSD
+      - BTC
+      - BTN
+      - BWP
+      - BYN
+      - BZD
+      - CAD
+      - CDF
+      - CHE
+      - CHF
+      - CHW
+      - CLF
+      - CLP
+      - CNH
+      - CNY
+      - COP
+      - COU
+      - CRC
+      - CUP
+      - CVE
+      - CZK
+      - DJF
+      - DKK
+      - DOP
+      - DZD
+      - EEK
+      - EGP
+      - ERN
+      - ETB
+      - ETH
+      - EUR
+      - FJD
+      - FKP
+      - GBP
+      - GEL
+      - GHS
+      - GIP
+      - GMD
+      - GNF
+      - GTQ
+      - GYD
+      - HKD
+      - HNL
+      - HRK
+      - HTG
+      - HUF
+      - IDR
+      - ILS
+      - INR
+      - IQD
+      - IRR
+      - ISK
+      - JMD
+      - JOD
+      - JPY
+      - KES
+      - KGS
+      - KHR
+      - KMF
+      - KPW
+      - KRW
+      - KWD
+      - KYD
+      - KZT
+      - LAK
+      - LBP
+      - LKR
+      - LRD
+      - LSL
+      - LTC
+      - LTL
+      - LVL
+      - LYD
+      - MAD
+      - MDL
+      - MGA
+      - MKD
+      - MMK
+      - MNT
+      - MOP
+      - MRU
+      - MUR
+      - MVR
+      - MWK
+      - MXN
+      - MXV
+      - MYR
+      - MZN
+      - NAD
+      - NGN
+      - NIO
+      - NOK
+      - NPR
+      - NZD
+      - OMR
+      - PAB
+      - PEN
+      - PGK
+      - PHP
+      - PKR
+      - PLN
+      - PYG
+      - QAR
+      - RON
+      - RSD
+      - RUB
+      - RWF
+      - SAR
+      - SBD
+      - SCR
+      - SDG
+      - SEK
+      - SGD
+      - SHP
+      - SLE
+      - SOS
+      - SRD
+      - SSP
+      - STN
+      - SVC
+      - SYP
+      - SZL
+      - THB
+      - TJS
+      - TMT
+      - TND
+      - TOP
+      - TRY
+      - TTD
+      - TWD
+      - TZS
+      - UAH
+      - UGX
+      - USD
+      - USN
+      - UYI
+      - UYU
+      - UYW
+      - UZS
+      - VED
+      - VEF
+      - VES
+      - VND
+      - VUV
+      - WST
+      - XAF
+      - XAG
+      - XAU
+      - XBA
+      - XBB
+      - XBC
+      - XBD
+      - XCD
+      - XDR
+      - XOF
+      - XPD
+      - XPF
+      - XPT
+      - XSU
+      - XTS
+      - XUA
+      - XXX
+      - YER
+      - ZAR
+      - ZMK
+      - ZMW
+      - ZWG
+      - ZWL
+      title: CurrencyEnum
+    ContactAccounts:
+      properties:
+        swift:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Swift
+          description: SWIFT/BIC code of the account.
+          examples:
+          - BBVAESMMXXX
+        iban:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Iban
+          description: Account identifier. Usually an IBAN, but for entries derived from `paymentsAccounts` in currencies that do not use IBAN (e.g. USD, CAD, JPY) it holds the resolved payment identifier for that currency, such as a local account number. Spaces are stripped before storage. An account with an empty `iban` is silently dropped when the contact is saved.
+          examples:
+          - ES9121000418450200051332
+        default:
+          anyOf:
+          - type: boolean
+          - type: 'null'
+          title: Default
+          description: Marks this account as the contact's default one.
+      type: object
+      title: ContactAccounts
     BulkUpsertContactsResponseSchema:
       properties:
         data:
@@ -810,108 +839,38 @@ components:
       required:
       - data
       title: BulkUpsertContactsResponseSchema
-    PatchContactsRequestSchema:
+    BulkPostContactsRequestSchema:
       properties:
-        tradeName:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Tradename
-          description: Commercial/trade name of the contact. Defaults to `legalName` when omitted or blank.
-          examples:
-          - Acme Supplies
-        legalName:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Legalname
-          description: Legal (registered) name of the contact.
-          examples:
-          - Acme Supplies S.L.
-        taxId:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Taxid
-          description: Tax identification number (CIF/NIF/VAT) of the contact. Spaces are removed before storage.
-          examples:
-          - B12345678
-        contact:
-          anyOf:
-          - $ref: '#/components/schemas/ContactSchema-Input'
-          - type: 'null'
-          description: Contact person details (name, phone, email) for this contact.
-        address:
-          anyOf:
-          - $ref: '#/components/schemas/ContactAddressSchema'
-          - type: 'null'
-          description: Postal address of the contact.
-        contactType:
-          $ref: '#/components/schemas/ContactContactTypeEnum'
-          description: Whether the contact is a `company` or a `freelance` individual. Defaults to `company`.
-          default: company
-        type:
-          anyOf:
-          - $ref: '#/components/schemas/ContactTypeEnum'
-          - type: 'null'
-          description: 'Commercial relationship with the contact: `client`, `supplier` or `client-supplier`.'
-        accounts:
-          anyOf:
-          - items:
-              $ref: '#/components/schemas/ContactAccounts'
-            type: array
-          - type: 'null'
-          title: Accounts
-          description: 'Bank accounts of the contact. When omitted (or empty) and `paymentsAccounts` is provided, Embat derives one entry per payment account automatically: the derived `iban` holds the payment identifier resolved for the account''s currency (an IBAN for IBAN-based currencies, otherwise the local account number), `swift` takes the account''s `bic`, and `default` its `default` flag.'
-        paymentsAccounts:
-          anyOf:
-          - items:
-              $ref: '#/components/schemas/ContactNewAccount'
-            type: array
-          - type: 'null'
-          title: Paymentsaccounts
-          description: Bank accounts of the contact, one per currency/payment rail, with the identifiers required to pay it (IBAN, account number, routing number...). Each entry is validated independently and **silently discarded** when it has no usable account identifier for its `currency` (neither `iban` nor `accountNumber` set); format validity of the identifiers themselves is not enforced. Entries that resolve to the same account identifier are deduplicated, keeping only the first one.
-        additionalInfo:
-          anyOf:
-          - additionalProperties: true
-            type: object
-          - type: 'null'
-          title: Additionalinfo
-          description: Free-form key/value metadata to attach to the contact.
-        accountingCode:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Accountingcode
-          description: Accounting account code this contact is linked to.
-          examples:
-          - '4300001'
-        paymentMethod:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Paymentmethod
-          description: Preferred payment method for this contact.
-          examples:
-          - bank-transaction
-        paymentTerms:
-          anyOf:
-          - type: integer
-          - type: 'null'
-          title: Paymentterms
-          description: Payment terms granted to the contact, in days.
-          examples:
-          - 30
-        attributes:
-          anyOf:
-          - items:
-              $ref: '#/components/schemas/AttributeValueRequestSchema'
-            type: array
-          - type: 'null'
-          title: Attributes
-          description: Custom attribute values to attach to the contact.
+        data:
+          items:
+            $ref: '#/components/schemas/PostContactsRequestSchema'
+          type: array
+          title: Data
+          description: Contacts to create.
       type: object
-      title: PatchContactsRequestSchema
+      required:
+      - data
+      title: BulkPostContactsRequestSchema
+    ModifyContactsResponseSchema:
+      properties:
+        id:
+          type: string
+          title: Id
+          description: Embat resource ID
+      type: object
+      required:
+      - id
+      title: ModifyContactsResponseSchema
+    DeleteContactsRequestSchema:
+      properties:
+        customId:
+          type: string
+          title: Customid
+          description: Custom ID of the contact to delete.
+      type: object
+      required:
+      - customId
+      title: DeleteContactsRequestSchema
     GetContactsResponseSchema:
       properties:
         tradeName:
@@ -1044,6 +1003,21 @@ components:
       - updatedAt
       - createdAt
       title: GetContactsResponseSchema
+    UpsertContactsResponseSchema:
+      properties:
+        id:
+          type: string
+          title: Id
+          description: Embat resource ID
+        customId:
+          type: string
+          title: Customid
+          description: Client-provided custom ID
+      type: object
+      required:
+      - id
+      - customId
+      title: UpsertContactsResponseSchema
     ContactNewAccountDetails:
       properties:
         iban:
@@ -1144,28 +1118,150 @@ components:
           - ES
       type: object
       title: ContactNewAccountDetails
-    BulkDeleteContactsRequestSchema:
+    app__schemas__contacts__ContactSchema:
       properties:
-        data:
-          items:
-            $ref: '#/components/schemas/DeleteContactsRequestSchema'
-          type: array
-          title: Data
-          description: Contacts to delete, identified by `customId`.
+        phone:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Phone
+          description: Phone number of the contact person.
+          examples:
+          - '+34600000000'
+        email:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Email
+          description: Email address of the contact person. Required to pay this contact by Interac e-Transfer in CAD.
+          examples:
+          - billing@acme-supplies.com
+        name:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Name
+          description: First name of the contact person.
+          examples:
+          - John
+        surname:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Surname
+          description: Last name of the contact person.
+          examples:
+          - Doe
       type: object
-      required:
-      - data
-      title: BulkDeleteContactsRequestSchema
-    ModifyContactsResponseSchema:
+      title: ContactSchema
+    ContactContactTypeEnum:
+      type: string
+      enum:
+      - freelance
+      - company
+      title: ContactContactTypeEnum
+    PatchContactsRequestSchema:
       properties:
-        id:
-          type: string
-          title: Id
-          description: Embat resource ID
+        tradeName:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Tradename
+          description: Commercial/trade name of the contact. Defaults to `legalName` when omitted or blank.
+          examples:
+          - Acme Supplies
+        legalName:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Legalname
+          description: Legal (registered) name of the contact.
+          examples:
+          - Acme Supplies S.L.
+        taxId:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Taxid
+          description: Tax identification number (CIF/NIF/VAT) of the contact. Spaces are removed before storage.
+          examples:
+          - B12345678
+        contact:
+          anyOf:
+          - $ref: '#/components/schemas/ContactSchema-Input'
+          - type: 'null'
+          description: Contact person details (name, phone, email) for this contact.
+        address:
+          anyOf:
+          - $ref: '#/components/schemas/ContactAddressSchema'
+          - type: 'null'
+          description: Postal address of the contact.
+        contactType:
+          $ref: '#/components/schemas/ContactContactTypeEnum'
+          description: Whether the contact is a `company` or a `freelance` individual. Defaults to `company`.
+          default: company
+        type:
+          anyOf:
+          - $ref: '#/components/schemas/ContactTypeEnum'
+          - type: 'null'
+          description: 'Commercial relationship with the contact: `client`, `supplier` or `client-supplier`.'
+        accounts:
+          anyOf:
+          - items:
+              $ref: '#/components/schemas/ContactAccounts'
+            type: array
+          - type: 'null'
+          title: Accounts
+          description: 'Bank accounts of the contact. When omitted (or empty) and `paymentsAccounts` is provided, Embat derives one entry per payment account automatically: the derived `iban` holds the payment identifier resolved for the account''s currency (an IBAN for IBAN-based currencies, otherwise the local account number), `swift` takes the account''s `bic`, and `default` its `default` flag.'
+        paymentsAccounts:
+          anyOf:
+          - items:
+              $ref: '#/components/schemas/ContactNewAccount'
+            type: array
+          - type: 'null'
+          title: Paymentsaccounts
+          description: Bank accounts of the contact, one per currency/payment rail, with the identifiers required to pay it (IBAN, account number, routing number...). Each entry is validated independently and **silently discarded** when it has no usable account identifier for its `currency` (neither `iban` nor `accountNumber` set); format validity of the identifiers themselves is not enforced. Entries that resolve to the same account identifier are deduplicated, keeping only the first one.
+        additionalInfo:
+          anyOf:
+          - additionalProperties: true
+            type: object
+          - type: 'null'
+          title: Additionalinfo
+          description: Free-form key/value metadata to attach to the contact.
+        accountingCode:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Accountingcode
+          description: Accounting account code this contact is linked to.
+          examples:
+          - '4300001'
+        paymentMethod:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Paymentmethod
+          description: Preferred payment method for this contact.
+          examples:
+          - bank-transaction
+        paymentTerms:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Paymentterms
+          description: Payment terms granted to the contact, in days.
+          examples:
+          - 30
+        attributes:
+          anyOf:
+          - items:
+              $ref: '#/components/schemas/AttributeValueRequestSchema'
+            type: array
+          - type: 'null'
+          title: Attributes
+          description: Custom attribute values to attach to the contact.
       type: object
-      required:
-      - id
-      title: ModifyContactsResponseSchema
+      title: PatchContactsRequestSchema
     ContactTypeEnum:
       type: string
       enum:
@@ -1173,32 +1269,133 @@ components:
       - client-supplier
       - client
       title: ContactTypeEnum
-    ContactAccounts:
+    AccountTypeEnum:
+      type: string
+      enum:
+      - CHECKING
+      - SAVINGS
+      title: AccountTypeEnum
+    PostContactsRequestSchema:
       properties:
-        swift:
+        tradeName:
           anyOf:
           - type: string
           - type: 'null'
-          title: Swift
-          description: SWIFT/BIC code of the account.
+          title: Tradename
+          description: Commercial/trade name of the contact. Defaults to `legalName` when omitted or blank.
           examples:
-          - BBVAESMMXXX
-        iban:
+          - Acme Supplies
+        legalName:
+          type: string
+          title: Legalname
+          description: Legal (registered) name of the contact.
+          examples:
+          - Acme Supplies S.L.
+        taxId:
           anyOf:
           - type: string
           - type: 'null'
-          title: Iban
-          description: Account identifier. Usually an IBAN, but for entries derived from `paymentsAccounts` in currencies that do not use IBAN (e.g. USD, CAD, JPY) it holds the resolved payment identifier for that currency, such as a local account number. Spaces are stripped before storage. An account with an empty `iban` is silently dropped when the contact is saved.
+          title: Taxid
+          description: Tax identification number (CIF/NIF/VAT) of the contact. Spaces are removed before storage.
           examples:
-          - ES9121000418450200051332
-        default:
+          - B12345678
+        contact:
           anyOf:
-          - type: boolean
+          - $ref: '#/components/schemas/ContactSchema-Input'
           - type: 'null'
-          title: Default
-          description: Marks this account as the contact's default one.
+          description: Contact person details (name, phone, email) for this contact.
+        address:
+          anyOf:
+          - $ref: '#/components/schemas/ContactAddressSchema'
+          - type: 'null'
+          description: Postal address of the contact.
+        contactType:
+          $ref: '#/components/schemas/ContactContactTypeEnum'
+          description: Whether the contact is a `company` or a `freelance` individual. Defaults to `company`.
+          default: company
+        type:
+          $ref: '#/components/schemas/ContactTypeEnum'
+          description: 'Commercial relationship with the contact: `client`, `supplier` or `client-supplier`.'
+        accounts:
+          anyOf:
+          - items:
+              $ref: '#/components/schemas/ContactAccounts'
+            type: array
+          - type: 'null'
+          title: Accounts
+          description: 'Bank accounts of the contact. When omitted (or empty) and `paymentsAccounts` is provided, Embat derives one entry per payment account automatically: the derived `iban` holds the payment identifier resolved for the account''s currency (an IBAN for IBAN-based currencies, otherwise the local account number), `swift` takes the account''s `bic`, and `default` its `default` flag.'
+        paymentsAccounts:
+          anyOf:
+          - items:
+              $ref: '#/components/schemas/ContactNewAccount'
+            type: array
+          - type: 'null'
+          title: Paymentsaccounts
+          description: Bank accounts of the contact, one per currency/payment rail, with the identifiers required to pay it (IBAN, account number, routing number...). Each entry is validated independently and **silently discarded** when it has no usable account identifier for its `currency` (neither `iban` nor `accountNumber` set); format validity of the identifiers themselves is not enforced. Entries that resolve to the same account identifier are deduplicated, keeping only the first one.
+        additionalInfo:
+          anyOf:
+          - additionalProperties: true
+            type: object
+          - type: 'null'
+          title: Additionalinfo
+          description: Free-form key/value metadata to attach to the contact.
+        accountingCode:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Accountingcode
+          description: Accounting account code this contact is linked to.
+          examples:
+          - '4300001'
+        paymentMethod:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Paymentmethod
+          description: Preferred payment method for this contact.
+          examples:
+          - bank-transaction
+        paymentTerms:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Paymentterms
+          description: Payment terms granted to the contact, in days.
+          examples:
+          - 30
+        attributes:
+          anyOf:
+          - items:
+              $ref: '#/components/schemas/AttributeValueRequestSchema'
+            type: array
+          - type: 'null'
+          title: Attributes
+          description: Custom attribute values to attach to the contact.
+        customId:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Customid
+          description: Your own unique ID for the contact. If omitted, Embat auto-generates one.
+          examples:
+          - erp-contact-001
       type: object
-      title: ContactAccounts
+      required:
+      - legalName
+      - type
+      title: PostContactsRequestSchema
+    BulkPatchContactsRequestSchema:
+      properties:
+        data:
+          items:
+            $ref: '#/components/schemas/AuxBulkPatchContactsRequestSchema'
+          type: array
+          title: Data
+          description: Contacts to update, identified by `customId`.
+      type: object
+      required:
+      - data
+      title: BulkPatchContactsRequestSchema
     ContactAddressSchema:
       properties:
         postalCode:
@@ -1243,6 +1440,116 @@ components:
           - Spain
       type: object
       title: ContactAddressSchema
+    AuxBulkPatchContactsRequestSchema:
+      properties:
+        tradeName:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Tradename
+          description: Commercial/trade name of the contact. Defaults to `legalName` when omitted or blank.
+          examples:
+          - Acme Supplies
+        legalName:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Legalname
+          description: Legal (registered) name of the contact.
+          examples:
+          - Acme Supplies S.L.
+        taxId:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Taxid
+          description: Tax identification number (CIF/NIF/VAT) of the contact. Spaces are removed before storage.
+          examples:
+          - B12345678
+        contact:
+          anyOf:
+          - $ref: '#/components/schemas/ContactSchema-Input'
+          - type: 'null'
+          description: Contact person details (name, phone, email) for this contact.
+        address:
+          anyOf:
+          - $ref: '#/components/schemas/ContactAddressSchema'
+          - type: 'null'
+          description: Postal address of the contact.
+        contactType:
+          $ref: '#/components/schemas/ContactContactTypeEnum'
+          description: Whether the contact is a `company` or a `freelance` individual. Defaults to `company`.
+          default: company
+        type:
+          anyOf:
+          - $ref: '#/components/schemas/ContactTypeEnum'
+          - type: 'null'
+          description: 'Commercial relationship with the contact: `client`, `supplier` or `client-supplier`.'
+        accounts:
+          anyOf:
+          - items:
+              $ref: '#/components/schemas/ContactAccounts'
+            type: array
+          - type: 'null'
+          title: Accounts
+          description: 'Bank accounts of the contact. When omitted (or empty) and `paymentsAccounts` is provided, Embat derives one entry per payment account automatically: the derived `iban` holds the payment identifier resolved for the account''s currency (an IBAN for IBAN-based currencies, otherwise the local account number), `swift` takes the account''s `bic`, and `default` its `default` flag.'
+        paymentsAccounts:
+          anyOf:
+          - items:
+              $ref: '#/components/schemas/ContactNewAccount'
+            type: array
+          - type: 'null'
+          title: Paymentsaccounts
+          description: Bank accounts of the contact, one per currency/payment rail, with the identifiers required to pay it (IBAN, account number, routing number...). Each entry is validated independently and **silently discarded** when it has no usable account identifier for its `currency` (neither `iban` nor `accountNumber` set); format validity of the identifiers themselves is not enforced. Entries that resolve to the same account identifier are deduplicated, keeping only the first one.
+        additionalInfo:
+          anyOf:
+          - additionalProperties: true
+            type: object
+          - type: 'null'
+          title: Additionalinfo
+          description: Free-form key/value metadata to attach to the contact.
+        accountingCode:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Accountingcode
+          description: Accounting account code this contact is linked to.
+          examples:
+          - '4300001'
+        paymentMethod:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Paymentmethod
+          description: Preferred payment method for this contact.
+          examples:
+          - bank-transaction
+        paymentTerms:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Paymentterms
+          description: Payment terms granted to the contact, in days.
+          examples:
+          - 30
+        attributes:
+          anyOf:
+          - items:
+              $ref: '#/components/schemas/AttributeValueRequestSchema'
+            type: array
+          - type: 'null'
+          title: Attributes
+          description: Custom attribute values to attach to the contact.
+        customId:
+          type: string
+          title: Customid
+          description: Embat custom/auto-generated unique contact ID. You can use it as your own custom ERP contact ID.
+          examples:
+          - erp-contact-001
+      type: object
+      required:
+      - customId
+      title: AuxBulkPatchContactsRequestSchema
     ISOCountryCodes:
       type: string
       enum:
@@ -1497,133 +1804,18 @@ components:
       - ZM
       - ZW
       title: ISOCountryCodes
-    BulkPostContactsRequestSchema:
+    BulkModifyContactsResponseSchema:
       properties:
         data:
           items:
-            $ref: '#/components/schemas/PostContactsRequestSchema'
+            $ref: '#/components/schemas/ModifyContactsResponseSchema'
           type: array
           title: Data
-          description: Contacts to create.
+          description: Result of the bulk operation, one entry per contact.
       type: object
       required:
       - data
-      title: BulkPostContactsRequestSchema
-    AttributeValueRequestSchema:
-      properties:
-        customId:
-          type: string
-          title: Customid
-          description: Custom ID of the attribute (see the Attributes endpoints) being set.
-          examples:
-          - cost-center
-        value:
-          type: string
-          title: Value
-          description: Display text of the value being set on this entity.
-          examples:
-          - Marketing
-        valueCustomId:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Valuecustomid
-          description: Custom ID of one of the attribute's predefined `values`, when the attribute is of type `list`. Leave unset for free-form `string`/`number` attributes.
-          examples:
-          - marketing
-        parentCustomId:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Parentcustomid
-          description: Not used when attaching an attribute value to an entity.
-      type: object
-      required:
-      - customId
-      - value
-      title: AttributeValueRequestSchema
-      description: 'Attaches an attribute value to another entity (payment, contact, operation,
-
-        transaction, accounting entry...).'
-    AccountTypeEnum:
-      type: string
-      enum:
-      - CHECKING
-      - SAVINGS
-      title: AccountTypeEnum
-    ContactSchema-Input:
-      properties:
-        phone:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Phone
-          description: Phone number of the contact person.
-          examples:
-          - '+34600000000'
-        email:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Email
-          description: Email address of the contact person. Required to pay this contact by Interac e-Transfer in CAD.
-          examples:
-          - billing@acme-supplies.com
-        name:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Name
-          description: First name of the contact person.
-          examples:
-          - John
-        surname:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Surname
-          description: Last name of the contact person.
-          examples:
-          - Doe
-      type: object
-      title: ContactSchema
-    ContactContactTypeEnum:
-      type: string
-      enum:
-      - freelance
-      - company
-      title: ContactContactTypeEnum
-    ListContactsResponseSchema:
-      properties:
-        nextPageToken:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Nextpagetoken
-          description: Token to fetch the next page of results. `null` when there are no more pages.
-        data:
-          items:
-            $ref: '#/components/schemas/GetContactsResponseSchema'
-          type: array
-          title: Data
-          description: Contacts matching the query.
-      type: object
-      required:
-      - data
-      title: ListContactsResponseSchema
-    ErrorResponse:
-      properties:
-        detail:
-          type: string
-          title: Detail
-          description: Human-readable explanation of the error.
-          examples:
-          - user not authorized
-      type: object
-      required:
-      - detail
-      title: ErrorResponse
-      description: Error payload returned by the API (FastAPI `detail` convention).
+      title: BulkModifyContactsResponseSchema
     HTTPValidationError:
       properties:
         detail:
@@ -1633,236 +1825,44 @@ components:
           title: Detail
       type: object
       title: HTTPValidationError
-    UpsertContactsResponseSchema:
+    ValidationError:
       properties:
-        id:
+        loc:
+          items:
+            anyOf:
+            - type: string
+            - type: integer
+          type: array
+          title: Location
+        msg:
           type: string
-          title: Id
-          description: Embat resource ID
-        customId:
+          title: Message
+        type:
           type: string
-          title: Customid
-          description: Client-provided custom ID
+          title: Error Type
+        input:
+          title: Input
+        ctx:
+          type: object
+          title: Context
       type: object
       required:
-      - id
-      - customId
-      title: UpsertContactsResponseSchema
-    DeleteContactsRequestSchema:
-      properties:
-        customId:
-          type: string
-          title: Customid
-          description: Custom ID of the contact to delete.
-      type: object
-      required:
-      - customId
-      title: DeleteContactsRequestSchema
-    CurrencyEnum:
-      type: string
-      enum:
-      - AED
-      - AFN
-      - ALL
-      - AMD
-      - ANG
-      - AOA
-      - ARS
-      - AUD
-      - AWG
-      - AZN
-      - BAM
-      - BBD
-      - BDT
-      - BGN
-      - BHD
-      - BIF
-      - BMD
-      - BND
-      - BOB
-      - BOV
-      - BRL
-      - BSD
-      - BTC
-      - BTN
-      - BWP
-      - BYN
-      - BZD
-      - CAD
-      - CDF
-      - CHE
-      - CHF
-      - CHW
-      - CLF
-      - CLP
-      - CNH
-      - CNY
-      - COP
-      - COU
-      - CRC
-      - CUP
-      - CVE
-      - CZK
-      - DJF
-      - DKK
-      - DOP
-      - DZD
-      - EEK
-      - EGP
-      - ERN
-      - ETB
-      - ETH
-      - EUR
-      - FJD
-      - FKP
-      - GBP
-      - GEL
-      - GHS
-      - GIP
-      - GMD
-      - GNF
-      - GTQ
-      - GYD
-      - HKD
-      - HNL
-      - HRK
-      - HTG
-      - HUF
-      - IDR
-      - ILS
-      - INR
-      - IQD
-      - IRR
-      - ISK
-      - JMD
-      - JOD
-      - JPY
-      - KES
-      - KGS
-      - KHR
-      - KMF
-      - KPW
-      - KRW
-      - KWD
-      - KYD
-      - KZT
-      - LAK
-      - LBP
-      - LKR
-      - LRD
-      - LSL
-      - LTC
-      - LTL
-      - LVL
-      - LYD
-      - MAD
-      - MDL
-      - MGA
-      - MKD
-      - MMK
-      - MNT
-      - MOP
-      - MRU
-      - MUR
-      - MVR
-      - MWK
-      - MXN
-      - MXV
-      - MYR
-      - MZN
-      - NAD
-      - NGN
-      - NIO
-      - NOK
-      - NPR
-      - NZD
-      - OMR
-      - PAB
-      - PEN
-      - PGK
-      - PHP
-      - PKR
-      - PLN
-      - PYG
-      - QAR
-      - RON
-      - RSD
-      - RUB
-      - RWF
-      - SAR
-      - SBD
-      - SCR
-      - SDG
-      - SEK
-      - SGD
-      - SHP
-      - SLE
-      - SOS
-      - SRD
-      - SSP
-      - STN
-      - SVC
-      - SYP
-      - SZL
-      - THB
-      - TJS
-      - TMT
-      - TND
-      - TOP
-      - TRY
-      - TTD
-      - TWD
-      - TZS
-      - UAH
-      - UGX
-      - USD
-      - USN
-      - UYI
-      - UYU
-      - UYW
-      - UZS
-      - VED
-      - VEF
-      - VES
-      - VND
-      - VUV
-      - WST
-      - XAF
-      - XAG
-      - XAU
-      - XBA
-      - XBB
-      - XBC
-      - XBD
-      - XCD
-      - XDR
-      - XOF
-      - XPD
-      - XPF
-      - XPT
-      - XSU
-      - XTS
-      - XUA
-      - XXX
-      - YER
-      - ZAR
-      - ZMK
-      - ZMW
-      - ZWG
-      - ZWL
-      title: CurrencyEnum
-    BulkPatchContactsRequestSchema:
+      - loc
+      - msg
+      - type
+      title: ValidationError
+    BulkDeleteContactsRequestSchema:
       properties:
         data:
           items:
-            $ref: '#/components/schemas/AuxBulkPatchContactsRequestSchema'
+            $ref: '#/components/schemas/DeleteContactsRequestSchema'
           type: array
           title: Data
-          description: Contacts to update, identified by `customId`.
+          description: Contacts to delete, identified by `customId`.
       type: object
       required:
       - data
-      title: BulkPatchContactsRequestSchema
+      title: BulkDeleteContactsRequestSchema
   securitySchemes:
     HTTPBearer:
       type: http

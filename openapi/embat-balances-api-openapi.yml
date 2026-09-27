@@ -163,6 +163,87 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
 components:
   schemas:
+    ErrorResponse:
+      properties:
+        detail:
+          type: string
+          title: Detail
+          description: Human-readable explanation of the error.
+          examples:
+          - user not authorized
+      type: object
+      required:
+      - detail
+      title: ErrorResponse
+      description: Error payload returned by the API (FastAPI `detail` convention).
+    ProductBaseSchema:
+      properties:
+        id:
+          type: string
+          title: Id
+          description: Embat product ID.
+          examples:
+          - prod_8f3a1c
+        currency:
+          $ref: '#/components/schemas/CurrencyEnum'
+          description: ISO currency code of the product.
+          examples:
+          - EUR
+        product:
+          type: string
+          title: Product
+          description: Product name as reported by the bank.
+          examples:
+          - Cuenta Corriente
+        bankFullName:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Bankfullname
+          description: Full legal name of the bank this product belongs to, if known.
+          examples:
+          - Banco Bilbao Vizcaya Argentaria
+        alias:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Alias
+          description: Custom alias given to the product in Embat, if any.
+          examples:
+          - Main checking account
+      type: object
+      required:
+      - id
+      - currency
+      - product
+      title: ProductBaseSchema
+    HTTPValidationError:
+      properties:
+        detail:
+          items:
+            $ref: '#/components/schemas/ValidationError'
+          type: array
+          title: Detail
+      type: object
+      title: HTTPValidationError
+    ListBalancesResponseSchema:
+      properties:
+        data:
+          items:
+            $ref: '#/components/schemas/GetBalancesResponseSchema'
+          type: array
+          title: Data
+          description: Balances matching the query.
+        nextPageToken:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Nextpagetoken
+          description: Token to fetch the next page of results. `null` when there are no more pages.
+      type: object
+      required:
+      - data
+      title: ListBalancesResponseSchema
     ValidationError:
       properties:
         loc:
@@ -189,37 +270,6 @@ components:
       - msg
       - type
       title: ValidationError
-    ListBalancesResponseSchema:
-      properties:
-        data:
-          items:
-            $ref: '#/components/schemas/GetBalancesResponseSchema'
-          type: array
-          title: Data
-          description: Balances matching the query.
-        nextPageToken:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Nextpagetoken
-          description: Token to fetch the next page of results. `null` when there are no more pages.
-      type: object
-      required:
-      - data
-      title: ListBalancesResponseSchema
-    ErrorResponse:
-      properties:
-        detail:
-          type: string
-          title: Detail
-          description: Human-readable explanation of the error.
-          examples:
-          - user not authorized
-      type: object
-      required:
-      - detail
-      title: ErrorResponse
-      description: Error payload returned by the API (FastAPI `detail` convention).
     GetBalancesResponseSchema:
       properties:
         id:
@@ -295,56 +345,6 @@ components:
           description: Last updated date of the entity in the database.
       type: object
       title: GetBalancesResponseSchema
-    HTTPValidationError:
-      properties:
-        detail:
-          items:
-            $ref: '#/components/schemas/ValidationError'
-          type: array
-          title: Detail
-      type: object
-      title: HTTPValidationError
-    ProductBaseSchema:
-      properties:
-        id:
-          type: string
-          title: Id
-          description: Embat product ID.
-          examples:
-          - prod_8f3a1c
-        currency:
-          $ref: '#/components/schemas/CurrencyEnum'
-          description: ISO currency code of the product.
-          examples:
-          - EUR
-        product:
-          type: string
-          title: Product
-          description: Product name as reported by the bank.
-          examples:
-          - Cuenta Corriente
-        bankFullName:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Bankfullname
-          description: Full legal name of the bank this product belongs to, if known.
-          examples:
-          - Banco Bilbao Vizcaya Argentaria
-        alias:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Alias
-          description: Custom alias given to the product in Embat, if any.
-          examples:
-          - Main checking account
-      type: object
-      required:
-      - id
-      - currency
-      - product
-      title: ProductBaseSchema
     CurrencyEnum:
       type: string
       enum:

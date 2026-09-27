@@ -564,32 +564,63 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
 components:
   schemas:
-    ValidationError:
+    ContactNewAccount:
       properties:
-        loc:
-          items:
-            anyOf:
-            - type: string
-            - type: integer
-          type: array
-          title: Location
-        msg:
+        default:
+          type: boolean
+          title: Default
+          description: Marks this account as the default one for its `currency`.
+          default: false
+        currency:
+          anyOf:
+          - $ref: '#/components/schemas/CurrencyEnum'
+          - type: 'null'
+          description: ISO currency code this account is used for. An empty string is treated the same as omitting this field.
+          examples:
+          - EUR
+        details:
+          anyOf:
+          - $ref: '#/components/schemas/ContactNewAccountDetails'
+          - type: 'null'
+          description: 'Bank account identifiers. Which fields are required depends on the `currency` and the destination country: IBAN-based currencies expect `iban`, others expect `accountNumber` plus the identifiers of the applicable payment rail (e.g. `routingNumber` for US accounts, `sortCode` for UK accounts).'
+      type: object
+      title: ContactNewAccount
+    AttributeValueRequestSchema:
+      properties:
+        customId:
           type: string
-          title: Message
-        type:
+          title: Customid
+          description: Custom ID of the attribute (see the Attributes endpoints) being set.
+          examples:
+          - cost-center
+        value:
           type: string
-          title: Error Type
-        input:
-          title: Input
-        ctx:
-          type: object
-          title: Context
+          title: Value
+          description: Display text of the value being set on this entity.
+          examples:
+          - Marketing
+        valueCustomId:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Valuecustomid
+          description: Custom ID of one of the attribute's predefined `values`, when the attribute is of type `list`. Leave unset for free-form `string`/`number` attributes.
+          examples:
+          - marketing
+        parentCustomId:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Parentcustomid
+          description: Not used when attaching an attribute value to an entity.
       type: object
       required:
-      - loc
-      - msg
-      - type
-      title: ValidationError
+      - customId
+      - value
+      title: AttributeValueRequestSchema
+      description: 'Attaches an attribute value to another entity (payment, contact, operation,
+
+        transaction, accounting entry...).'
     BaseContactSchema-Output:
       properties:
         tradeName:
@@ -700,142 +731,25 @@ components:
           - erp-contact-001
       type: object
       title: BaseContactSchema
-    app__schemas__contacts__ContactSchema:
+    OperationPaymentRequestSchema:
       properties:
-        phone:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Phone
-          description: Phone number of the contact person.
+        amount:
+          type: number
+          title: Amount
+          description: Amount of the payment allocated to this operation, in the operation currency.
           examples:
-          - '+34600000000'
-        email:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Email
-          description: Email address of the contact person. Required to pay this contact by Interac e-Transfer in CAD.
-          examples:
-          - billing@acme-supplies.com
-        name:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Name
-          description: First name of the contact person.
-          examples:
-          - John
-        surname:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Surname
-          description: Last name of the contact person.
-          examples:
-          - Doe
-      type: object
-      title: ContactSchema
-    ContactNewAccount:
-      properties:
-        default:
-          type: boolean
-          title: Default
-          description: Marks this account as the default one for its `currency`.
-          default: false
-        currency:
-          anyOf:
-          - $ref: '#/components/schemas/CurrencyEnum'
-          - type: 'null'
-          description: ISO currency code this account is used for. An empty string is treated the same as omitting this field.
-          examples:
-          - EUR
-        details:
-          anyOf:
-          - $ref: '#/components/schemas/ContactNewAccountDetails'
-          - type: 'null'
-          description: 'Bank account identifiers. Which fields are required depends on the `currency` and the destination country: IBAN-based currencies expect `iban`, others expect `accountNumber` plus the identifiers of the applicable payment rail (e.g. `routingNumber` for US accounts, `sortCode` for UK accounts).'
-      type: object
-      title: ContactNewAccount
-    BulkPatchPaymentsRequestSchema:
-      properties:
-        data:
-          items:
-            $ref: '#/components/schemas/AuxBulkPatchPaymentsRequestSchema'
-          type: array
-          title: Data
-          description: Payments to update, identified by `customId`.
-      type: object
-      required:
-      - data
-      title: BulkPatchPaymentsRequestSchema
-    BulkUpsertPaymentsResponseSchema:
-      properties:
-        data:
-          items:
-            $ref: '#/components/schemas/UpsertPaymentsResponseSchema'
-          type: array
-          title: Data
-          description: Result of the bulk creation, one entry per payment.
-      type: object
-      required:
-      - data
-      title: BulkUpsertPaymentsResponseSchema
-    DeletePaymentsRequestSchema:
-      properties:
+          - 500.0
         customId:
           type: string
           title: Customid
-          description: Custom ID of the payment to delete.
+          description: Custom ID of the operation this payment amount is applied to.
+          examples:
+          - invoice-2024-001
       type: object
       required:
+      - amount
       - customId
-      title: DeletePaymentsRequestSchema
-    IntercompanyPaymentSchema:
-      properties:
-        id:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Id
-          description: Embat ID of the intercompany process this payment belongs to.
-          examples:
-          - proc-abc
-        relatedPaymentPairs:
-          anyOf:
-          - items:
-              items:
-                type: string
-              type: array
-            type: array
-          - type: 'null'
-          title: Relatedpaymentpairs
-          description: All hub/counterpart payment ID pairs of the intercompany process, as `[hubPaymentId, counterpartPaymentId]` pairs.
-          examples:
-          - - - pay-hub-A
-              - pay-sub-1
-            - - pay-hub-B
-              - pay-sub-2
-        relatedPaymentsIds:
-          anyOf:
-          - items:
-              type: string
-            type: array
-          - type: 'null'
-          title: Relatedpaymentsids
-          description: Embat IDs of the payments directly paired with this one in the intercompany process (e.g. a subsidiary payment points back to its hub payment line).
-          examples:
-          - - pay-hub-A
-        counterpartyContact:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Counterpartycontact
-          description: Custom ID of the counterparty contact involved in the intercompany settlement.
-          examples:
-          - contact-sub-1
-      type: object
-      title: IntercompanyPaymentSchema
+      title: OperationPaymentRequestSchema
     PatchPaymentsRequestSchema:
       properties:
         sync:
@@ -867,6 +781,416 @@ components:
           description: Marks the payment as registered in the accounting system.
       type: object
       title: PatchPaymentsRequestSchema
+    BulkUpsertPaymentsResponseSchema:
+      properties:
+        data:
+          items:
+            $ref: '#/components/schemas/UpsertPaymentsResponseSchema'
+          type: array
+          title: Data
+          description: Result of the bulk creation, one entry per payment.
+      type: object
+      required:
+      - data
+      title: BulkUpsertPaymentsResponseSchema
+    ErrorResponse:
+      properties:
+        detail:
+          type: string
+          title: Detail
+          description: Human-readable explanation of the error.
+          examples:
+          - user not authorized
+      type: object
+      required:
+      - detail
+      title: ErrorResponse
+      description: Error payload returned by the API (FastAPI `detail` convention).
+    CurrencyEnum:
+      type: string
+      enum:
+      - AED
+      - AFN
+      - ALL
+      - AMD
+      - ANG
+      - AOA
+      - ARS
+      - AUD
+      - AWG
+      - AZN
+      - BAM
+      - BBD
+      - BDT
+      - BGN
+      - BHD
+      - BIF
+      - BMD
+      - BND
+      - BOB
+      - BOV
+      - BRL
+      - BSD
+      - BTC
+      - BTN
+      - BWP
+      - BYN
+      - BZD
+      - CAD
+      - CDF
+      - CHE
+      - CHF
+      - CHW
+      - CLF
+      - CLP
+      - CNH
+      - CNY
+      - COP
+      - COU
+      - CRC
+      - CUP
+      - CVE
+      - CZK
+      - DJF
+      - DKK
+      - DOP
+      - DZD
+      - EEK
+      - EGP
+      - ERN
+      - ETB
+      - ETH
+      - EUR
+      - FJD
+      - FKP
+      - GBP
+      - GEL
+      - GHS
+      - GIP
+      - GMD
+      - GNF
+      - GTQ
+      - GYD
+      - HKD
+      - HNL
+      - HRK
+      - HTG
+      - HUF
+      - IDR
+      - ILS
+      - INR
+      - IQD
+      - IRR
+      - ISK
+      - JMD
+      - JOD
+      - JPY
+      - KES
+      - KGS
+      - KHR
+      - KMF
+      - KPW
+      - KRW
+      - KWD
+      - KYD
+      - KZT
+      - LAK
+      - LBP
+      - LKR
+      - LRD
+      - LSL
+      - LTC
+      - LTL
+      - LVL
+      - LYD
+      - MAD
+      - MDL
+      - MGA
+      - MKD
+      - MMK
+      - MNT
+      - MOP
+      - MRU
+      - MUR
+      - MVR
+      - MWK
+      - MXN
+      - MXV
+      - MYR
+      - MZN
+      - NAD
+      - NGN
+      - NIO
+      - NOK
+      - NPR
+      - NZD
+      - OMR
+      - PAB
+      - PEN
+      - PGK
+      - PHP
+      - PKR
+      - PLN
+      - PYG
+      - QAR
+      - RON
+      - RSD
+      - RUB
+      - RWF
+      - SAR
+      - SBD
+      - SCR
+      - SDG
+      - SEK
+      - SGD
+      - SHP
+      - SLE
+      - SOS
+      - SRD
+      - SSP
+      - STN
+      - SVC
+      - SYP
+      - SZL
+      - THB
+      - TJS
+      - TMT
+      - TND
+      - TOP
+      - TRY
+      - TTD
+      - TWD
+      - TZS
+      - UAH
+      - UGX
+      - USD
+      - USN
+      - UYI
+      - UYU
+      - UYW
+      - UZS
+      - VED
+      - VEF
+      - VES
+      - VND
+      - VUV
+      - WST
+      - XAF
+      - XAG
+      - XAU
+      - XBA
+      - XBB
+      - XBC
+      - XBD
+      - XCD
+      - XDR
+      - XOF
+      - XPD
+      - XPF
+      - XPT
+      - XSU
+      - XTS
+      - XUA
+      - XXX
+      - YER
+      - ZAR
+      - ZMK
+      - ZMW
+      - ZWG
+      - ZWL
+      title: CurrencyEnum
+    ContactAccounts:
+      properties:
+        swift:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Swift
+          description: SWIFT/BIC code of the account.
+          examples:
+          - BBVAESMMXXX
+        iban:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Iban
+          description: Account identifier. Usually an IBAN, but for entries derived from `paymentsAccounts` in currencies that do not use IBAN (e.g. USD, CAD, JPY) it holds the resolved payment identifier for that currency, such as a local account number. Spaces are stripped before storage. An account with an empty `iban` is silently dropped when the contact is saved.
+          examples:
+          - ES9121000418450200051332
+        default:
+          anyOf:
+          - type: boolean
+          - type: 'null'
+          title: Default
+          description: Marks this account as the contact's default one.
+      type: object
+      title: ContactAccounts
+    PaymentShortTypeEnum:
+      type: string
+      enum:
+      - contacts
+      - accountings
+      - operations
+      - banks
+      - salesOrder
+      title: PaymentShortTypeEnum
+    BulkModifyPaymentsResponseSchema:
+      properties:
+        data:
+          items:
+            $ref: '#/components/schemas/ModifyPaymentsResponseSchema'
+          type: array
+          title: Data
+          description: Result of the bulk operation, one entry per payment.
+      type: object
+      required:
+      - data
+      title: BulkModifyPaymentsResponseSchema
+    UpsertPaymentsResponseSchema:
+      properties:
+        id:
+          type: string
+          title: Id
+          description: Embat payment ID
+        customId:
+          type: string
+          title: Customid
+          description: Client-provided custom ID
+      type: object
+      required:
+      - id
+      - customId
+      title: UpsertPaymentsResponseSchema
+    BulkPatchPaymentsRequestSchema:
+      properties:
+        data:
+          items:
+            $ref: '#/components/schemas/AuxBulkPatchPaymentsRequestSchema'
+          type: array
+          title: Data
+          description: Payments to update, identified by `customId`.
+      type: object
+      required:
+      - data
+      title: BulkPatchPaymentsRequestSchema
+    PostPaymentsRequestSchema:
+      properties:
+        method:
+          type: string
+          title: Method
+          description: Payment method. Defaults to `bank-transaction` when not sent.
+          default: bank-transaction
+          examples:
+          - bank-transaction
+        transactionId:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Transactionid
+          description: Embat ID of the bank transaction linked to this payment.
+        operations:
+          items:
+            $ref: '#/components/schemas/OperationPaymentRequestSchema'
+          type: array
+          title: Operations
+          description: Operations this payment is applied to. Must contain at least one item. Each entry is validated independently and silently discarded if the operation does not exist, is already paid or canceled, already received a payment with this same `customId`, or already has payments created from Embat — see the endpoint description.
+        productId:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Productid
+          description: Embat product ID. You can get them from "Products" endpoints.
+        contactCustomId:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Contactcustomid
+          description: Custom ID of the contact (client/supplier) involved in the payment.
+        date:
+          type: string
+          format: date-time
+          title: Date
+          description: Date the payment was made or received.
+        concept:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Concept
+          description: Free-text description of the payment.
+          examples:
+          - 'Invoice #2024-001 payment'
+        amount:
+          type: number
+          title: Amount
+          description: Payment amount in the payment `currency`. Positive for collections, negative for outgoing payments.
+          examples:
+          - 1250.5
+        accountingAmount:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Accountingamount
+          description: Payment amount expressed in the company accounting currency. If omitted, it defaults to `amount`, `accountingCurrency` defaults to `currency` and `exchangeRate` is set to 1.0.
+          examples:
+          - 1250.5
+        currency:
+          anyOf:
+          - $ref: '#/components/schemas/CurrencyEnum'
+          - type: 'null'
+          description: ISO currency code of `amount`. Defaults to `EUR` when omitted.
+          examples:
+          - EUR
+        accountingCurrency:
+          anyOf:
+          - $ref: '#/components/schemas/CurrencyEnum'
+          - type: 'null'
+          description: ISO currency code of `accountingAmount`. Defaults to `currency` when omitted.
+          examples:
+          - EUR
+        exchangeRate:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Exchangerate
+          description: Exchange rate applied between `currency` and `accountingCurrency`. Defaults to 1.0 when omitted.
+          examples:
+          - 1.0
+        additionalInfo:
+          anyOf:
+          - additionalProperties: true
+            type: object
+          - type: 'null'
+          title: Additionalinfo
+          description: Free-form key/value metadata to attach to the payment.
+        attributes:
+          anyOf:
+          - items:
+              $ref: '#/components/schemas/AttributeValueRequestSchema'
+            type: array
+          - type: 'null'
+          title: Attributes
+          description: Custom attribute values to attach to the payment.
+        customId:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Customid
+          description: Your own unique ID for the payment. If omitted, Embat auto-generates one.
+          examples:
+          - erp-payment-001
+      type: object
+      required:
+      - operations
+      - date
+      - amount
+      title: PostPaymentsRequestSchema
+    SourceEnum:
+      type: string
+      enum:
+      - erp
+      - api
+      - embat
+      title: SourceEnum
     ContactNewAccountDetails:
       properties:
         iban:
@@ -967,6 +1291,366 @@ components:
           - ES
       type: object
       title: ContactNewAccountDetails
+    app__schemas__contacts__ContactSchema:
+      properties:
+        phone:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Phone
+          description: Phone number of the contact person.
+          examples:
+          - '+34600000000'
+        email:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Email
+          description: Email address of the contact person. Required to pay this contact by Interac e-Transfer in CAD.
+          examples:
+          - billing@acme-supplies.com
+        name:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Name
+          description: First name of the contact person.
+          examples:
+          - John
+        surname:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Surname
+          description: Last name of the contact person.
+          examples:
+          - Doe
+      type: object
+      title: ContactSchema
+    GetPaymentsResponseSchema:
+      properties:
+        method:
+          type: string
+          title: Method
+          description: Payment method. Defaults to `bank-transaction` when not sent.
+          default: bank-transaction
+          examples:
+          - bank-transaction
+        transactionId:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Transactionid
+          description: Embat ID of the bank transaction linked to this payment.
+        operations:
+          anyOf:
+          - items:
+              $ref: '#/components/schemas/OperationPaymentResponseSchema'
+            type: array
+          - type: 'null'
+          title: Operations
+          description: Operations this payment is applied to.
+        productId:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Productid
+          description: Embat product ID. You can get them from "Products" endpoints.
+        contactCustomId:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Contactcustomid
+          description: Custom ID of the contact (client/supplier) involved in the payment.
+        date:
+          type: string
+          format: date-time
+          title: Date
+          description: Date the payment was made or received.
+        concept:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Concept
+          description: Free-text description of the payment.
+          examples:
+          - 'Invoice #2024-001 payment'
+        amount:
+          type: number
+          title: Amount
+          description: Payment amount in the payment `currency`. Positive for collections, negative for outgoing payments.
+          examples:
+          - 1250.5
+        accountingAmount:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Accountingamount
+          description: Payment amount expressed in the company accounting currency. If omitted, it defaults to `amount`, `accountingCurrency` defaults to `currency` and `exchangeRate` is set to 1.0.
+          examples:
+          - 1250.5
+        currency:
+          anyOf:
+          - $ref: '#/components/schemas/CurrencyEnum'
+          - type: 'null'
+          description: ISO currency code of `amount`. Defaults to `EUR` when omitted.
+          examples:
+          - EUR
+        accountingCurrency:
+          anyOf:
+          - $ref: '#/components/schemas/CurrencyEnum'
+          - type: 'null'
+          description: ISO currency code of `accountingAmount`. Defaults to `currency` when omitted.
+          examples:
+          - EUR
+        exchangeRate:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Exchangerate
+          description: Exchange rate applied between `currency` and `accountingCurrency`. Defaults to 1.0 when omitted.
+          examples:
+          - 1.0
+        additionalInfo:
+          anyOf:
+          - additionalProperties: true
+            type: object
+          - type: 'null'
+          title: Additionalinfo
+          description: Free-form key/value metadata to attach to the payment.
+        attributes:
+          anyOf:
+          - items:
+              $ref: '#/components/schemas/AttributeValueRequestSchema'
+            type: array
+          - type: 'null'
+          title: Attributes
+          description: Custom attribute values to attach to the payment.
+        id:
+          type: string
+          title: Id
+          description: Embat payment ID
+        customId:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Customid
+          description: Your own unique ID for the payment. If the payment has none, it is auto-generated as `id` concatenated with `companyId`.
+        type:
+          anyOf:
+          - $ref: '#/components/schemas/PaymentShortTypeEnum'
+          - type: 'null'
+          description: 'Payment classification: `contacts`, `accountings`, `operations`, `banks` or `salesOrder`. Payments created through this API are always classified as `operations`.'
+        productAccountingCode:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Productaccountingcode
+          description: Product accounting code
+        accountingCode:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Accountingcode
+          description: Accounting account code the payment is posted to.
+        paymentSource:
+          $ref: '#/components/schemas/SourceEnum'
+          description: Origin of the payment record.
+          default: embat
+        companyId:
+          type: string
+          title: Companyid
+          description: Embat company ID. You can get them from "companies" endpoints
+        updatedAt:
+          type: string
+          format: date-time
+          title: Updatedat
+          description: Last updated date of the entity in the database
+        createdAt:
+          type: string
+          format: date-time
+          title: Createdat
+          description: Created date of the entity in the database
+        sync:
+          type: boolean
+          title: Sync
+          description: Whether the payment is synchronized with the accounting system.
+          default: false
+        registered:
+          type: boolean
+          title: Registered
+          description: Whether the payment is registered in the accounting system.
+          default: false
+        userId:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Userid
+          description: Embat ID of the user who created the payment, if created manually.
+        transactionAmount:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Transactionamount
+          description: Total amount of the bank transaction linked to this payment.
+        transactionAccountingAmount:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Transactionaccountingamount
+          description: Accounting amount of the bank transaction linked to this payment.
+        multicurrency:
+          type: boolean
+          title: Multicurrency
+          description: True when the payment's operations use a currency different from the payment currency, indicating a currency exchange took place.
+          default: false
+        error:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Error
+          description: Error message recorded against the payment, if any.
+          examples:
+          - Missing account
+        contact:
+          anyOf:
+          - $ref: '#/components/schemas/BaseContactSchema-Output'
+          - type: 'null'
+          description: Contact (client/supplier) involved in the payment.
+        intercompany:
+          anyOf:
+          - $ref: '#/components/schemas/IntercompanyPaymentSchema'
+          - type: 'null'
+          description: Intercompany settlement details, when the payment is part of one.
+        transactionAttributes:
+          anyOf:
+          - items:
+              $ref: '#/components/schemas/AttributeValueRequestSchema'
+            type: array
+          - type: 'null'
+          title: Transactionattributes
+          description: Custom attribute values of the bank transaction linked to this payment.
+      type: object
+      required:
+      - date
+      - amount
+      - id
+      - companyId
+      - updatedAt
+      - createdAt
+      title: GetPaymentsResponseSchema
+    ContactContactTypeEnum:
+      type: string
+      enum:
+      - freelance
+      - company
+      title: ContactContactTypeEnum
+    BulkPostPaymentsRequestSchema:
+      properties:
+        data:
+          items:
+            $ref: '#/components/schemas/PostPaymentsRequestSchema'
+          type: array
+          title: Data
+          description: Payments to create.
+      type: object
+      required:
+      - data
+      title: BulkPostPaymentsRequestSchema
+    ContactTypeEnum:
+      type: string
+      enum:
+      - supplier
+      - client-supplier
+      - client
+      title: ContactTypeEnum
+    AccountTypeEnum:
+      type: string
+      enum:
+      - CHECKING
+      - SAVINGS
+      title: AccountTypeEnum
+    ContactAddressSchema:
+      properties:
+        postalCode:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Postalcode
+          description: Postal/ZIP code. Required by some payment rails (e.g. SEPA, SWIFT, ACH, Fedwire, BACS, CHAPS, Faster Payments, EFT) depending on the destination country and currency.
+          examples:
+          - '28001'
+        address:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Address
+          description: Complete street address (street type, name, number, floor/flat...). Required by some payment rails depending on the destination country and currency.
+          examples:
+          - Calle Mayor 10, 3B
+        province:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Province
+          description: Province, state or region. Required by some payment rails depending on the destination country and currency.
+          examples:
+          - Madrid
+        city:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: City
+          description: City. Required by some payment rails depending on the destination country and currency.
+          examples:
+          - Madrid
+        country:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Country
+          description: Country name. Required by some payment rails depending on the destination country and currency.
+          examples:
+          - Spain
+      type: object
+      title: ContactAddressSchema
+    AuxBulkPatchPaymentsRequestSchema:
+      properties:
+        sync:
+          anyOf:
+          - type: boolean
+          - type: 'null'
+          title: Sync
+          description: Marks the payment as synchronized with the accounting system.
+        additionalInfo:
+          anyOf:
+          - additionalProperties: true
+            type: object
+          - type: 'null'
+          title: Additionalinfo
+          description: Free-form key/value metadata to attach to the payment.
+        error:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Error
+          description: Error message to record against the payment. Sending an empty string clears a previously set error.
+          examples:
+          - Missing account
+        registered:
+          anyOf:
+          - type: boolean
+          - type: 'null'
+          title: Registered
+          description: Marks the payment as registered in the accounting system.
+        customId:
+          type: string
+          title: Customid
+          description: Embat custom/auto-generated unique payment ID. You can use it as your own custom ERP payment ID.
+      type: object
+      required:
+      - customId
+      title: AuxBulkPatchPaymentsRequestSchema
     OperationPaymentResponseSchema:
       properties:
         amount:
@@ -1048,95 +1732,28 @@ components:
       - amount
       - customId
       title: OperationPaymentResponseSchema
-    ContactTypeEnum:
-      type: string
-      enum:
-      - supplier
-      - client-supplier
-      - client
-      title: ContactTypeEnum
-    BulkPostPaymentsRequestSchema:
+    BulkDeletePaymentsRequestSchema:
       properties:
         data:
           items:
-            $ref: '#/components/schemas/PostPaymentsRequestSchema'
+            $ref: '#/components/schemas/DeletePaymentsRequestSchema'
           type: array
           title: Data
-          description: Payments to create.
+          description: Payments to delete, identified by `customId`.
       type: object
       required:
       - data
-      title: BulkPostPaymentsRequestSchema
-    ContactAccounts:
+      title: BulkDeletePaymentsRequestSchema
+    DeletePaymentsRequestSchema:
       properties:
-        swift:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Swift
-          description: SWIFT/BIC code of the account.
-          examples:
-          - BBVAESMMXXX
-        iban:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Iban
-          description: Account identifier. Usually an IBAN, but for entries derived from `paymentsAccounts` in currencies that do not use IBAN (e.g. USD, CAD, JPY) it holds the resolved payment identifier for that currency, such as a local account number. Spaces are stripped before storage. An account with an empty `iban` is silently dropped when the contact is saved.
-          examples:
-          - ES9121000418450200051332
-        default:
-          anyOf:
-          - type: boolean
-          - type: 'null'
-          title: Default
-          description: Marks this account as the contact's default one.
+        customId:
+          type: string
+          title: Customid
+          description: Custom ID of the payment to delete.
       type: object
-      title: ContactAccounts
-    ContactAddressSchema:
-      properties:
-        postalCode:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Postalcode
-          description: Postal/ZIP code. Required by some payment rails (e.g. SEPA, SWIFT, ACH, Fedwire, BACS, CHAPS, Faster Payments, EFT) depending on the destination country and currency.
-          examples:
-          - '28001'
-        address:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Address
-          description: Complete street address (street type, name, number, floor/flat...). Required by some payment rails depending on the destination country and currency.
-          examples:
-          - Calle Mayor 10, 3B
-        province:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Province
-          description: Province, state or region. Required by some payment rails depending on the destination country and currency.
-          examples:
-          - Madrid
-        city:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: City
-          description: City. Required by some payment rails depending on the destination country and currency.
-          examples:
-          - Madrid
-        country:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Country
-          description: Country name. Required by some payment rails depending on the destination country and currency.
-          examples:
-          - Spain
-      type: object
-      title: ContactAddressSchema
+      required:
+      - customId
+      title: DeletePaymentsRequestSchema
     ISOCountryCodes:
       type: string
       enum:
@@ -1391,6 +2008,51 @@ components:
       - ZM
       - ZW
       title: ISOCountryCodes
+    IntercompanyPaymentSchema:
+      properties:
+        id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Id
+          description: Embat ID of the intercompany process this payment belongs to.
+          examples:
+          - proc-abc
+        relatedPaymentPairs:
+          anyOf:
+          - items:
+              items:
+                type: string
+              type: array
+            type: array
+          - type: 'null'
+          title: Relatedpaymentpairs
+          description: All hub/counterpart payment ID pairs of the intercompany process, as `[hubPaymentId, counterpartPaymentId]` pairs.
+          examples:
+          - - - pay-hub-A
+              - pay-sub-1
+            - - pay-hub-B
+              - pay-sub-2
+        relatedPaymentsIds:
+          anyOf:
+          - items:
+              type: string
+            type: array
+          - type: 'null'
+          title: Relatedpaymentsids
+          description: Embat IDs of the payments directly paired with this one in the intercompany process (e.g. a subsidiary payment points back to its hub payment line).
+          examples:
+          - - pay-hub-A
+        counterpartyContact:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Counterpartycontact
+          description: Custom ID of the counterparty contact involved in the intercompany settlement.
+          examples:
+          - contact-sub-1
+      type: object
+      title: IntercompanyPaymentSchema
     ListPaymentsResponseSchema:
       properties:
         data:
@@ -1409,303 +2071,6 @@ components:
       required:
       - data
       title: ListPaymentsResponseSchema
-    AttributeValueRequestSchema:
-      properties:
-        customId:
-          type: string
-          title: Customid
-          description: Custom ID of the attribute (see the Attributes endpoints) being set.
-          examples:
-          - cost-center
-        value:
-          type: string
-          title: Value
-          description: Display text of the value being set on this entity.
-          examples:
-          - Marketing
-        valueCustomId:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Valuecustomid
-          description: Custom ID of one of the attribute's predefined `values`, when the attribute is of type `list`. Leave unset for free-form `string`/`number` attributes.
-          examples:
-          - marketing
-        parentCustomId:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Parentcustomid
-          description: Not used when attaching an attribute value to an entity.
-      type: object
-      required:
-      - customId
-      - value
-      title: AttributeValueRequestSchema
-      description: 'Attaches an attribute value to another entity (payment, contact, operation,
-
-        transaction, accounting entry...).'
-    BulkModifyPaymentsResponseSchema:
-      properties:
-        data:
-          items:
-            $ref: '#/components/schemas/ModifyPaymentsResponseSchema'
-          type: array
-          title: Data
-          description: Result of the bulk operation, one entry per payment.
-      type: object
-      required:
-      - data
-      title: BulkModifyPaymentsResponseSchema
-    BulkDeletePaymentsRequestSchema:
-      properties:
-        data:
-          items:
-            $ref: '#/components/schemas/DeletePaymentsRequestSchema'
-          type: array
-          title: Data
-          description: Payments to delete, identified by `customId`.
-      type: object
-      required:
-      - data
-      title: BulkDeletePaymentsRequestSchema
-    GetPaymentsResponseSchema:
-      properties:
-        method:
-          type: string
-          title: Method
-          description: Payment method. Defaults to `bank-transaction` when not sent.
-          default: bank-transaction
-          examples:
-          - bank-transaction
-        transactionId:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Transactionid
-          description: Embat ID of the bank transaction linked to this payment.
-        operations:
-          anyOf:
-          - items:
-              $ref: '#/components/schemas/OperationPaymentResponseSchema'
-            type: array
-          - type: 'null'
-          title: Operations
-          description: Operations this payment is applied to.
-        productId:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Productid
-          description: Embat product ID. You can get them from "Products" endpoints.
-        contactCustomId:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Contactcustomid
-          description: Custom ID of the contact (client/supplier) involved in the payment.
-        date:
-          type: string
-          format: date-time
-          title: Date
-          description: Date the payment was made or received.
-        concept:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Concept
-          description: Free-text description of the payment.
-          examples:
-          - 'Invoice #2024-001 payment'
-        amount:
-          type: number
-          title: Amount
-          description: Payment amount in the payment `currency`. Positive for collections, negative for outgoing payments.
-          examples:
-          - 1250.5
-        accountingAmount:
-          anyOf:
-          - type: number
-          - type: 'null'
-          title: Accountingamount
-          description: Payment amount expressed in the company accounting currency. If omitted, it defaults to `amount`, `accountingCurrency` defaults to `currency` and `exchangeRate` is set to 1.0.
-          examples:
-          - 1250.5
-        currency:
-          anyOf:
-          - $ref: '#/components/schemas/CurrencyEnum'
-          - type: 'null'
-          description: ISO currency code of `amount`. Defaults to `EUR` when omitted.
-          examples:
-          - EUR
-        accountingCurrency:
-          anyOf:
-          - $ref: '#/components/schemas/CurrencyEnum'
-          - type: 'null'
-          description: ISO currency code of `accountingAmount`. Defaults to `currency` when omitted.
-          examples:
-          - EUR
-        exchangeRate:
-          anyOf:
-          - type: number
-          - type: 'null'
-          title: Exchangerate
-          description: Exchange rate applied between `currency` and `accountingCurrency`. Defaults to 1.0 when omitted.
-          examples:
-          - 1.0
-        additionalInfo:
-          anyOf:
-          - additionalProperties: true
-            type: object
-          - type: 'null'
-          title: Additionalinfo
-          description: Free-form key/value metadata to attach to the payment.
-        attributes:
-          anyOf:
-          - items:
-              $ref: '#/components/schemas/AttributeValueRequestSchema'
-            type: array
-          - type: 'null'
-          title: Attributes
-          description: Custom attribute values to attach to the payment.
-        id:
-          type: string
-          title: Id
-          description: Embat payment ID
-        customId:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Customid
-          description: Your own unique ID for the payment. If the payment has none, it is auto-generated as `id` concatenated with `companyId`.
-        type:
-          anyOf:
-          - $ref: '#/components/schemas/PaymentShortTypeEnum'
-          - type: 'null'
-          description: 'Payment classification: `contacts`, `accountings`, `operations`, `banks` or `salesOrder`. Payments created through this API are always classified as `operations`.'
-        productAccountingCode:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Productaccountingcode
-          description: Product accounting code
-        accountingCode:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Accountingcode
-          description: Accounting account code the payment is posted to.
-        paymentSource:
-          $ref: '#/components/schemas/SourceEnum'
-          description: Origin of the payment record.
-          default: embat
-        companyId:
-          type: string
-          title: Companyid
-          description: Embat company ID. You can get them from "companies" endpoints
-        updatedAt:
-          type: string
-          format: date-time
-          title: Updatedat
-          description: Last updated date of the entity in the database
-        createdAt:
-          type: string
-          format: date-time
-          title: Createdat
-          description: Created date of the entity in the database
-        sync:
-          type: boolean
-          title: Sync
-          description: Whether the payment is synchronized with the accounting system.
-          default: false
-        registered:
-          type: boolean
-          title: Registered
-          description: Whether the payment is registered in the accounting system.
-          default: false
-        userId:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Userid
-          description: Embat ID of the user who created the payment, if created manually.
-        transactionAmount:
-          anyOf:
-          - type: number
-          - type: 'null'
-          title: Transactionamount
-          description: Total amount of the bank transaction linked to this payment.
-        transactionAccountingAmount:
-          anyOf:
-          - type: number
-          - type: 'null'
-          title: Transactionaccountingamount
-          description: Accounting amount of the bank transaction linked to this payment.
-        multicurrency:
-          type: boolean
-          title: Multicurrency
-          description: True when the payment's operations use a currency different from the payment currency, indicating a currency exchange took place.
-          default: false
-        error:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Error
-          description: Error message recorded against the payment, if any.
-          examples:
-          - Missing account
-        contact:
-          anyOf:
-          - $ref: '#/components/schemas/BaseContactSchema-Output'
-          - type: 'null'
-          description: Contact (client/supplier) involved in the payment.
-        intercompany:
-          anyOf:
-          - $ref: '#/components/schemas/IntercompanyPaymentSchema'
-          - type: 'null'
-          description: Intercompany settlement details, when the payment is part of one.
-        transactionAttributes:
-          anyOf:
-          - items:
-              $ref: '#/components/schemas/AttributeValueRequestSchema'
-            type: array
-          - type: 'null'
-          title: Transactionattributes
-          description: Custom attribute values of the bank transaction linked to this payment.
-      type: object
-      required:
-      - date
-      - amount
-      - id
-      - companyId
-      - updatedAt
-      - createdAt
-      title: GetPaymentsResponseSchema
-    AccountTypeEnum:
-      type: string
-      enum:
-      - CHECKING
-      - SAVINGS
-      title: AccountTypeEnum
-    ContactContactTypeEnum:
-      type: string
-      enum:
-      - freelance
-      - company
-      title: ContactContactTypeEnum
-    ErrorResponse:
-      properties:
-        detail:
-          type: string
-          title: Detail
-          description: Human-readable explanation of the error.
-          examples:
-          - user not authorized
-      type: object
-      required:
-      - detail
-      title: ErrorResponse
-      description: Error payload returned by the API (FastAPI `detail` convention).
     HTTPValidationError:
       properties:
         detail:
@@ -1715,397 +2080,6 @@ components:
           title: Detail
       type: object
       title: HTTPValidationError
-    OperationPaymentRequestSchema:
-      properties:
-        amount:
-          type: number
-          title: Amount
-          description: Amount of the payment allocated to this operation, in the operation currency.
-          examples:
-          - 500.0
-        customId:
-          type: string
-          title: Customid
-          description: Custom ID of the operation this payment amount is applied to.
-          examples:
-          - invoice-2024-001
-      type: object
-      required:
-      - amount
-      - customId
-      title: OperationPaymentRequestSchema
-    PostPaymentsRequestSchema:
-      properties:
-        method:
-          type: string
-          title: Method
-          description: Payment method. Defaults to `bank-transaction` when not sent.
-          default: bank-transaction
-          examples:
-          - bank-transaction
-        transactionId:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Transactionid
-          description: Embat ID of the bank transaction linked to this payment.
-        operations:
-          items:
-            $ref: '#/components/schemas/OperationPaymentRequestSchema'
-          type: array
-          title: Operations
-          description: Operations this payment is applied to. Must contain at least one item. Each entry is validated independently and silently discarded if the operation does not exist, is already paid or canceled, already received a payment with this same `customId`, or already has payments created from Embat — see the endpoint description.
-        productId:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Productid
-          description: Embat product ID. You can get them from "Products" endpoints.
-        contactCustomId:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Contactcustomid
-          description: Custom ID of the contact (client/supplier) involved in the payment.
-        date:
-          type: string
-          format: date-time
-          title: Date
-          description: Date the payment was made or received.
-        concept:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Concept
-          description: Free-text description of the payment.
-          examples:
-          - 'Invoice #2024-001 payment'
-        amount:
-          type: number
-          title: Amount
-          description: Payment amount in the payment `currency`. Positive for collections, negative for outgoing payments.
-          examples:
-          - 1250.5
-        accountingAmount:
-          anyOf:
-          - type: number
-          - type: 'null'
-          title: Accountingamount
-          description: Payment amount expressed in the company accounting currency. If omitted, it defaults to `amount`, `accountingCurrency` defaults to `currency` and `exchangeRate` is set to 1.0.
-          examples:
-          - 1250.5
-        currency:
-          anyOf:
-          - $ref: '#/components/schemas/CurrencyEnum'
-          - type: 'null'
-          description: ISO currency code of `amount`. Defaults to `EUR` when omitted.
-          examples:
-          - EUR
-        accountingCurrency:
-          anyOf:
-          - $ref: '#/components/schemas/CurrencyEnum'
-          - type: 'null'
-          description: ISO currency code of `accountingAmount`. Defaults to `currency` when omitted.
-          examples:
-          - EUR
-        exchangeRate:
-          anyOf:
-          - type: number
-          - type: 'null'
-          title: Exchangerate
-          description: Exchange rate applied between `currency` and `accountingCurrency`. Defaults to 1.0 when omitted.
-          examples:
-          - 1.0
-        additionalInfo:
-          anyOf:
-          - additionalProperties: true
-            type: object
-          - type: 'null'
-          title: Additionalinfo
-          description: Free-form key/value metadata to attach to the payment.
-        attributes:
-          anyOf:
-          - items:
-              $ref: '#/components/schemas/AttributeValueRequestSchema'
-            type: array
-          - type: 'null'
-          title: Attributes
-          description: Custom attribute values to attach to the payment.
-        customId:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Customid
-          description: Your own unique ID for the payment. If omitted, Embat auto-generates one.
-          examples:
-          - erp-payment-001
-      type: object
-      required:
-      - operations
-      - date
-      - amount
-      title: PostPaymentsRequestSchema
-    UpsertPaymentsResponseSchema:
-      properties:
-        id:
-          type: string
-          title: Id
-          description: Embat payment ID
-        customId:
-          type: string
-          title: Customid
-          description: Client-provided custom ID
-      type: object
-      required:
-      - id
-      - customId
-      title: UpsertPaymentsResponseSchema
-    AuxBulkPatchPaymentsRequestSchema:
-      properties:
-        sync:
-          anyOf:
-          - type: boolean
-          - type: 'null'
-          title: Sync
-          description: Marks the payment as synchronized with the accounting system.
-        additionalInfo:
-          anyOf:
-          - additionalProperties: true
-            type: object
-          - type: 'null'
-          title: Additionalinfo
-          description: Free-form key/value metadata to attach to the payment.
-        error:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Error
-          description: Error message to record against the payment. Sending an empty string clears a previously set error.
-          examples:
-          - Missing account
-        registered:
-          anyOf:
-          - type: boolean
-          - type: 'null'
-          title: Registered
-          description: Marks the payment as registered in the accounting system.
-        customId:
-          type: string
-          title: Customid
-          description: Embat custom/auto-generated unique payment ID. You can use it as your own custom ERP payment ID.
-      type: object
-      required:
-      - customId
-      title: AuxBulkPatchPaymentsRequestSchema
-    CurrencyEnum:
-      type: string
-      enum:
-      - AED
-      - AFN
-      - ALL
-      - AMD
-      - ANG
-      - AOA
-      - ARS
-      - AUD
-      - AWG
-      - AZN
-      - BAM
-      - BBD
-      - BDT
-      - BGN
-      - BHD
-      - BIF
-      - BMD
-      - BND
-      - BOB
-      - BOV
-      - BRL
-      - BSD
-      - BTC
-      - BTN
-      - BWP
-      - BYN
-      - BZD
-      - CAD
-      - CDF
-      - CHE
-      - CHF
-      - CHW
-      - CLF
-      - CLP
-      - CNH
-      - CNY
-      - COP
-      - COU
-      - CRC
-      - CUP
-      - CVE
-      - CZK
-      - DJF
-      - DKK
-      - DOP
-      - DZD
-      - EEK
-      - EGP
-      - ERN
-      - ETB
-      - ETH
-      - EUR
-      - FJD
-      - FKP
-      - GBP
-      - GEL
-      - GHS
-      - GIP
-      - GMD
-      - GNF
-      - GTQ
-      - GYD
-      - HKD
-      - HNL
-      - HRK
-      - HTG
-      - HUF
-      - IDR
-      - ILS
-      - INR
-      - IQD
-      - IRR
-      - ISK
-      - JMD
-      - JOD
-      - JPY
-      - KES
-      - KGS
-      - KHR
-      - KMF
-      - KPW
-      - KRW
-      - KWD
-      - KYD
-      - KZT
-      - LAK
-      - LBP
-      - LKR
-      - LRD
-      - LSL
-      - LTC
-      - LTL
-      - LVL
-      - LYD
-      - MAD
-      - MDL
-      - MGA
-      - MKD
-      - MMK
-      - MNT
-      - MOP
-      - MRU
-      - MUR
-      - MVR
-      - MWK
-      - MXN
-      - MXV
-      - MYR
-      - MZN
-      - NAD
-      - NGN
-      - NIO
-      - NOK
-      - NPR
-      - NZD
-      - OMR
-      - PAB
-      - PEN
-      - PGK
-      - PHP
-      - PKR
-      - PLN
-      - PYG
-      - QAR
-      - RON
-      - RSD
-      - RUB
-      - RWF
-      - SAR
-      - SBD
-      - SCR
-      - SDG
-      - SEK
-      - SGD
-      - SHP
-      - SLE
-      - SOS
-      - SRD
-      - SSP
-      - STN
-      - SVC
-      - SYP
-      - SZL
-      - THB
-      - TJS
-      - TMT
-      - TND
-      - TOP
-      - TRY
-      - TTD
-      - TWD
-      - TZS
-      - UAH
-      - UGX
-      - USD
-      - USN
-      - UYI
-      - UYU
-      - UYW
-      - UZS
-      - VED
-      - VEF
-      - VES
-      - VND
-      - VUV
-      - WST
-      - XAF
-      - XAG
-      - XAU
-      - XBA
-      - XBB
-      - XBC
-      - XBD
-      - XCD
-      - XDR
-      - XOF
-      - XPD
-      - XPF
-      - XPT
-      - XSU
-      - XTS
-      - XUA
-      - XXX
-      - YER
-      - ZAR
-      - ZMK
-      - ZMW
-      - ZWG
-      - ZWL
-      title: CurrencyEnum
-    SourceEnum:
-      type: string
-      enum:
-      - erp
-      - api
-      - embat
-      title: SourceEnum
-    PaymentShortTypeEnum:
-      type: string
-      enum:
-      - contacts
-      - accountings
-      - operations
-      - banks
-      - salesOrder
-      title: PaymentShortTypeEnum
     ModifyPaymentsResponseSchema:
       properties:
         id:
@@ -2116,6 +2090,32 @@ components:
       required:
       - id
       title: ModifyPaymentsResponseSchema
+    ValidationError:
+      properties:
+        loc:
+          items:
+            anyOf:
+            - type: string
+            - type: integer
+          type: array
+          title: Location
+        msg:
+          type: string
+          title: Message
+        type:
+          type: string
+          title: Error Type
+        input:
+          title: Input
+        ctx:
+          type: object
+          title: Context
+      type: object
+      required:
+      - loc
+      - msg
+      - type
+      title: ValidationError
   securitySchemes:
     HTTPBearer:
       type: http

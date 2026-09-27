@@ -129,150 +129,6 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
 components:
   schemas:
-    ValidationError:
-      properties:
-        loc:
-          items:
-            anyOf:
-            - type: string
-            - type: integer
-          type: array
-          title: Location
-        msg:
-          type: string
-          title: Message
-        type:
-          type: string
-          title: Error Type
-        input:
-          title: Input
-        ctx:
-          type: object
-          title: Context
-      type: object
-      required:
-      - loc
-      - msg
-      - type
-      title: ValidationError
-    ErrorResponse:
-      properties:
-        detail:
-          type: string
-          title: Detail
-          description: Human-readable explanation of the error.
-          examples:
-          - user not authorized
-      type: object
-      required:
-      - detail
-      title: ErrorResponse
-      description: Error payload returned by the API (FastAPI `detail` convention).
-    ListCompaniesResponseSchema:
-      properties:
-        data:
-          items:
-            $ref: '#/components/schemas/CompanyResponseSchema'
-          type: array
-          title: Data
-          description: Companies your credentials have access to.
-      type: object
-      required:
-      - data
-      title: ListCompaniesResponseSchema
-    CompanyResponseSchema:
-      properties:
-        id:
-          type: string
-          title: Id
-          description: Embat company ID. Use it as `companyId` in the rest of the API.
-          examples:
-          - company_5f2c1a
-        legalName:
-          type: string
-          title: Legalname
-          description: Company legal name.
-          examples:
-          - Acme Corporation S.L.
-        updatedAt:
-          anyOf:
-          - type: string
-            format: date-time
-          - type: 'null'
-          title: Updatedat
-          description: Last updated date of the entity in the database
-        createdAt:
-          anyOf:
-          - type: string
-            format: date-time
-          - type: 'null'
-          title: Createdat
-          description: Created date of the entity in the database
-        contact:
-          anyOf:
-          - $ref: '#/components/schemas/app__schemas__companies__ContactSchema'
-          - type: 'null'
-          description: Company's administrative contact.
-        tags:
-          anyOf:
-          - items:
-              $ref: '#/components/schemas/TagsSchema'
-            type: array
-          - type: 'null'
-          title: Tags
-          description: Tags assigned to the company, used for classification in Embat.
-        config:
-          anyOf:
-          - $ref: '#/components/schemas/CompanyConfigSchema'
-          - type: 'null'
-          description: Company-level configuration, such as the accounting currency.
-      type: object
-      required:
-      - id
-      - legalName
-      title: CompanyResponseSchema
-    HTTPValidationError:
-      properties:
-        detail:
-          items:
-            $ref: '#/components/schemas/ValidationError'
-          type: array
-          title: Detail
-      type: object
-      title: HTTPValidationError
-    TagsSchema:
-      properties:
-        id:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Id
-          description: Embat tag ID.
-          examples:
-          - tag_4d2f1a
-        updatedAt:
-          type: string
-          format: date-time
-          title: Updatedat
-          description: Last updated date of the entity in the database
-        createdAt:
-          type: string
-          format: date-time
-          title: Createdat
-          description: Created date of the entity in the database
-        name:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Name
-          description: Tag name.
-          examples:
-          - VIP
-      type: object
-      required:
-      - updatedAt
-      - createdAt
-      title: TagsSchema
     app__schemas__companies__ContactSchema:
       properties:
         phone:
@@ -358,6 +214,172 @@ components:
       - id
       - email
       title: CompanyUserSchema
+    CompanyConfigSchema:
+      properties:
+        currency:
+          $ref: '#/components/schemas/CurrencyEnum'
+          description: Company's accounting currency. Defaults to `EUR` when not configured.
+          default: EUR
+          examples:
+          - EUR
+      type: object
+      title: CompanyConfigSchema
+    ListCompanyUsersResponseSchema:
+      properties:
+        data:
+          items:
+            $ref: '#/components/schemas/CompanyUserSchema'
+          type: array
+          title: Data
+          description: Users with access to the company.
+      type: object
+      required:
+      - data
+      title: ListCompanyUsersResponseSchema
+    HTTPValidationError:
+      properties:
+        detail:
+          items:
+            $ref: '#/components/schemas/ValidationError'
+          type: array
+          title: Detail
+      type: object
+      title: HTTPValidationError
+    TagsSchema:
+      properties:
+        id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Id
+          description: Embat tag ID.
+          examples:
+          - tag_4d2f1a
+        updatedAt:
+          type: string
+          format: date-time
+          title: Updatedat
+          description: Last updated date of the entity in the database
+        createdAt:
+          type: string
+          format: date-time
+          title: Createdat
+          description: Created date of the entity in the database
+        name:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Name
+          description: Tag name.
+          examples:
+          - VIP
+      type: object
+      required:
+      - updatedAt
+      - createdAt
+      title: TagsSchema
+    ListCompaniesResponseSchema:
+      properties:
+        data:
+          items:
+            $ref: '#/components/schemas/CompanyResponseSchema'
+          type: array
+          title: Data
+          description: Companies your credentials have access to.
+      type: object
+      required:
+      - data
+      title: ListCompaniesResponseSchema
+    ValidationError:
+      properties:
+        loc:
+          items:
+            anyOf:
+            - type: string
+            - type: integer
+          type: array
+          title: Location
+        msg:
+          type: string
+          title: Message
+        type:
+          type: string
+          title: Error Type
+        input:
+          title: Input
+        ctx:
+          type: object
+          title: Context
+      type: object
+      required:
+      - loc
+      - msg
+      - type
+      title: ValidationError
+    CompanyResponseSchema:
+      properties:
+        id:
+          type: string
+          title: Id
+          description: Embat company ID. Use it as `companyId` in the rest of the API.
+          examples:
+          - company_5f2c1a
+        legalName:
+          type: string
+          title: Legalname
+          description: Company legal name.
+          examples:
+          - Acme Corporation S.L.
+        updatedAt:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Updatedat
+          description: Last updated date of the entity in the database
+        createdAt:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Createdat
+          description: Created date of the entity in the database
+        contact:
+          anyOf:
+          - $ref: '#/components/schemas/app__schemas__companies__ContactSchema'
+          - type: 'null'
+          description: Company's administrative contact.
+        tags:
+          anyOf:
+          - items:
+              $ref: '#/components/schemas/TagsSchema'
+            type: array
+          - type: 'null'
+          title: Tags
+          description: Tags assigned to the company, used for classification in Embat.
+        config:
+          anyOf:
+          - $ref: '#/components/schemas/CompanyConfigSchema'
+          - type: 'null'
+          description: Company-level configuration, such as the accounting currency.
+      type: object
+      required:
+      - id
+      - legalName
+      title: CompanyResponseSchema
+    ErrorResponse:
+      properties:
+        detail:
+          type: string
+          title: Detail
+          description: Human-readable explanation of the error.
+          examples:
+          - user not authorized
+      type: object
+      required:
+      - detail
+      title: ErrorResponse
+      description: Error payload returned by the API (FastAPI `detail` convention).
     CurrencyEnum:
       type: string
       enum:
@@ -551,28 +573,6 @@ components:
       - ZWG
       - ZWL
       title: CurrencyEnum
-    CompanyConfigSchema:
-      properties:
-        currency:
-          $ref: '#/components/schemas/CurrencyEnum'
-          description: Company's accounting currency. Defaults to `EUR` when not configured.
-          default: EUR
-          examples:
-          - EUR
-      type: object
-      title: CompanyConfigSchema
-    ListCompanyUsersResponseSchema:
-      properties:
-        data:
-          items:
-            $ref: '#/components/schemas/CompanyUserSchema'
-          type: array
-          title: Data
-          description: Users with access to the company.
-      type: object
-      required:
-      - data
-      title: ListCompanyUsersResponseSchema
   securitySchemes:
     HTTPBearer:
       type: http

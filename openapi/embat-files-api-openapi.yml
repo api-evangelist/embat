@@ -221,45 +221,6 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
 components:
   schemas:
-    ValidationError:
-      properties:
-        loc:
-          items:
-            anyOf:
-            - type: string
-            - type: integer
-          type: array
-          title: Location
-        msg:
-          type: string
-          title: Message
-        type:
-          type: string
-          title: Error Type
-        input:
-          title: Input
-        ctx:
-          type: object
-          title: Context
-      type: object
-      required:
-      - loc
-      - msg
-      - type
-      title: ValidationError
-    ErrorResponse:
-      properties:
-        detail:
-          type: string
-          title: Detail
-          description: Human-readable explanation of the error.
-          examples:
-          - user not authorized
-      type: object
-      required:
-      - detail
-      title: ErrorResponse
-      description: Error payload returned by the API (FastAPI `detail` convention).
     FileFormatsEnum:
       type: string
       enum:
@@ -291,48 +252,6 @@ components:
       required:
       - data
       title: ListFilesReceptionsResponseSchema
-    ListFilesEmissionsResponseSchema:
-      properties:
-        data:
-          items:
-            $ref: '#/components/schemas/GetFilesEmissionResponseSchema'
-          type: array
-          title: Data
-          description: File emissions matching the query.
-        nextPageToken:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Nextpagetoken
-          description: Token to fetch the next page of results. `null` when there are no more pages.
-      type: object
-      required:
-      - data
-      title: ListFilesEmissionsResponseSchema
-    HTTPValidationError:
-      properties:
-        detail:
-          items:
-            $ref: '#/components/schemas/ValidationError'
-          type: array
-          title: Detail
-      type: object
-      title: HTTPValidationError
-    Body_create_file_emission_files__companyId___bankId__post:
-      properties:
-        file:
-          type: string
-          contentMediaType: application/octet-stream
-          title: File
-          description: Binary content of the file to submit to the bank.
-        format:
-          $ref: '#/components/schemas/FileFormatsEnum'
-          description: Format of the submitted file.
-      type: object
-      required:
-      - file
-      - format
-      title: Body_create_file_emission_files__companyId___bankId__post
     BankFileSchema:
       properties:
         id:
@@ -394,6 +313,85 @@ components:
       - id
       - name
       title: UserFileSchema
+    GetFilesReceptionResponseSchema:
+      properties:
+        id:
+          type: string
+          title: Id
+          description: Embat ID of the file reception.
+        groupId:
+          type: string
+          title: Groupid
+          description: Embat group ID the file belongs to.
+        companyId:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Companyid
+          description: Embat company ID the file was matched to, if identified.
+        fileName:
+          type: string
+          title: Filename
+          description: Name of the file as received from the bank.
+          examples:
+          - statement.xml
+        bank:
+          anyOf:
+          - $ref: '#/components/schemas/BankFileSchema'
+          - type: 'null'
+          description: Bank the file was received from, if identified.
+        downloaded:
+          type: boolean
+          title: Downloaded
+          description: Whether the file has already been downloaded.
+        provider:
+          type: string
+          title: Provider
+          description: Channel or provider through which the file was received.
+          examples:
+          - bank
+        receptionDate:
+          type: string
+          format: date-time
+          title: Receptiondate
+          description: Date the file was received from the bank.
+        createdAt:
+          type: string
+          format: date-time
+          title: Createdat
+          description: Created date of the entity in the database
+        updatedAt:
+          type: string
+          format: date-time
+          title: Updatedat
+          description: Last updated date of the entity in the database
+      type: object
+      required:
+      - id
+      - groupId
+      - fileName
+      - downloaded
+      - provider
+      - receptionDate
+      - createdAt
+      - updatedAt
+      title: GetFilesReceptionResponseSchema
+      description: Files response data schema
+    Body_create_file_emission_files__companyId___bankId__post:
+      properties:
+        file:
+          type: string
+          contentMediaType: application/octet-stream
+          title: File
+          description: Binary content of the file to submit to the bank.
+        format:
+          $ref: '#/components/schemas/FileFormatsEnum'
+          description: Format of the submitted file.
+      type: object
+      required:
+      - file
+      - format
+      title: Body_create_file_emission_files__companyId___bankId__post
     GetFilesEmissionResponseSchema:
       properties:
         id:
@@ -466,70 +464,72 @@ components:
       - updatedAt
       title: GetFilesEmissionResponseSchema
       description: Files response data schema
-    GetFilesReceptionResponseSchema:
+    HTTPValidationError:
       properties:
-        id:
+        detail:
+          items:
+            $ref: '#/components/schemas/ValidationError'
+          type: array
+          title: Detail
+      type: object
+      title: HTTPValidationError
+    ValidationError:
+      properties:
+        loc:
+          items:
+            anyOf:
+            - type: string
+            - type: integer
+          type: array
+          title: Location
+        msg:
           type: string
-          title: Id
-          description: Embat ID of the file reception.
-        groupId:
+          title: Message
+        type:
           type: string
-          title: Groupid
-          description: Embat group ID the file belongs to.
-        companyId:
+          title: Error Type
+        input:
+          title: Input
+        ctx:
+          type: object
+          title: Context
+      type: object
+      required:
+      - loc
+      - msg
+      - type
+      title: ValidationError
+    ListFilesEmissionsResponseSchema:
+      properties:
+        data:
+          items:
+            $ref: '#/components/schemas/GetFilesEmissionResponseSchema'
+          type: array
+          title: Data
+          description: File emissions matching the query.
+        nextPageToken:
           anyOf:
           - type: string
           - type: 'null'
-          title: Companyid
-          description: Embat company ID the file was matched to, if identified.
-        fileName:
-          type: string
-          title: Filename
-          description: Name of the file as received from the bank.
-          examples:
-          - statement.xml
-        bank:
-          anyOf:
-          - $ref: '#/components/schemas/BankFileSchema'
-          - type: 'null'
-          description: Bank the file was received from, if identified.
-        downloaded:
-          type: boolean
-          title: Downloaded
-          description: Whether the file has already been downloaded.
-        provider:
-          type: string
-          title: Provider
-          description: Channel or provider through which the file was received.
-          examples:
-          - bank
-        receptionDate:
-          type: string
-          format: date-time
-          title: Receptiondate
-          description: Date the file was received from the bank.
-        createdAt:
-          type: string
-          format: date-time
-          title: Createdat
-          description: Created date of the entity in the database
-        updatedAt:
-          type: string
-          format: date-time
-          title: Updatedat
-          description: Last updated date of the entity in the database
+          title: Nextpagetoken
+          description: Token to fetch the next page of results. `null` when there are no more pages.
       type: object
       required:
-      - id
-      - groupId
-      - fileName
-      - downloaded
-      - provider
-      - receptionDate
-      - createdAt
-      - updatedAt
-      title: GetFilesReceptionResponseSchema
-      description: Files response data schema
+      - data
+      title: ListFilesEmissionsResponseSchema
+    ErrorResponse:
+      properties:
+        detail:
+          type: string
+          title: Detail
+          description: Human-readable explanation of the error.
+          examples:
+          - user not authorized
+      type: object
+      required:
+      - detail
+      title: ErrorResponse
+      description: Error payload returned by the API (FastAPI `detail` convention).
     PostFilesEmissionResponseSchema:
       properties:
         id:

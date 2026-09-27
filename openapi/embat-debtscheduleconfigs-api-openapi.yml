@@ -147,32 +147,6 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
 components:
   schemas:
-    ValidationError:
-      properties:
-        loc:
-          items:
-            anyOf:
-            - type: string
-            - type: integer
-          type: array
-          title: Location
-        msg:
-          type: string
-          title: Message
-        type:
-          type: string
-          title: Error Type
-        input:
-          title: Input
-        ctx:
-          type: object
-          title: Context
-      type: object
-      required:
-      - loc
-      - msg
-      - type
-      title: ValidationError
     GetDebtScheduleConfigResponseSchema:
       properties:
         id:
@@ -228,19 +202,6 @@ components:
       - semiannually
       - yearly
       title: AmortisingFrequencyEnum
-    ErrorResponse:
-      properties:
-        detail:
-          type: string
-          title: Detail
-          description: Human-readable explanation of the error.
-          examples:
-          - user not authorized
-      type: object
-      required:
-      - detail
-      title: ErrorResponse
-      description: Error payload returned by the API (FastAPI `detail` convention).
     DebtSchedulePaymentSchema:
       properties:
         period:
@@ -287,6 +248,12 @@ components:
       - taxPayment
       - totalPayment
       title: DebtSchedulePaymentSchema
+    InterestTypeEnum:
+      type: string
+      enum:
+      - fixed
+      - variable
+      title: InterestTypeEnum
     DebtScheduleConfigSchema:
       properties:
         amortisingFrequency:
@@ -348,6 +315,24 @@ components:
       - annualInterestRateOrSpread
       - interestType
       title: DebtScheduleConfigSchema
+    ListDebtScheduleConfigsResponseSchema:
+      properties:
+        data:
+          items:
+            $ref: '#/components/schemas/GetDebtScheduleConfigResponseSchema'
+          type: array
+          title: Data
+          description: Debt schedule configurations matching the query.
+        nextPageToken:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Nextpagetoken
+          description: Token to fetch the next page of results. `null` when there are no more pages.
+      type: object
+      required:
+      - data
+      title: ListDebtScheduleConfigsResponseSchema
     HTTPValidationError:
       properties:
         detail:
@@ -357,12 +342,45 @@ components:
           title: Detail
       type: object
       title: HTTPValidationError
-    InterestTypeEnum:
-      type: string
-      enum:
-      - fixed
-      - variable
-      title: InterestTypeEnum
+    ValidationError:
+      properties:
+        loc:
+          items:
+            anyOf:
+            - type: string
+            - type: integer
+          type: array
+          title: Location
+        msg:
+          type: string
+          title: Message
+        type:
+          type: string
+          title: Error Type
+        input:
+          title: Input
+        ctx:
+          type: object
+          title: Context
+      type: object
+      required:
+      - loc
+      - msg
+      - type
+      title: ValidationError
+    ErrorResponse:
+      properties:
+        detail:
+          type: string
+          title: Detail
+          description: Human-readable explanation of the error.
+          examples:
+          - user not authorized
+      type: object
+      required:
+      - detail
+      title: ErrorResponse
+      description: Error payload returned by the API (FastAPI `detail` convention).
     CurrencyEnum:
       type: string
       enum:
@@ -556,24 +574,6 @@ components:
       - ZWG
       - ZWL
       title: CurrencyEnum
-    ListDebtScheduleConfigsResponseSchema:
-      properties:
-        data:
-          items:
-            $ref: '#/components/schemas/GetDebtScheduleConfigResponseSchema'
-          type: array
-          title: Data
-          description: Debt schedule configurations matching the query.
-        nextPageToken:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Nextpagetoken
-          description: Token to fetch the next page of results. `null` when there are no more pages.
-      type: object
-      required:
-      - data
-      title: ListDebtScheduleConfigsResponseSchema
   securitySchemes:
     HTTPBearer:
       type: http

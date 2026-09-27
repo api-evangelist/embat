@@ -225,7 +225,196 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
 components:
   schemas:
-    AuxBulkPatchProductsRequestSchema:
+    BulkModifyProductsResponseSchema:
+      properties:
+        data:
+          items:
+            $ref: '#/components/schemas/ModifyProductsResponseSchema'
+          type: array
+          title: Data
+          description: Result of the bulk operation, one entry per product.
+      type: object
+      required:
+      - data
+      title: BulkModifyProductsResponseSchema
+    GetProductsResponseSchema:
+      properties:
+        id:
+          type: string
+          title: Id
+          description: Embat product ID.
+          examples:
+          - prod_8f3a1c
+        bankId:
+          type: string
+          title: Bankid
+          description: Embat ID of the bank relationship this product belongs to. You can get them from "banks" endpoints.
+        companyId:
+          type: string
+          title: Companyid
+          description: Embat company ID. You can get them from "companies" endpoints.
+        accountingCode:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Accountingcode
+          description: Accounting account code this product is posted to, if it has been reconciled with one.
+          examples:
+          - '5720001'
+        balance:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Balance
+          description: Current balance of the product, in its own `currency`.
+          examples:
+          - 15234.67
+        balanceCreditGranted:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Balancecreditgranted
+          description: Total credit limit granted on the product (e.g. for lines of credit).
+          examples:
+          - 50000.0
+        countableBalance:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Countablebalance
+          description: Balance used for reporting purposes. Defaults to `balance` when the bank does not report a countable balance, or reports it as zero.
+          examples:
+          - 15234.67
+        arrangedBalance:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Arrangedbalance
+          description: Arranged balance of the product (e.g. amount drawn against a credit line), as reported by the bank.
+          examples:
+          - 10000.0
+        updatedAt:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Updatedat
+          description: Last time this product was updated in Embat.
+        createdAt:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Createdat
+          description: Date this product was created in Embat.
+        currency:
+          $ref: '#/components/schemas/CurrencyEnum'
+          description: ISO currency code of the product.
+          examples:
+          - EUR
+        product:
+          type: string
+          title: Product
+          description: Product name as reported by the bank.
+          examples:
+          - Cuenta Corriente
+        iban:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Iban
+          description: IBAN or account number identifying the product.
+          examples:
+          - ES9121000418450200051332
+        type:
+          type: string
+          title: Type
+          description: Product type reported by the bank, e.g. `checking`, `savings`, `card`, `loan`, `lineofcredit` or `wallet`.
+          examples:
+          - checking
+        alias:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Alias
+          description: Custom alias given to the product in Embat, if any.
+          examples:
+          - Main checking account
+        description:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Description
+          description: Description of the product as reported by the bank.
+        notes:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Notes
+          description: Notes attached to the product in Embat. Falls back to `description` when not set.
+        bank:
+          type: string
+          title: Bank
+          description: Identifier of the bank providing this product.
+          examples:
+          - bbva
+        bankFullName:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Bankfullname
+          description: Full legal name of the bank this product belongs to, if known.
+          examples:
+          - Banco Bilbao Vizcaya Argentaria
+        additionalInfo:
+          anyOf:
+          - additionalProperties: true
+            type: object
+          - type: 'null'
+          title: Additionalinfo
+          description: Free-form key/value metadata attached to the product.
+        hasTransactions:
+          anyOf:
+          - type: boolean
+          - type: 'null'
+          title: Hastransactions
+          description: 'Whether the product supports bank transactions. Always recomputed by Embat: `true` for `checking`, `lineofcredit`, `card` and `wallet` products, `false` otherwise.'
+        manual:
+          type: boolean
+          title: Manual
+          description: Whether the product was added manually, rather than aggregated from a bank connection.
+          default: false
+        tags:
+          anyOf:
+          - items:
+              type: string
+            type: array
+          - type: 'null'
+          title: Tags
+          description: Custom tags assigned to the product in Embat.
+        financialDetails:
+          anyOf:
+          - additionalProperties: true
+            type: object
+          - type: 'null'
+          title: Financialdetails
+          description: Additional financial detail attributes reported for the product.
+        reconciliation:
+          anyOf:
+          - $ref: '#/components/schemas/ReconciliationSchema'
+          - type: 'null'
+          description: Reconciliation status of the accounting account linked to this product via `accountingCode`. `null` when the product has no `accountingCode` or when no accounting account matches it.
+      type: object
+      required:
+      - id
+      - bankId
+      - companyId
+      - currency
+      - product
+      - type
+      - bank
+      title: GetProductsResponseSchema
+    PatchProductsRequestSchema:
       properties:
         additionalInfo:
           additionalProperties: true
@@ -241,6 +430,34 @@ components:
           description: Accounting account code to link the product to.
           examples:
           - '5720001'
+      type: object
+      title: PatchProductsRequestSchema
+    BulkPatchProductsRequestSchema:
+      properties:
+        data:
+          items:
+            $ref: '#/components/schemas/AuxBulkPatchProductsRequestSchema'
+          type: array
+          title: Data
+          description: Products to update, identified by `id`.
+      type: object
+      required:
+      - data
+      title: BulkPatchProductsRequestSchema
+    ListProductsResponseSchema:
+      properties:
+        data:
+          items:
+            $ref: '#/components/schemas/GetProductsResponseSchema'
+          type: array
+          title: Data
+          description: Products of the company.
+      type: object
+      required:
+      - data
+      title: ListProductsResponseSchema
+    ModifyProductsResponseSchema:
+      properties:
         id:
           type: string
           title: Id
@@ -248,7 +465,16 @@ components:
       type: object
       required:
       - id
-      title: AuxBulkPatchProductsRequestSchema
+      title: ModifyProductsResponseSchema
+    HTTPValidationError:
+      properties:
+        detail:
+          items:
+            $ref: '#/components/schemas/ValidationError'
+          type: array
+          title: Detail
+      type: object
+      title: HTTPValidationError
     ValidationError:
       properties:
         loc:
@@ -275,80 +501,6 @@ components:
       - msg
       - type
       title: ValidationError
-    ErrorResponse:
-      properties:
-        detail:
-          type: string
-          title: Detail
-          description: Human-readable explanation of the error.
-          examples:
-          - user not authorized
-      type: object
-      required:
-      - detail
-      title: ErrorResponse
-      description: Error payload returned by the API (FastAPI `detail` convention).
-    PatchProductsRequestSchema:
-      properties:
-        additionalInfo:
-          additionalProperties: true
-          type: object
-          title: Additionalinfo
-          description: Free-form key/value metadata to attach to the product. Replaces the existing value entirely.
-          default: {}
-        accountingCode:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Accountingcode
-          description: Accounting account code to link the product to.
-          examples:
-          - '5720001'
-      type: object
-      title: PatchProductsRequestSchema
-    ModifyProductsResponseSchema:
-      properties:
-        id:
-          type: string
-          title: Id
-          description: Embat product ID
-      type: object
-      required:
-      - id
-      title: ModifyProductsResponseSchema
-    HTTPValidationError:
-      properties:
-        detail:
-          items:
-            $ref: '#/components/schemas/ValidationError'
-          type: array
-          title: Detail
-      type: object
-      title: HTTPValidationError
-    BulkModifyProductsResponseSchema:
-      properties:
-        data:
-          items:
-            $ref: '#/components/schemas/ModifyProductsResponseSchema'
-          type: array
-          title: Data
-          description: Result of the bulk operation, one entry per product.
-      type: object
-      required:
-      - data
-      title: BulkModifyProductsResponseSchema
-    BulkPatchProductsRequestSchema:
-      properties:
-        data:
-          items:
-            $ref: '#/components/schemas/AuxBulkPatchProductsRequestSchema'
-          type: array
-          title: Data
-          description: Products to update, identified by `id`.
-      type: object
-      required:
-      - data
-      title: BulkPatchProductsRequestSchema
     ReconciliationSchema:
       properties:
         accountingCode:
@@ -370,18 +522,43 @@ components:
           - '2024-01-01T00:00:00Z'
       type: object
       title: ReconciliationSchema
-    ListProductsResponseSchema:
+    ErrorResponse:
       properties:
-        data:
-          items:
-            $ref: '#/components/schemas/GetProductsResponseSchema'
-          type: array
-          title: Data
-          description: Products of the company.
+        detail:
+          type: string
+          title: Detail
+          description: Human-readable explanation of the error.
+          examples:
+          - user not authorized
       type: object
       required:
-      - data
-      title: ListProductsResponseSchema
+      - detail
+      title: ErrorResponse
+      description: Error payload returned by the API (FastAPI `detail` convention).
+    AuxBulkPatchProductsRequestSchema:
+      properties:
+        additionalInfo:
+          additionalProperties: true
+          type: object
+          title: Additionalinfo
+          description: Free-form key/value metadata to attach to the product. Replaces the existing value entirely.
+          default: {}
+        accountingCode:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Accountingcode
+          description: Accounting account code to link the product to.
+          examples:
+          - '5720001'
+        id:
+          type: string
+          title: Id
+          description: Embat product ID
+      type: object
+      required:
+      - id
+      title: AuxBulkPatchProductsRequestSchema
     CurrencyEnum:
       type: string
       enum:
@@ -575,183 +752,6 @@ components:
       - ZWG
       - ZWL
       title: CurrencyEnum
-    GetProductsResponseSchema:
-      properties:
-        id:
-          type: string
-          title: Id
-          description: Embat product ID.
-          examples:
-          - prod_8f3a1c
-        bankId:
-          type: string
-          title: Bankid
-          description: Embat ID of the bank relationship this product belongs to. You can get them from "banks" endpoints.
-        companyId:
-          type: string
-          title: Companyid
-          description: Embat company ID. You can get them from "companies" endpoints.
-        accountingCode:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Accountingcode
-          description: Accounting account code this product is posted to, if it has been reconciled with one.
-          examples:
-          - '5720001'
-        balance:
-          anyOf:
-          - type: number
-          - type: 'null'
-          title: Balance
-          description: Current balance of the product, in its own `currency`.
-          examples:
-          - 15234.67
-        balanceCreditGranted:
-          anyOf:
-          - type: number
-          - type: 'null'
-          title: Balancecreditgranted
-          description: Total credit limit granted on the product (e.g. for lines of credit).
-          examples:
-          - 50000.0
-        countableBalance:
-          anyOf:
-          - type: number
-          - type: 'null'
-          title: Countablebalance
-          description: Balance used for reporting purposes. Defaults to `balance` when the bank does not report a countable balance, or reports it as zero.
-          examples:
-          - 15234.67
-        arrangedBalance:
-          anyOf:
-          - type: number
-          - type: 'null'
-          title: Arrangedbalance
-          description: Arranged balance of the product (e.g. amount drawn against a credit line), as reported by the bank.
-          examples:
-          - 10000.0
-        updatedAt:
-          anyOf:
-          - type: string
-            format: date-time
-          - type: 'null'
-          title: Updatedat
-          description: Last time this product was updated in Embat.
-        createdAt:
-          anyOf:
-          - type: string
-            format: date-time
-          - type: 'null'
-          title: Createdat
-          description: Date this product was created in Embat.
-        currency:
-          $ref: '#/components/schemas/CurrencyEnum'
-          description: ISO currency code of the product.
-          examples:
-          - EUR
-        product:
-          type: string
-          title: Product
-          description: Product name as reported by the bank.
-          examples:
-          - Cuenta Corriente
-        iban:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Iban
-          description: IBAN or account number identifying the product.
-          examples:
-          - ES9121000418450200051332
-        type:
-          type: string
-          title: Type
-          description: Product type reported by the bank, e.g. `checking`, `savings`, `card`, `loan`, `lineofcredit` or `wallet`.
-          examples:
-          - checking
-        alias:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Alias
-          description: Custom alias given to the product in Embat, if any.
-          examples:
-          - Main checking account
-        description:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Description
-          description: Description of the product as reported by the bank.
-        notes:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Notes
-          description: Notes attached to the product in Embat. Falls back to `description` when not set.
-        bank:
-          type: string
-          title: Bank
-          description: Identifier of the bank providing this product.
-          examples:
-          - bbva
-        bankFullName:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Bankfullname
-          description: Full legal name of the bank this product belongs to, if known.
-          examples:
-          - Banco Bilbao Vizcaya Argentaria
-        additionalInfo:
-          anyOf:
-          - additionalProperties: true
-            type: object
-          - type: 'null'
-          title: Additionalinfo
-          description: Free-form key/value metadata attached to the product.
-        hasTransactions:
-          anyOf:
-          - type: boolean
-          - type: 'null'
-          title: Hastransactions
-          description: 'Whether the product supports bank transactions. Always recomputed by Embat: `true` for `checking`, `lineofcredit`, `card` and `wallet` products, `false` otherwise.'
-        manual:
-          type: boolean
-          title: Manual
-          description: Whether the product was added manually, rather than aggregated from a bank connection.
-          default: false
-        tags:
-          anyOf:
-          - items:
-              type: string
-            type: array
-          - type: 'null'
-          title: Tags
-          description: Custom tags assigned to the product in Embat.
-        financialDetails:
-          anyOf:
-          - additionalProperties: true
-            type: object
-          - type: 'null'
-          title: Financialdetails
-          description: Additional financial detail attributes reported for the product.
-        reconciliation:
-          anyOf:
-          - $ref: '#/components/schemas/ReconciliationSchema'
-          - type: 'null'
-          description: Reconciliation status of the accounting account linked to this product via `accountingCode`. `null` when the product has no `accountingCode` or when no accounting account matches it.
-      type: object
-      required:
-      - id
-      - bankId
-      - companyId
-      - currency
-      - product
-      - type
-      - bank
-      title: GetProductsResponseSchema
   securitySchemes:
     HTTPBearer:
       type: http

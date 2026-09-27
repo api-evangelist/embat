@@ -173,6 +173,36 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
 components:
   schemas:
+    ErrorDetailSchema:
+      properties:
+        detail:
+          type: string
+          title: Detail
+          description: Human-readable explanation of the error.
+          examples:
+          - 'Forbidden: you are not authorized to download this receipt.'
+      type: object
+      required:
+      - detail
+      title: ErrorDetailSchema
+    ListPaymentOrdersResponseSchema:
+      properties:
+        data:
+          items:
+            $ref: '#/components/schemas/PaymentOrderSchema'
+          type: array
+          title: Data
+          description: Payment orders matching the query.
+        nextPageToken:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Nextpagetoken
+          description: Token to fetch the next page of results. `null` when there are no more pages.
+      type: object
+      required:
+      - data
+      title: ListPaymentOrdersResponseSchema
     ValidationError:
       properties:
         loc:
@@ -199,160 +229,6 @@ components:
       - msg
       - type
       title: ValidationError
-    ErrorResponse:
-      properties:
-        detail:
-          type: string
-          title: Detail
-          description: Human-readable explanation of the error.
-          examples:
-          - user not authorized
-      type: object
-      required:
-      - detail
-      title: ErrorResponse
-      description: Error payload returned by the API (FastAPI `detail` convention).
-    HTTPValidationError:
-      properties:
-        detail:
-          items:
-            $ref: '#/components/schemas/ValidationError'
-          type: array
-          title: Detail
-      type: object
-      title: HTTPValidationError
-    PaymentOrderSchema:
-      properties:
-        id:
-          type: string
-          title: Id
-          description: Embat payment order ID.
-          examples:
-          - po_8f2a1c9e
-        companyId:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Companyid
-          description: Embat company ID. You can get them from "companies" endpoints.
-        concept:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Concept
-          description: Free-text description of the payment order.
-          examples:
-          - Supplier invoice payment
-        documentId:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Documentid
-          description: Identifier of the source document (e.g. invoice) the payment order was created from, if any.
-          examples:
-          - INV-2024-0456
-        status:
-          anyOf:
-          - $ref: '#/components/schemas/PaymentOrderStatusEnum'
-          - type: 'null'
-          description: 'Execution status of the payment order: `IN_PROGRESS` while it is being processed, `COMPLETED` once executed, `REJECTED` if it was declined, or `ON_HOLD` while execution is paused.'
-        amount:
-          anyOf:
-          - type: number
-          - type: 'null'
-          title: Amount
-          description: Payment order amount, in `currency`.
-          examples:
-          - 1500.0
-        currency:
-          anyOf:
-          - $ref: '#/components/schemas/CurrencyEnum'
-          - type: 'null'
-          description: ISO currency code of `amount`.
-          examples:
-          - EUR
-        beneficiary:
-          anyOf:
-          - $ref: '#/components/schemas/BeneficiarySchema'
-          - type: 'null'
-          description: Beneficiary the payment order was sent to.
-        product:
-          anyOf:
-          - $ref: '#/components/schemas/app__schemas__paymentOrders__ProductSchema'
-          - type: 'null'
-          description: Product linked to the payment order, if any.
-        bank:
-          anyOf:
-          - $ref: '#/components/schemas/BankSchema'
-          - type: 'null'
-          description: Bank the payment order was executed through.
-        paymentDate:
-          anyOf:
-          - type: string
-            format: date-time
-          - type: 'null'
-          title: Paymentdate
-          description: Date the payment order was (or is scheduled to be) executed.
-        createdAt:
-          anyOf:
-          - type: string
-            format: date-time
-          - type: 'null'
-          title: Createdat
-          description: Created date of the entity in the database
-        updatedAt:
-          anyOf:
-          - type: string
-            format: date-time
-          - type: 'null'
-          title: Updatedat
-          description: Last updated date of the entity in the database
-      type: object
-      required:
-      - id
-      title: PaymentOrderSchema
-    BeneficiarySchema:
-      properties:
-        legalName:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Legalname
-          description: Legal name of the payment order beneficiary.
-          examples:
-          - Acme Supplies S.L.
-      type: object
-      title: BeneficiarySchema
-    ErrorDetailSchema:
-      properties:
-        detail:
-          type: string
-          title: Detail
-          description: Human-readable explanation of the error.
-          examples:
-          - 'Forbidden: you are not authorized to download this receipt.'
-      type: object
-      required:
-      - detail
-      title: ErrorDetailSchema
-    BankSchema:
-      properties:
-        id:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Id
-          description: Embat bank ID the payment order was executed through.
-        fullName:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Fullname
-          description: Full name of the bank.
-          examples:
-          - Banco Santander
-      type: object
-      title: BankSchema
     app__schemas__paymentOrders__ProductSchema:
       properties:
         id:
@@ -371,6 +247,27 @@ components:
           - Main disbursement account
       type: object
       title: ProductSchema
+    HTTPValidationError:
+      properties:
+        detail:
+          items:
+            $ref: '#/components/schemas/ValidationError'
+          type: array
+          title: Detail
+      type: object
+      title: HTTPValidationError
+    BeneficiarySchema:
+      properties:
+        legalName:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Legalname
+          description: Legal name of the payment order beneficiary.
+          examples:
+          - Acme Supplies S.L.
+      type: object
+      title: BeneficiarySchema
     PaymentOrderStatusEnum:
       type: string
       enum:
@@ -379,6 +276,37 @@ components:
       - IN_PROGRESS
       - ON_HOLD
       title: PaymentOrderStatusEnum
+    BankSchema:
+      properties:
+        id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Id
+          description: Embat bank ID the payment order was executed through.
+        fullName:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Fullname
+          description: Full name of the bank.
+          examples:
+          - Banco Santander
+      type: object
+      title: BankSchema
+    ErrorResponse:
+      properties:
+        detail:
+          type: string
+          title: Detail
+          description: Human-readable explanation of the error.
+          examples:
+          - user not authorized
+      type: object
+      required:
+      - detail
+      title: ErrorResponse
+      description: Error payload returned by the API (FastAPI `detail` convention).
     CurrencyEnum:
       type: string
       enum:
@@ -572,24 +500,96 @@ components:
       - ZWG
       - ZWL
       title: CurrencyEnum
-    ListPaymentOrdersResponseSchema:
+    PaymentOrderSchema:
       properties:
-        data:
-          items:
-            $ref: '#/components/schemas/PaymentOrderSchema'
-          type: array
-          title: Data
-          description: Payment orders matching the query.
-        nextPageToken:
+        id:
+          type: string
+          title: Id
+          description: Embat payment order ID.
+          examples:
+          - po_8f2a1c9e
+        companyId:
           anyOf:
           - type: string
           - type: 'null'
-          title: Nextpagetoken
-          description: Token to fetch the next page of results. `null` when there are no more pages.
+          title: Companyid
+          description: Embat company ID. You can get them from "companies" endpoints.
+        concept:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Concept
+          description: Free-text description of the payment order.
+          examples:
+          - Supplier invoice payment
+        documentId:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Documentid
+          description: Identifier of the source document (e.g. invoice) the payment order was created from, if any.
+          examples:
+          - INV-2024-0456
+        status:
+          anyOf:
+          - $ref: '#/components/schemas/PaymentOrderStatusEnum'
+          - type: 'null'
+          description: 'Execution status of the payment order: `IN_PROGRESS` while it is being processed, `COMPLETED` once executed, `REJECTED` if it was declined, or `ON_HOLD` while execution is paused.'
+        amount:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Amount
+          description: Payment order amount, in `currency`.
+          examples:
+          - 1500.0
+        currency:
+          anyOf:
+          - $ref: '#/components/schemas/CurrencyEnum'
+          - type: 'null'
+          description: ISO currency code of `amount`.
+          examples:
+          - EUR
+        beneficiary:
+          anyOf:
+          - $ref: '#/components/schemas/BeneficiarySchema'
+          - type: 'null'
+          description: Beneficiary the payment order was sent to.
+        product:
+          anyOf:
+          - $ref: '#/components/schemas/app__schemas__paymentOrders__ProductSchema'
+          - type: 'null'
+          description: Product linked to the payment order, if any.
+        bank:
+          anyOf:
+          - $ref: '#/components/schemas/BankSchema'
+          - type: 'null'
+          description: Bank the payment order was executed through.
+        paymentDate:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Paymentdate
+          description: Date the payment order was (or is scheduled to be) executed.
+        createdAt:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Createdat
+          description: Created date of the entity in the database
+        updatedAt:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Updatedat
+          description: Last updated date of the entity in the database
       type: object
       required:
-      - data
-      title: ListPaymentOrdersResponseSchema
+      - id
+      title: PaymentOrderSchema
   securitySchemes:
     HTTPBearer:
       type: http
