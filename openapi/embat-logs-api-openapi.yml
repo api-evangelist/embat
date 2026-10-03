@@ -109,69 +109,41 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
 components:
   schemas:
-    BulkPostLogsRequestSchema:
+    HTTPValidationError:
       properties:
-        data:
+        detail:
           items:
-            $ref: '#/components/schemas/PostLogRequestSchema'
+            $ref: '#/components/schemas/ValidationError'
           type: array
-          title: Data
-          description: Logs to create.
+          title: Detail
       type: object
-      required:
-      - data
-      title: BulkPostLogsRequestSchema
-    LogsLevelsEnum:
-      type: string
-      enum:
-      - INFO
-      - ERROR
-      - WARNING
-      title: LogsLevelsEnum
-    PostLogRequestSchema:
+      title: HTTPValidationError
+    ValidationError:
       properties:
-        erp:
-          $ref: '#/components/schemas/ErspEnum'
-          description: ERP system that originated the log.
-          examples:
-          - netsuite
-        erpVersion:
-          type: string
-          title: Erpversion
-          description: Version of the ERP system that originated the log.
-          examples:
-          - '2024.1'
-        connectorVersion:
-          type: string
-          title: Connectorversion
-          description: Version of the integration that reported the log.
-          examples:
-          - 1.4.2
-        level:
-          $ref: '#/components/schemas/LogsLevelsEnum'
-          description: Severity of the log entry.
-          examples:
-          - ERROR
-        code:
-          $ref: '#/components/schemas/LogsCodesEnum'
-          description: Code classifying the log by severity and, where available, by the entity it relates to (e.g. `PAYMENTS_ERROR`, `AUTHORIZATION_WARNING`). Use the generic `INFO`, `WARNING` or `ERROR` codes for events not tied to one of those entities.
-          examples:
-          - PAYMENTS_ERROR
-        message:
+        loc:
+          items:
+            anyOf:
+            - type: string
+            - type: integer
+          type: array
+          title: Location
+        msg:
           type: string
           title: Message
-          description: Free-text description of the event, warning or error being reported.
-          examples:
-          - 'Failed to post payment: missing accounting account'
+        type:
+          type: string
+          title: Error Type
+        input:
+          title: Input
+        ctx:
+          type: object
+          title: Context
       type: object
       required:
-      - erp
-      - erpVersion
-      - connectorVersion
-      - level
-      - code
-      - message
-      title: PostLogRequestSchema
+      - loc
+      - msg
+      - type
+      title: ValidationError
     ErspEnum:
       type: string
       enum:
@@ -225,41 +197,69 @@ components:
       - PAYMENTS_WARNING
       - PAYMENTS_ERROR
       title: LogsCodesEnum
-    HTTPValidationError:
+    PostLogRequestSchema:
       properties:
-        detail:
-          items:
-            $ref: '#/components/schemas/ValidationError'
-          type: array
-          title: Detail
-      type: object
-      title: HTTPValidationError
-    ValidationError:
-      properties:
-        loc:
-          items:
-            anyOf:
-            - type: string
-            - type: integer
-          type: array
-          title: Location
-        msg:
+        erp:
+          $ref: '#/components/schemas/ErspEnum'
+          description: ERP system that originated the log.
+          examples:
+          - netsuite
+        erpVersion:
+          type: string
+          title: Erpversion
+          description: Version of the ERP system that originated the log.
+          examples:
+          - '2024.1'
+        connectorVersion:
+          type: string
+          title: Connectorversion
+          description: Version of the integration that reported the log.
+          examples:
+          - 1.4.2
+        level:
+          $ref: '#/components/schemas/LogsLevelsEnum'
+          description: Severity of the log entry.
+          examples:
+          - ERROR
+        code:
+          $ref: '#/components/schemas/LogsCodesEnum'
+          description: Code classifying the log by severity and, where available, by the entity it relates to (e.g. `PAYMENTS_ERROR`, `AUTHORIZATION_WARNING`). Use the generic `INFO`, `WARNING` or `ERROR` codes for events not tied to one of those entities.
+          examples:
+          - PAYMENTS_ERROR
+        message:
           type: string
           title: Message
-        type:
-          type: string
-          title: Error Type
-        input:
-          title: Input
-        ctx:
-          type: object
-          title: Context
+          description: Free-text description of the event, warning or error being reported.
+          examples:
+          - 'Failed to post payment: missing accounting account'
       type: object
       required:
-      - loc
-      - msg
-      - type
-      title: ValidationError
+      - erp
+      - erpVersion
+      - connectorVersion
+      - level
+      - code
+      - message
+      title: PostLogRequestSchema
+    BulkPostLogsRequestSchema:
+      properties:
+        data:
+          items:
+            $ref: '#/components/schemas/PostLogRequestSchema'
+          type: array
+          title: Data
+          description: Logs to create.
+      type: object
+      required:
+      - data
+      title: BulkPostLogsRequestSchema
+    LogsLevelsEnum:
+      type: string
+      enum:
+      - INFO
+      - ERROR
+      - WARNING
+      title: LogsLevelsEnum
     ErrorResponse:
       properties:
         detail:

@@ -470,295 +470,6 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
 components:
   schemas:
-    BulkUpsertReconcilingItemsResponseSchema:
-      properties:
-        data:
-          items:
-            $ref: '#/components/schemas/UpsertReconcilingItemsResponseSchema'
-          type: array
-          title: Data
-          description: Result of the bulk creation, one entry per reconciling item.
-      type: object
-      required:
-      - data
-      title: BulkUpsertReconcilingItemsResponseSchema
-    ListReconcilingItemsResponseSchema:
-      properties:
-        data:
-          items:
-            $ref: '#/components/schemas/GetReconcilingItemsResponseSchema'
-          type: array
-          title: Data
-          description: Reconciling items matching the query.
-        nextPageToken:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Nextpagetoken
-          description: Token to fetch the next page of results. `null` when there are no more pages.
-      type: object
-      required:
-      - data
-      title: ListReconcilingItemsResponseSchema
-    BulkPatchReconcilingItemsRequestSchema:
-      properties:
-        data:
-          items:
-            $ref: '#/components/schemas/AuxBulkPatchReconcilingItemsRequestSchema'
-          type: array
-          title: Data
-          description: Reconciling items to update, identified by `customId`.
-      type: object
-      required:
-      - data
-      title: BulkPatchReconcilingItemsRequestSchema
-    PostReconcilingItemSchema:
-      properties:
-        amount:
-          type: number
-          title: Amount
-          description: Amount of the reconciling item, in `currency`.
-          examples:
-          - 199.9
-        currency:
-          $ref: '#/components/schemas/CurrencyEnum'
-          description: Currency of the reconciling item, in ISO 4217 format.
-          examples:
-          - EUR
-        date:
-          type: string
-          format: date-time
-          title: Date
-          description: Date of the reconciling item.
-          examples:
-          - '2024-01-15T00:00:00Z'
-        description:
-          type: string
-          title: Description
-          description: Free-text description of the reconciling item.
-          examples:
-          - 'Stripe order #4821'
-        metadata:
-          anyOf:
-          - additionalProperties: true
-            type: object
-          - type: 'null'
-          title: Metadata
-          description: Free-form key/value data associated with the reconciling item. When its reconciling source defines a `matchingMetadataKey`, the value stored under that key is used to automatically associate this item with a product transaction — only string, number or boolean values are usable for matching, other value types are ignored. An empty string is also accepted and treated as an empty object. Replaces the previously stored value entirely (not merged). Omitted or `null` leaves the current metadata unchanged.
-          examples:
-          - orderId: ORD-48213
-        additionalInfo:
-          anyOf:
-          - additionalProperties: true
-            type: object
-          - type: 'null'
-          title: Additionalinfo
-          description: Free-form key/value metadata to attach to the reconciling item. An empty string is also accepted and treated as an empty object. Replaces the previously stored value entirely (not merged). Omitted or `null` leaves the current metadata unchanged.
-        customId:
-          type: string
-          title: Customid
-          description: Your own unique ID for the reconciling item. You can use it as your internal reconciling item identifier.
-          examples:
-          - stripe-order-4821
-        reconcilingSourceCustomId:
-          type: string
-          title: Reconcilingsourcecustomid
-          description: 'Custom ID of the reconciling source this item belongs to. You can get them from "Reconciling Sources" endpoints. Not validated against existing reconciling sources: if it does not match one, the item is still created, but it is not automatically matched against transactions.'
-          examples:
-          - stripe-orders
-      type: object
-      required:
-      - amount
-      - currency
-      - date
-      - description
-      - customId
-      - reconcilingSourceCustomId
-      title: PostReconcilingItemSchema
-    BulkDeleteReconcilingItemsRequestSchema:
-      properties:
-        data:
-          items:
-            $ref: '#/components/schemas/DeleteReconcilingItemsRequestSchema'
-          type: array
-          title: Data
-          description: Reconciling items to delete, identified by `customId`.
-      type: object
-      required:
-      - data
-      title: BulkDeleteReconcilingItemsRequestSchema
-    PatchReconcilingItemSchema:
-      properties:
-        amount:
-          anyOf:
-          - type: number
-          - type: 'null'
-          title: Amount
-          description: Amount of the reconciling item, in `currency`. Omitted or `null` leaves the current amount unchanged.
-          examples:
-          - 199.9
-        currency:
-          anyOf:
-          - $ref: '#/components/schemas/CurrencyEnum'
-          - type: 'null'
-          description: Currency of the reconciling item, in ISO 4217 format. Omitted or `null` leaves the current currency unchanged.
-          examples:
-          - EUR
-        date:
-          anyOf:
-          - type: string
-            format: date-time
-          - type: 'null'
-          title: Date
-          description: Date of the reconciling item. Omitted or `null` leaves the current date unchanged.
-          examples:
-          - '2024-01-15T00:00:00Z'
-        description:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Description
-          description: Free-text description of the reconciling item. Omitted or `null` leaves the current description unchanged.
-          examples:
-          - 'Stripe order #4821'
-        metadata:
-          anyOf:
-          - additionalProperties: true
-            type: object
-          - type: 'null'
-          title: Metadata
-          description: Free-form key/value data associated with the reconciling item. When its reconciling source defines a `matchingMetadataKey`, the value stored under that key is used to automatically associate this item with a product transaction — only string, number or boolean values are usable for matching, other value types are ignored. An empty string is also accepted and treated as an empty object. Replaces the previously stored value entirely (not merged). Omitted or `null` leaves the current metadata unchanged.
-          examples:
-          - orderId: ORD-48213
-        additionalInfo:
-          anyOf:
-          - additionalProperties: true
-            type: object
-          - type: 'null'
-          title: Additionalinfo
-          description: Free-form key/value metadata to attach to the reconciling item. An empty string is also accepted and treated as an empty object. Replaces the previously stored value entirely (not merged). Omitted or `null` leaves the current metadata unchanged.
-      type: object
-      title: PatchReconcilingItemSchema
-    UpsertReconcilingItemsResponseSchema:
-      properties:
-        id:
-          type: string
-          title: Id
-          description: Embat resource ID
-        customId:
-          type: string
-          title: Customid
-          description: Client-provided custom ID
-      type: object
-      required:
-      - id
-      - customId
-      title: UpsertReconcilingItemsResponseSchema
-    BulkPostReconcilingItemsRequestSchema:
-      properties:
-        data:
-          items:
-            $ref: '#/components/schemas/PostReconcilingItemSchema'
-          type: array
-          title: Data
-          description: Reconciling items to create.
-      type: object
-      required:
-      - data
-      title: BulkPostReconcilingItemsRequestSchema
-    BulkModifyReconcilingItemsResponseSchema:
-      properties:
-        data:
-          items:
-            $ref: '#/components/schemas/ModifyReconcilingItemsResponseSchema'
-          type: array
-          title: Data
-          description: Result of the bulk operation, one entry per reconciling item.
-      type: object
-      required:
-      - data
-      title: BulkModifyReconcilingItemsResponseSchema
-    AuxBulkPatchReconcilingItemsRequestSchema:
-      properties:
-        amount:
-          anyOf:
-          - type: number
-          - type: 'null'
-          title: Amount
-          description: Amount of the reconciling item, in `currency`. Omitted or `null` leaves the current amount unchanged.
-          examples:
-          - 199.9
-        currency:
-          anyOf:
-          - $ref: '#/components/schemas/CurrencyEnum'
-          - type: 'null'
-          description: Currency of the reconciling item, in ISO 4217 format. Omitted or `null` leaves the current currency unchanged.
-          examples:
-          - EUR
-        date:
-          anyOf:
-          - type: string
-            format: date-time
-          - type: 'null'
-          title: Date
-          description: Date of the reconciling item. Omitted or `null` leaves the current date unchanged.
-          examples:
-          - '2024-01-15T00:00:00Z'
-        description:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Description
-          description: Free-text description of the reconciling item. Omitted or `null` leaves the current description unchanged.
-          examples:
-          - 'Stripe order #4821'
-        metadata:
-          anyOf:
-          - additionalProperties: true
-            type: object
-          - type: 'null'
-          title: Metadata
-          description: Free-form key/value data associated with the reconciling item. When its reconciling source defines a `matchingMetadataKey`, the value stored under that key is used to automatically associate this item with a product transaction — only string, number or boolean values are usable for matching, other value types are ignored. An empty string is also accepted and treated as an empty object. Replaces the previously stored value entirely (not merged). Omitted or `null` leaves the current metadata unchanged.
-          examples:
-          - orderId: ORD-48213
-        additionalInfo:
-          anyOf:
-          - additionalProperties: true
-            type: object
-          - type: 'null'
-          title: Additionalinfo
-          description: Free-form key/value metadata to attach to the reconciling item. An empty string is also accepted and treated as an empty object. Replaces the previously stored value entirely (not merged). Omitted or `null` leaves the current metadata unchanged.
-        customId:
-          type: string
-          title: Customid
-          description: Custom ID of the reconciling item to update.
-          examples:
-          - stripe-order-4821
-      type: object
-      required:
-      - customId
-      title: AuxBulkPatchReconcilingItemsRequestSchema
-    DeleteReconcilingItemsRequestSchema:
-      properties:
-        customId:
-          type: string
-          title: Customid
-          description: Custom ID of the reconciling item to delete.
-          examples:
-          - stripe-order-4821
-      type: object
-      required:
-      - customId
-      title: DeleteReconcilingItemsRequestSchema
-    HTTPValidationError:
-      properties:
-        detail:
-          items:
-            $ref: '#/components/schemas/ValidationError'
-          type: array
-          title: Detail
-      type: object
-      title: HTTPValidationError
     ModifyReconcilingItemsResponseSchema:
       properties:
         id:
@@ -769,32 +480,6 @@ components:
       required:
       - id
       title: ModifyReconcilingItemsResponseSchema
-    ValidationError:
-      properties:
-        loc:
-          items:
-            anyOf:
-            - type: string
-            - type: integer
-          type: array
-          title: Location
-        msg:
-          type: string
-          title: Message
-        type:
-          type: string
-          title: Error Type
-        input:
-          title: Input
-        ctx:
-          type: object
-          title: Context
-      type: object
-      required:
-      - loc
-      - msg
-      - type
-      title: ValidationError
     GetReconcilingItemsResponseSchema:
       properties:
         amount:
@@ -890,19 +575,6 @@ components:
       - updatedAt
       - createdAt
       title: GetReconcilingItemsResponseSchema
-    ErrorResponse:
-      properties:
-        detail:
-          type: string
-          title: Detail
-          description: Human-readable explanation of the error.
-          examples:
-          - user not authorized
-      type: object
-      required:
-      - detail
-      title: ErrorResponse
-      description: Error payload returned by the API (FastAPI `detail` convention).
     CurrencyEnum:
       type: string
       enum:
@@ -1096,6 +768,334 @@ components:
       - ZWG
       - ZWL
       title: CurrencyEnum
+    BulkPostReconcilingItemsRequestSchema:
+      properties:
+        data:
+          items:
+            $ref: '#/components/schemas/PostReconcilingItemSchema'
+          type: array
+          title: Data
+          description: Reconciling items to create.
+      type: object
+      required:
+      - data
+      title: BulkPostReconcilingItemsRequestSchema
+    HTTPValidationError:
+      properties:
+        detail:
+          items:
+            $ref: '#/components/schemas/ValidationError'
+          type: array
+          title: Detail
+      type: object
+      title: HTTPValidationError
+    BulkUpsertReconcilingItemsResponseSchema:
+      properties:
+        data:
+          items:
+            $ref: '#/components/schemas/UpsertReconcilingItemsResponseSchema'
+          type: array
+          title: Data
+          description: Result of the bulk creation, one entry per reconciling item.
+      type: object
+      required:
+      - data
+      title: BulkUpsertReconcilingItemsResponseSchema
+    ValidationError:
+      properties:
+        loc:
+          items:
+            anyOf:
+            - type: string
+            - type: integer
+          type: array
+          title: Location
+        msg:
+          type: string
+          title: Message
+        type:
+          type: string
+          title: Error Type
+        input:
+          title: Input
+        ctx:
+          type: object
+          title: Context
+      type: object
+      required:
+      - loc
+      - msg
+      - type
+      title: ValidationError
+    UpsertReconcilingItemsResponseSchema:
+      properties:
+        id:
+          type: string
+          title: Id
+          description: Embat resource ID
+        customId:
+          type: string
+          title: Customid
+          description: Client-provided custom ID
+      type: object
+      required:
+      - id
+      - customId
+      title: UpsertReconcilingItemsResponseSchema
+    AuxBulkPatchReconcilingItemsRequestSchema:
+      properties:
+        amount:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Amount
+          description: Amount of the reconciling item, in `currency`. Omitted or `null` leaves the current amount unchanged.
+          examples:
+          - 199.9
+        currency:
+          anyOf:
+          - $ref: '#/components/schemas/CurrencyEnum'
+          - type: 'null'
+          description: Currency of the reconciling item, in ISO 4217 format. Omitted or `null` leaves the current currency unchanged.
+          examples:
+          - EUR
+        date:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Date
+          description: Date of the reconciling item. Omitted or `null` leaves the current date unchanged.
+          examples:
+          - '2024-01-15T00:00:00Z'
+        description:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Description
+          description: Free-text description of the reconciling item. Omitted or `null` leaves the current description unchanged.
+          examples:
+          - 'Stripe order #4821'
+        metadata:
+          anyOf:
+          - additionalProperties: true
+            type: object
+          - type: 'null'
+          title: Metadata
+          description: Free-form key/value data associated with the reconciling item. When its reconciling source defines a `matchingMetadataKey`, the value stored under that key is used to automatically associate this item with a product transaction — only string, number or boolean values are usable for matching, other value types are ignored. An empty string is also accepted and treated as an empty object. Replaces the previously stored value entirely (not merged). Omitted or `null` leaves the current metadata unchanged.
+          examples:
+          - orderId: ORD-48213
+        additionalInfo:
+          anyOf:
+          - additionalProperties: true
+            type: object
+          - type: 'null'
+          title: Additionalinfo
+          description: Free-form key/value metadata to attach to the reconciling item. An empty string is also accepted and treated as an empty object. Replaces the previously stored value entirely (not merged). Omitted or `null` leaves the current metadata unchanged.
+        customId:
+          type: string
+          title: Customid
+          description: Custom ID of the reconciling item to update.
+          examples:
+          - stripe-order-4821
+      type: object
+      required:
+      - customId
+      title: AuxBulkPatchReconcilingItemsRequestSchema
+    PatchReconcilingItemSchema:
+      properties:
+        amount:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Amount
+          description: Amount of the reconciling item, in `currency`. Omitted or `null` leaves the current amount unchanged.
+          examples:
+          - 199.9
+        currency:
+          anyOf:
+          - $ref: '#/components/schemas/CurrencyEnum'
+          - type: 'null'
+          description: Currency of the reconciling item, in ISO 4217 format. Omitted or `null` leaves the current currency unchanged.
+          examples:
+          - EUR
+        date:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Date
+          description: Date of the reconciling item. Omitted or `null` leaves the current date unchanged.
+          examples:
+          - '2024-01-15T00:00:00Z'
+        description:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Description
+          description: Free-text description of the reconciling item. Omitted or `null` leaves the current description unchanged.
+          examples:
+          - 'Stripe order #4821'
+        metadata:
+          anyOf:
+          - additionalProperties: true
+            type: object
+          - type: 'null'
+          title: Metadata
+          description: Free-form key/value data associated with the reconciling item. When its reconciling source defines a `matchingMetadataKey`, the value stored under that key is used to automatically associate this item with a product transaction — only string, number or boolean values are usable for matching, other value types are ignored. An empty string is also accepted and treated as an empty object. Replaces the previously stored value entirely (not merged). Omitted or `null` leaves the current metadata unchanged.
+          examples:
+          - orderId: ORD-48213
+        additionalInfo:
+          anyOf:
+          - additionalProperties: true
+            type: object
+          - type: 'null'
+          title: Additionalinfo
+          description: Free-form key/value metadata to attach to the reconciling item. An empty string is also accepted and treated as an empty object. Replaces the previously stored value entirely (not merged). Omitted or `null` leaves the current metadata unchanged.
+      type: object
+      title: PatchReconcilingItemSchema
+    BulkPatchReconcilingItemsRequestSchema:
+      properties:
+        data:
+          items:
+            $ref: '#/components/schemas/AuxBulkPatchReconcilingItemsRequestSchema'
+          type: array
+          title: Data
+          description: Reconciling items to update, identified by `customId`.
+      type: object
+      required:
+      - data
+      title: BulkPatchReconcilingItemsRequestSchema
+    ListReconcilingItemsResponseSchema:
+      properties:
+        data:
+          items:
+            $ref: '#/components/schemas/GetReconcilingItemsResponseSchema'
+          type: array
+          title: Data
+          description: Reconciling items matching the query.
+        nextPageToken:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Nextpagetoken
+          description: Token to fetch the next page of results. `null` when there are no more pages.
+      type: object
+      required:
+      - data
+      title: ListReconcilingItemsResponseSchema
+    ErrorResponse:
+      properties:
+        detail:
+          type: string
+          title: Detail
+          description: Human-readable explanation of the error.
+          examples:
+          - user not authorized
+      type: object
+      required:
+      - detail
+      title: ErrorResponse
+      description: Error payload returned by the API (FastAPI `detail` convention).
+    PostReconcilingItemSchema:
+      properties:
+        amount:
+          type: number
+          title: Amount
+          description: Amount of the reconciling item, in `currency`.
+          examples:
+          - 199.9
+        currency:
+          $ref: '#/components/schemas/CurrencyEnum'
+          description: Currency of the reconciling item, in ISO 4217 format.
+          examples:
+          - EUR
+        date:
+          type: string
+          format: date-time
+          title: Date
+          description: Date of the reconciling item.
+          examples:
+          - '2024-01-15T00:00:00Z'
+        description:
+          type: string
+          title: Description
+          description: Free-text description of the reconciling item.
+          examples:
+          - 'Stripe order #4821'
+        metadata:
+          anyOf:
+          - additionalProperties: true
+            type: object
+          - type: 'null'
+          title: Metadata
+          description: Free-form key/value data associated with the reconciling item. When its reconciling source defines a `matchingMetadataKey`, the value stored under that key is used to automatically associate this item with a product transaction — only string, number or boolean values are usable for matching, other value types are ignored. An empty string is also accepted and treated as an empty object. Replaces the previously stored value entirely (not merged). Omitted or `null` leaves the current metadata unchanged.
+          examples:
+          - orderId: ORD-48213
+        additionalInfo:
+          anyOf:
+          - additionalProperties: true
+            type: object
+          - type: 'null'
+          title: Additionalinfo
+          description: Free-form key/value metadata to attach to the reconciling item. An empty string is also accepted and treated as an empty object. Replaces the previously stored value entirely (not merged). Omitted or `null` leaves the current metadata unchanged.
+        customId:
+          type: string
+          title: Customid
+          description: Your own unique ID for the reconciling item. You can use it as your internal reconciling item identifier.
+          examples:
+          - stripe-order-4821
+        reconcilingSourceCustomId:
+          type: string
+          title: Reconcilingsourcecustomid
+          description: 'Custom ID of the reconciling source this item belongs to. You can get them from "Reconciling Sources" endpoints. Not validated against existing reconciling sources: if it does not match one, the item is still created, but it is not automatically matched against transactions.'
+          examples:
+          - stripe-orders
+      type: object
+      required:
+      - amount
+      - currency
+      - date
+      - description
+      - customId
+      - reconcilingSourceCustomId
+      title: PostReconcilingItemSchema
+    BulkModifyReconcilingItemsResponseSchema:
+      properties:
+        data:
+          items:
+            $ref: '#/components/schemas/ModifyReconcilingItemsResponseSchema'
+          type: array
+          title: Data
+          description: Result of the bulk operation, one entry per reconciling item.
+      type: object
+      required:
+      - data
+      title: BulkModifyReconcilingItemsResponseSchema
+    BulkDeleteReconcilingItemsRequestSchema:
+      properties:
+        data:
+          items:
+            $ref: '#/components/schemas/DeleteReconcilingItemsRequestSchema'
+          type: array
+          title: Data
+          description: Reconciling items to delete, identified by `customId`.
+      type: object
+      required:
+      - data
+      title: BulkDeleteReconcilingItemsRequestSchema
+    DeleteReconcilingItemsRequestSchema:
+      properties:
+        customId:
+          type: string
+          title: Customid
+          description: Custom ID of the reconciling item to delete.
+          examples:
+          - stripe-order-4821
+      type: object
+      required:
+      - customId
+      title: DeleteReconcilingItemsRequestSchema
   securitySchemes:
     HTTPBearer:
       type: http

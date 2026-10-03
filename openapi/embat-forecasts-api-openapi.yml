@@ -294,50 +294,7 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
 components:
   schemas:
-    ErrorResponse:
-      properties:
-        detail:
-          type: string
-          title: Detail
-          description: Human-readable explanation of the error.
-          examples:
-          - user not authorized
-      type: object
-      required:
-      - detail
-      title: ErrorResponse
-      description: Error payload returned by the API (FastAPI `detail` convention).
-    ListForecastsResponseSchema:
-      properties:
-        data:
-          items:
-            $ref: '#/components/schemas/GetForecastsResponseSchema'
-          type: array
-          title: Data
-          description: Forecasts matching the query.
-        nextPageToken:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Nextpagetoken
-          description: Token to fetch the next page of results. `null` when there are no more pages.
-      type: object
-      required:
-      - data
-      title: ListForecastsResponseSchema
-    BulkModifyForecastsResponseSchema:
-      properties:
-        data:
-          items:
-            $ref: '#/components/schemas/ModifyForecastsResponseSchema'
-          type: array
-          title: Data
-          description: Result of the bulk update, one entry per forecast.
-      type: object
-      required:
-      - data
-      title: BulkModifyForecastsResponseSchema
-    PatchForecastsRequestSchema:
+    AuxBulkPatchForecastsRequestSchema:
       properties:
         additionalInfo:
           additionalProperties: true
@@ -353,199 +310,16 @@ components:
           description: Marks the forecast as synchronized with your systems. Fields omitted from the request, or sent as `null`, are left unchanged.
           examples:
           - true
-      type: object
-      title: PatchForecastsRequestSchema
-    PeriodicityEnum:
-      type: string
-      enum:
-      - monthly
-      - yearly
-      - weekly
-      - daily
-      title: PeriodicityEnum
-    ValidationError:
-      properties:
-        loc:
-          items:
-            anyOf:
-            - type: string
-            - type: integer
-          type: array
-          title: Location
-        msg:
-          type: string
-          title: Message
-        type:
-          type: string
-          title: Error Type
-        input:
-          title: Input
-        ctx:
-          type: object
-          title: Context
-      type: object
-      required:
-      - loc
-      - msg
-      - type
-      title: ValidationError
-    BulkPatchForecastsRequestSchema:
-      properties:
-        data:
-          items:
-            $ref: '#/components/schemas/AuxBulkPatchForecastsRequestSchema'
-          type: array
-          title: Data
-          description: Forecasts to update, identified by `id`.
-      type: object
-      required:
-      - data
-      title: BulkPatchForecastsRequestSchema
-    HTTPValidationError:
-      properties:
-        detail:
-          items:
-            $ref: '#/components/schemas/ValidationError'
-          type: array
-          title: Detail
-      type: object
-      title: HTTPValidationError
-    ModifyForecastsResponseSchema:
-      properties:
         id:
           type: string
           title: Id
-          description: Embat forecast ID.
+          description: Embat forecast ID to update.
           examples:
           - fct_00123
       type: object
       required:
       - id
-      title: ModifyForecastsResponseSchema
-    GetForecastsResponseSchema:
-      properties:
-        id:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Id
-          description: Embat forecast ID.
-          examples:
-          - fct_00123
-        companyId:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Companyid
-          description: Embat company ID. You can get them from "companies" endpoints.
-        amount:
-          anyOf:
-          - type: number
-          - type: 'null'
-          title: Amount
-          description: Forecasted amount, in the scenario `currency`. Positive for inflows, negative for outflows.
-          examples:
-          - 15000.0
-        accountingAmount:
-          anyOf:
-          - type: number
-          - type: 'null'
-          title: Accountingamount
-          description: Forecasted amount converted to EUR using the exchange rate for the forecast `date`. `null` when the forecast is dated before 2021 or no exchange rate is yet available for that date. Only computed when listing forecasts with `GET /forecasts/{companyId}`; retrieving a single forecast by id returns this field as stored, typically `null`.
-          examples:
-          - 13850.25
-        accountingCurrency:
-          anyOf:
-          - $ref: '#/components/schemas/CurrencyEnum'
-          - type: 'null'
-          description: Currency of `accountingAmount`. Currently always `EUR`.
-          examples:
-          - EUR
-        exchangeRate:
-          anyOf:
-          - type: number
-          - type: 'null'
-          title: Exchangerate
-          description: Exchange rate applied to obtain `accountingAmount` from `amount`. Subject to the same conditions as `accountingAmount`.
-          examples:
-          - 1.083
-        date:
-          anyOf:
-          - type: string
-            format: date-time
-          - type: 'null'
-          title: Date
-          description: Date the forecast applies to.
-        createdAt:
-          anyOf:
-          - type: string
-            format: date-time
-          - type: 'null'
-          title: Createdat
-          description: Creation date of the forecast.
-        updatedAt:
-          anyOf:
-          - type: string
-            format: date-time
-          - type: 'null'
-          title: Updatedat
-          description: Last updated date of the forecast.
-        categoryId:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Categoryid
-          description: Embat ID of the category the forecast is classified under.
-        scenario:
-          anyOf:
-          - $ref: '#/components/schemas/ScenarioSchema'
-          - type: 'null'
-          description: Scenario the forecast belongs to.
-      type: object
-      title: GetForecastsResponseSchema
-      description: Forecasts response data schema
-    ScenarioSchema:
-      properties:
-        id:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Id
-          description: Embat scenario ID.
-          examples:
-          - scn_00045
-        name:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Name
-          description: Scenario name.
-          examples:
-          - Base case
-        currency:
-          anyOf:
-          - $ref: '#/components/schemas/CurrencyEnum'
-          - type: 'null'
-          description: Currency the scenario's forecasted amounts are expressed in.
-          examples:
-          - EUR
-        description:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Description
-          description: Free-text description of the scenario.
-          examples:
-          - Baseline treasury projection for FY2026
-        periodicity:
-          anyOf:
-          - $ref: '#/components/schemas/PeriodicityEnum'
-          - type: 'null'
-          description: 'Time granularity of the scenario''s forecasted periods: `daily`, `weekly`, `monthly` or `yearly`.'
-          examples:
-          - monthly
-      type: object
-      title: ScenarioSchema
+      title: AuxBulkPatchForecastsRequestSchema
     CurrencyEnum:
       type: string
       enum:
@@ -739,7 +513,62 @@ components:
       - ZWG
       - ZWL
       title: CurrencyEnum
-    AuxBulkPatchForecastsRequestSchema:
+    HTTPValidationError:
+      properties:
+        detail:
+          items:
+            $ref: '#/components/schemas/ValidationError'
+          type: array
+          title: Detail
+      type: object
+      title: HTTPValidationError
+    ValidationError:
+      properties:
+        loc:
+          items:
+            anyOf:
+            - type: string
+            - type: integer
+          type: array
+          title: Location
+        msg:
+          type: string
+          title: Message
+        type:
+          type: string
+          title: Error Type
+        input:
+          title: Input
+        ctx:
+          type: object
+          title: Context
+      type: object
+      required:
+      - loc
+      - msg
+      - type
+      title: ValidationError
+    PeriodicityEnum:
+      type: string
+      enum:
+      - monthly
+      - yearly
+      - weekly
+      - daily
+      title: PeriodicityEnum
+    BulkModifyForecastsResponseSchema:
+      properties:
+        data:
+          items:
+            $ref: '#/components/schemas/ModifyForecastsResponseSchema'
+          type: array
+          title: Data
+          description: Result of the bulk update, one entry per forecast.
+      type: object
+      required:
+      - data
+      title: BulkModifyForecastsResponseSchema
+    PatchForecastsRequestSchema:
       properties:
         additionalInfo:
           additionalProperties: true
@@ -755,16 +584,187 @@ components:
           description: Marks the forecast as synchronized with your systems. Fields omitted from the request, or sent as `null`, are left unchanged.
           examples:
           - true
+      type: object
+      title: PatchForecastsRequestSchema
+    GetForecastsResponseSchema:
+      properties:
+        id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Id
+          description: Embat forecast ID.
+          examples:
+          - fct_00123
+        companyId:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Companyid
+          description: Embat company ID. You can get them from "companies" endpoints.
+        amount:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Amount
+          description: Forecasted amount, in the scenario `currency`. Positive for inflows, negative for outflows.
+          examples:
+          - 15000.0
+        accountingAmount:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Accountingamount
+          description: Forecasted amount converted to EUR using the exchange rate for the forecast `date`. `null` when the forecast is dated before 2021 or no exchange rate is yet available for that date. Only computed when listing forecasts with `GET /forecasts/{companyId}`; retrieving a single forecast by id returns this field as stored, typically `null`.
+          examples:
+          - 13850.25
+        accountingCurrency:
+          anyOf:
+          - $ref: '#/components/schemas/CurrencyEnum'
+          - type: 'null'
+          description: Currency of `accountingAmount`. Currently always `EUR`.
+          examples:
+          - EUR
+        exchangeRate:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Exchangerate
+          description: Exchange rate applied to obtain `accountingAmount` from `amount`. Subject to the same conditions as `accountingAmount`.
+          examples:
+          - 1.083
+        date:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Date
+          description: Date the forecast applies to.
+        createdAt:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Createdat
+          description: Creation date of the forecast.
+        updatedAt:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Updatedat
+          description: Last updated date of the forecast.
+        categoryId:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Categoryid
+          description: Embat ID of the category the forecast is classified under.
+        scenario:
+          anyOf:
+          - $ref: '#/components/schemas/ScenarioSchema'
+          - type: 'null'
+          description: Scenario the forecast belongs to.
+      type: object
+      title: GetForecastsResponseSchema
+      description: Forecasts response data schema
+    BulkPatchForecastsRequestSchema:
+      properties:
+        data:
+          items:
+            $ref: '#/components/schemas/AuxBulkPatchForecastsRequestSchema'
+          type: array
+          title: Data
+          description: Forecasts to update, identified by `id`.
+      type: object
+      required:
+      - data
+      title: BulkPatchForecastsRequestSchema
+    ScenarioSchema:
+      properties:
+        id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Id
+          description: Embat scenario ID.
+          examples:
+          - scn_00045
+        name:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Name
+          description: Scenario name.
+          examples:
+          - Base case
+        currency:
+          anyOf:
+          - $ref: '#/components/schemas/CurrencyEnum'
+          - type: 'null'
+          description: Currency the scenario's forecasted amounts are expressed in.
+          examples:
+          - EUR
+        description:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Description
+          description: Free-text description of the scenario.
+          examples:
+          - Baseline treasury projection for FY2026
+        periodicity:
+          anyOf:
+          - $ref: '#/components/schemas/PeriodicityEnum'
+          - type: 'null'
+          description: 'Time granularity of the scenario''s forecasted periods: `daily`, `weekly`, `monthly` or `yearly`.'
+          examples:
+          - monthly
+      type: object
+      title: ScenarioSchema
+    ErrorResponse:
+      properties:
+        detail:
+          type: string
+          title: Detail
+          description: Human-readable explanation of the error.
+          examples:
+          - user not authorized
+      type: object
+      required:
+      - detail
+      title: ErrorResponse
+      description: Error payload returned by the API (FastAPI `detail` convention).
+    ModifyForecastsResponseSchema:
+      properties:
         id:
           type: string
           title: Id
-          description: Embat forecast ID to update.
+          description: Embat forecast ID.
           examples:
           - fct_00123
       type: object
       required:
       - id
-      title: AuxBulkPatchForecastsRequestSchema
+      title: ModifyForecastsResponseSchema
+    ListForecastsResponseSchema:
+      properties:
+        data:
+          items:
+            $ref: '#/components/schemas/GetForecastsResponseSchema'
+          type: array
+          title: Data
+          description: Forecasts matching the query.
+        nextPageToken:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Nextpagetoken
+          description: Token to fetch the next page of results. `null` when there are no more pages.
+      type: object
+      required:
+      - data
+      title: ListForecastsResponseSchema
   securitySchemes:
     HTTPBearer:
       type: http

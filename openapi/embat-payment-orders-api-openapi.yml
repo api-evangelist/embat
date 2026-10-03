@@ -173,140 +173,6 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
 components:
   schemas:
-    ErrorDetailSchema:
-      properties:
-        detail:
-          type: string
-          title: Detail
-          description: Human-readable explanation of the error.
-          examples:
-          - 'Forbidden: you are not authorized to download this receipt.'
-      type: object
-      required:
-      - detail
-      title: ErrorDetailSchema
-    ListPaymentOrdersResponseSchema:
-      properties:
-        data:
-          items:
-            $ref: '#/components/schemas/PaymentOrderSchema'
-          type: array
-          title: Data
-          description: Payment orders matching the query.
-        nextPageToken:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Nextpagetoken
-          description: Token to fetch the next page of results. `null` when there are no more pages.
-      type: object
-      required:
-      - data
-      title: ListPaymentOrdersResponseSchema
-    ValidationError:
-      properties:
-        loc:
-          items:
-            anyOf:
-            - type: string
-            - type: integer
-          type: array
-          title: Location
-        msg:
-          type: string
-          title: Message
-        type:
-          type: string
-          title: Error Type
-        input:
-          title: Input
-        ctx:
-          type: object
-          title: Context
-      type: object
-      required:
-      - loc
-      - msg
-      - type
-      title: ValidationError
-    app__schemas__paymentOrders__ProductSchema:
-      properties:
-        id:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Id
-          description: Embat product ID linked to the payment order, if any.
-        alias:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Alias
-          description: Display alias of the linked product. `null` if the payment order has no product, or the product no longer exists.
-          examples:
-          - Main disbursement account
-      type: object
-      title: ProductSchema
-    HTTPValidationError:
-      properties:
-        detail:
-          items:
-            $ref: '#/components/schemas/ValidationError'
-          type: array
-          title: Detail
-      type: object
-      title: HTTPValidationError
-    BeneficiarySchema:
-      properties:
-        legalName:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Legalname
-          description: Legal name of the payment order beneficiary.
-          examples:
-          - Acme Supplies S.L.
-      type: object
-      title: BeneficiarySchema
-    PaymentOrderStatusEnum:
-      type: string
-      enum:
-      - COMPLETED
-      - REJECTED
-      - IN_PROGRESS
-      - ON_HOLD
-      title: PaymentOrderStatusEnum
-    BankSchema:
-      properties:
-        id:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Id
-          description: Embat bank ID the payment order was executed through.
-        fullName:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Fullname
-          description: Full name of the bank.
-          examples:
-          - Banco Santander
-      type: object
-      title: BankSchema
-    ErrorResponse:
-      properties:
-        detail:
-          type: string
-          title: Detail
-          description: Human-readable explanation of the error.
-          examples:
-          - user not authorized
-      type: object
-      required:
-      - detail
-      title: ErrorResponse
-      description: Error payload returned by the API (FastAPI `detail` convention).
     CurrencyEnum:
       type: string
       enum:
@@ -500,6 +366,140 @@ components:
       - ZWG
       - ZWL
       title: CurrencyEnum
+    HTTPValidationError:
+      properties:
+        detail:
+          items:
+            $ref: '#/components/schemas/ValidationError'
+          type: array
+          title: Detail
+      type: object
+      title: HTTPValidationError
+    BankSchema:
+      properties:
+        id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Id
+          description: Embat bank ID the payment order was executed through.
+        fullName:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Fullname
+          description: Full name of the bank.
+          examples:
+          - Banco Santander
+      type: object
+      title: BankSchema
+    ValidationError:
+      properties:
+        loc:
+          items:
+            anyOf:
+            - type: string
+            - type: integer
+          type: array
+          title: Location
+        msg:
+          type: string
+          title: Message
+        type:
+          type: string
+          title: Error Type
+        input:
+          title: Input
+        ctx:
+          type: object
+          title: Context
+      type: object
+      required:
+      - loc
+      - msg
+      - type
+      title: ValidationError
+    PaymentOrderStatusEnum:
+      type: string
+      enum:
+      - COMPLETED
+      - REJECTED
+      - IN_PROGRESS
+      - ON_HOLD
+      title: PaymentOrderStatusEnum
+    ListPaymentOrdersResponseSchema:
+      properties:
+        data:
+          items:
+            $ref: '#/components/schemas/PaymentOrderSchema'
+          type: array
+          title: Data
+          description: Payment orders matching the query.
+        nextPageToken:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Nextpagetoken
+          description: Token to fetch the next page of results. `null` when there are no more pages.
+      type: object
+      required:
+      - data
+      title: ListPaymentOrdersResponseSchema
+    ErrorDetailSchema:
+      properties:
+        detail:
+          type: string
+          title: Detail
+          description: Human-readable explanation of the error.
+          examples:
+          - 'Forbidden: you are not authorized to download this receipt.'
+      type: object
+      required:
+      - detail
+      title: ErrorDetailSchema
+    ErrorResponse:
+      properties:
+        detail:
+          type: string
+          title: Detail
+          description: Human-readable explanation of the error.
+          examples:
+          - user not authorized
+      type: object
+      required:
+      - detail
+      title: ErrorResponse
+      description: Error payload returned by the API (FastAPI `detail` convention).
+    app__schemas__paymentOrders__ProductSchema:
+      properties:
+        id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Id
+          description: Embat product ID linked to the payment order, if any.
+        alias:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Alias
+          description: Display alias of the linked product. `null` if the payment order has no product, or the product no longer exists.
+          examples:
+          - Main disbursement account
+      type: object
+      title: ProductSchema
+    BeneficiarySchema:
+      properties:
+        legalName:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Legalname
+          description: Legal name of the payment order beneficiary.
+          examples:
+          - Acme Supplies S.L.
+      type: object
+      title: BeneficiarySchema
     PaymentOrderSchema:
       properties:
         id:

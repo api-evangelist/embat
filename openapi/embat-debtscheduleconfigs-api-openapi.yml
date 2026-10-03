@@ -147,192 +147,6 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
 components:
   schemas:
-    GetDebtScheduleConfigResponseSchema:
-      properties:
-        id:
-          type: string
-          title: Id
-          description: Embat debt schedule configuration ID.
-        companyId:
-          type: string
-          title: Companyid
-          description: Embat company ID. You can get them from "companies" endpoints.
-        currency:
-          $ref: '#/components/schemas/CurrencyEnum'
-          description: ISO currency code of the amounts in this debt schedule.
-          examples:
-          - EUR
-        bankId:
-          type: string
-          title: Bankid
-          description: Embat ID of the bank relationship this debt is held with. You can get them from "banks" endpoints.
-        debtProductId:
-          type: string
-          title: Debtproductid
-          description: Embat ID of the debt product this schedule is configured over. You can get them from "products" endpoints.
-        settlementProductId:
-          type: string
-          title: Settlementproductid
-          description: Embat ID of the product used to pay this debt schedule (returned as `settlementProductId`). You can get them from "products" endpoints.
-        config:
-          $ref: '#/components/schemas/DebtScheduleConfigSchema'
-          description: 'Configuration of the debt schedule: frequency, balances, rates and period count.'
-        debtSchedulePaymentsCalendar:
-          items:
-            $ref: '#/components/schemas/DebtSchedulePaymentSchema'
-          type: array
-          title: Debtschedulepaymentscalendar
-          description: Full calendar of scheduled payments for this debt, one entry per period, with the principal, interest and tax breakdown.
-      type: object
-      required:
-      - id
-      - companyId
-      - currency
-      - bankId
-      - debtProductId
-      - settlementProductId
-      - config
-      - debtSchedulePaymentsCalendar
-      title: GetDebtScheduleConfigResponseSchema
-    AmortisingFrequencyEnum:
-      type: string
-      enum:
-      - monthly
-      - quarterly
-      - semiannually
-      - yearly
-      title: AmortisingFrequencyEnum
-    DebtSchedulePaymentSchema:
-      properties:
-        period:
-          type: integer
-          title: Period
-          description: Period number in the amortization schedule, starting at 1.
-          examples:
-          - 1
-        date:
-          type: string
-          format: date-time
-          title: Date
-          description: Due date of this scheduled payment.
-        principalPayment:
-          type: number
-          title: Principalpayment
-          description: Principal portion of the payment, in the debt schedule `currency`.
-          examples:
-          - 8333.33
-        interestPayment:
-          type: number
-          title: Interestpayment
-          description: Interest portion of the payment, in the debt schedule `currency`.
-          examples:
-          - 416.67
-        taxPayment:
-          type: number
-          title: Taxpayment
-          description: Tax portion of the payment, in the debt schedule `currency`. `0` when no tax applies.
-          examples:
-          - 0.0
-        totalPayment:
-          type: number
-          title: Totalpayment
-          description: Total amount due for this period, in the debt schedule `currency` (`principalPayment` + `interestPayment` + `taxPayment`).
-          examples:
-          - 8750.0
-      type: object
-      required:
-      - period
-      - date
-      - principalPayment
-      - interestPayment
-      - taxPayment
-      - totalPayment
-      title: DebtSchedulePaymentSchema
-    InterestTypeEnum:
-      type: string
-      enum:
-      - fixed
-      - variable
-      title: InterestTypeEnum
-    DebtScheduleConfigSchema:
-      properties:
-        amortisingFrequency:
-          $ref: '#/components/schemas/AmortisingFrequencyEnum'
-          description: 'Frequency at which principal is amortized: `monthly`, `quarterly`, `semiannually` or `yearly`.'
-        outstandingBalance:
-          type: number
-          title: Outstandingbalance
-          description: Balance still pending repayment, in the debt schedule `currency`.
-          examples:
-          - 100000.0
-        grantedBalance:
-          type: number
-          title: Grantedbalance
-          description: Original balance granted for this debt, in the debt schedule `currency`.
-          examples:
-          - 120000.0
-        totalPeriods:
-          type: integer
-          title: Totalperiods
-          description: Total number of payment periods in the schedule.
-          examples:
-          - 12
-        nextPaymentDate:
-          type: string
-          format: date-time
-          title: Nextpaymentdate
-          description: Due date of the next scheduled payment.
-        lastPaymentDate:
-          type: string
-          format: date-time
-          title: Lastpaymentdate
-          description: Due date of the last scheduled payment (maturity date).
-        taxRate:
-          anyOf:
-          - type: number
-          - type: 'null'
-          title: Taxrate
-          description: Tax rate applied to payments, if any. `null` when no tax applies.
-          examples:
-          - 0.02
-        annualInterestRateOrSpread:
-          type: number
-          title: Annualinterestrateorspread
-          description: Annual interest rate for `fixed` debt, or the spread applied over the reference rate for `variable` debt (see `interestType`).
-          examples:
-          - 0.045
-        interestType:
-          $ref: '#/components/schemas/InterestTypeEnum'
-          description: 'Interest rate type: `fixed` or `variable`.'
-      type: object
-      required:
-      - amortisingFrequency
-      - outstandingBalance
-      - grantedBalance
-      - totalPeriods
-      - nextPaymentDate
-      - lastPaymentDate
-      - annualInterestRateOrSpread
-      - interestType
-      title: DebtScheduleConfigSchema
-    ListDebtScheduleConfigsResponseSchema:
-      properties:
-        data:
-          items:
-            $ref: '#/components/schemas/GetDebtScheduleConfigResponseSchema'
-          type: array
-          title: Data
-          description: Debt schedule configurations matching the query.
-        nextPageToken:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Nextpagetoken
-          description: Token to fetch the next page of results. `null` when there are no more pages.
-      type: object
-      required:
-      - data
-      title: ListDebtScheduleConfigsResponseSchema
     HTTPValidationError:
       properties:
         detail:
@@ -368,19 +182,6 @@ components:
       - msg
       - type
       title: ValidationError
-    ErrorResponse:
-      properties:
-        detail:
-          type: string
-          title: Detail
-          description: Human-readable explanation of the error.
-          examples:
-          - user not authorized
-      type: object
-      required:
-      - detail
-      title: ErrorResponse
-      description: Error payload returned by the API (FastAPI `detail` convention).
     CurrencyEnum:
       type: string
       enum:
@@ -574,6 +375,205 @@ components:
       - ZWG
       - ZWL
       title: CurrencyEnum
+    DebtScheduleConfigSchema:
+      properties:
+        amortisingFrequency:
+          $ref: '#/components/schemas/AmortisingFrequencyEnum'
+          description: 'Frequency at which principal is amortized: `monthly`, `quarterly`, `semiannually` or `yearly`.'
+        outstandingBalance:
+          type: number
+          title: Outstandingbalance
+          description: Balance still pending repayment, in the debt schedule `currency`.
+          examples:
+          - 100000.0
+        grantedBalance:
+          type: number
+          title: Grantedbalance
+          description: Original balance granted for this debt, in the debt schedule `currency`.
+          examples:
+          - 120000.0
+        totalPeriods:
+          type: integer
+          title: Totalperiods
+          description: Total number of payment periods in the schedule.
+          examples:
+          - 12
+        nextPaymentDate:
+          type: string
+          format: date-time
+          title: Nextpaymentdate
+          description: Due date of the next scheduled payment.
+        lastPaymentDate:
+          type: string
+          format: date-time
+          title: Lastpaymentdate
+          description: Due date of the last scheduled payment (maturity date).
+        taxRate:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Taxrate
+          description: Tax rate applied to payments, if any. `null` when no tax applies.
+          examples:
+          - 0.02
+        annualInterestRateOrSpread:
+          type: number
+          title: Annualinterestrateorspread
+          description: Annual interest rate for `fixed` debt, or the spread applied over the reference rate for `variable` debt (see `interestType`).
+          examples:
+          - 0.045
+        interestType:
+          $ref: '#/components/schemas/InterestTypeEnum'
+          description: 'Interest rate type: `fixed` or `variable`.'
+      type: object
+      required:
+      - amortisingFrequency
+      - outstandingBalance
+      - grantedBalance
+      - totalPeriods
+      - nextPaymentDate
+      - lastPaymentDate
+      - annualInterestRateOrSpread
+      - interestType
+      title: DebtScheduleConfigSchema
+    GetDebtScheduleConfigResponseSchema:
+      properties:
+        id:
+          type: string
+          title: Id
+          description: Embat debt schedule configuration ID.
+        companyId:
+          type: string
+          title: Companyid
+          description: Embat company ID. You can get them from "companies" endpoints.
+        currency:
+          $ref: '#/components/schemas/CurrencyEnum'
+          description: ISO currency code of the amounts in this debt schedule.
+          examples:
+          - EUR
+        bankId:
+          type: string
+          title: Bankid
+          description: Embat ID of the bank relationship this debt is held with. You can get them from "banks" endpoints.
+        debtProductId:
+          type: string
+          title: Debtproductid
+          description: Embat ID of the debt product this schedule is configured over. You can get them from "products" endpoints.
+        settlementProductId:
+          type: string
+          title: Settlementproductid
+          description: Embat ID of the product used to pay this debt schedule (returned as `settlementProductId`). You can get them from "products" endpoints.
+        config:
+          $ref: '#/components/schemas/DebtScheduleConfigSchema'
+          description: 'Configuration of the debt schedule: frequency, balances, rates and period count.'
+        debtSchedulePaymentsCalendar:
+          items:
+            $ref: '#/components/schemas/DebtSchedulePaymentSchema'
+          type: array
+          title: Debtschedulepaymentscalendar
+          description: Full calendar of scheduled payments for this debt, one entry per period, with the principal, interest and tax breakdown.
+      type: object
+      required:
+      - id
+      - companyId
+      - currency
+      - bankId
+      - debtProductId
+      - settlementProductId
+      - config
+      - debtSchedulePaymentsCalendar
+      title: GetDebtScheduleConfigResponseSchema
+    AmortisingFrequencyEnum:
+      type: string
+      enum:
+      - monthly
+      - quarterly
+      - semiannually
+      - yearly
+      title: AmortisingFrequencyEnum
+    DebtSchedulePaymentSchema:
+      properties:
+        period:
+          type: integer
+          title: Period
+          description: Period number in the amortization schedule, starting at 1.
+          examples:
+          - 1
+        date:
+          type: string
+          format: date-time
+          title: Date
+          description: Due date of this scheduled payment.
+        principalPayment:
+          type: number
+          title: Principalpayment
+          description: Principal portion of the payment, in the debt schedule `currency`.
+          examples:
+          - 8333.33
+        interestPayment:
+          type: number
+          title: Interestpayment
+          description: Interest portion of the payment, in the debt schedule `currency`.
+          examples:
+          - 416.67
+        taxPayment:
+          type: number
+          title: Taxpayment
+          description: Tax portion of the payment, in the debt schedule `currency`. `0` when no tax applies.
+          examples:
+          - 0.0
+        totalPayment:
+          type: number
+          title: Totalpayment
+          description: Total amount due for this period, in the debt schedule `currency` (`principalPayment` + `interestPayment` + `taxPayment`).
+          examples:
+          - 8750.0
+      type: object
+      required:
+      - period
+      - date
+      - principalPayment
+      - interestPayment
+      - taxPayment
+      - totalPayment
+      title: DebtSchedulePaymentSchema
+    ErrorResponse:
+      properties:
+        detail:
+          type: string
+          title: Detail
+          description: Human-readable explanation of the error.
+          examples:
+          - user not authorized
+      type: object
+      required:
+      - detail
+      title: ErrorResponse
+      description: Error payload returned by the API (FastAPI `detail` convention).
+    ListDebtScheduleConfigsResponseSchema:
+      properties:
+        data:
+          items:
+            $ref: '#/components/schemas/GetDebtScheduleConfigResponseSchema'
+          type: array
+          title: Data
+          description: Debt schedule configurations matching the query.
+        nextPageToken:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Nextpagetoken
+          description: Token to fetch the next page of results. `null` when there are no more pages.
+      type: object
+      required:
+      - data
+      title: ListDebtScheduleConfigsResponseSchema
+    InterestTypeEnum:
+      type: string
+      enum:
+      - fixed
+      - variable
+      title: InterestTypeEnum
   securitySchemes:
     HTTPBearer:
       type: http

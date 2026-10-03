@@ -111,59 +111,6 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
 components:
   schemas:
-    ListCategoriesResponseSchema:
-      properties:
-        data:
-          items:
-            $ref: '#/components/schemas/GetCategoriesResponseSchema'
-          type: array
-          title: Data
-          description: Categories matching the query.
-      type: object
-      required:
-      - data
-      title: ListCategoriesResponseSchema
-    GetCategoriesResponseSchema:
-      properties:
-        id:
-          type: string
-          title: Id
-          description: Embat category ID. Referenced as `categoryId` on transactions, forecasts and operations.
-        companyId:
-          type: string
-          title: Companyid
-          description: Embat company ID. You can get them from "companies" endpoints
-        updatedAt:
-          type: string
-          format: date-time
-          title: Updatedat
-          description: Last updated date of the entity in the database
-        createdAt:
-          type: string
-          format: date-time
-          title: Createdat
-          description: Created date of the entity in the database
-        name:
-          type: string
-          title: Name
-          description: Category name.
-          examples:
-          - Providers
-        parentId:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Parentid
-          description: Embat ID of the parent category. `null` for a top-level category.
-      type: object
-      required:
-      - id
-      - companyId
-      - updatedAt
-      - createdAt
-      - name
-      title: GetCategoriesResponseSchema
-      description: Category response data schema
     HTTPValidationError:
       properties:
         detail:
@@ -212,6 +159,59 @@ components:
       - detail
       title: ErrorResponse
       description: Error payload returned by the API (FastAPI `detail` convention).
+    GetCategoriesResponseSchema:
+      properties:
+        id:
+          type: string
+          title: Id
+          description: Embat category ID. Referenced as `categoryId` on transactions, forecasts and operations.
+        companyId:
+          type: string
+          title: Companyid
+          description: Embat company ID. You can get them from "companies" endpoints
+        updatedAt:
+          type: string
+          format: date-time
+          title: Updatedat
+          description: Last updated date of the entity in the database
+        createdAt:
+          type: string
+          format: date-time
+          title: Createdat
+          description: Created date of the entity in the database
+        name:
+          type: string
+          title: Name
+          description: Category name.
+          examples:
+          - Providers
+        parentId:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Parentid
+          description: Embat ID of the parent category. `null` for a top-level category.
+      type: object
+      required:
+      - id
+      - companyId
+      - updatedAt
+      - createdAt
+      - name
+      title: GetCategoriesResponseSchema
+      description: Category response data schema
+    ListCategoriesResponseSchema:
+      properties:
+        data:
+          items:
+            $ref: '#/components/schemas/GetCategoriesResponseSchema'
+          type: array
+          title: Data
+          description: Categories matching the query.
+      type: object
+      required:
+      - data
+      title: ListCategoriesResponseSchema
   securitySchemes:
     HTTPBearer:
       type: http

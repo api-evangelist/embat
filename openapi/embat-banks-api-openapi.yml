@@ -182,89 +182,6 @@ components:
       - product
       - type
       title: ProductSchema
-    GetBanksResponseSchema:
-      properties:
-        id:
-          type: string
-          title: Id
-          description: Embat bank relationship ID.
-          examples:
-          - bank_5f2c1a
-        bankService:
-          type: string
-          title: Bankservice
-          description: Identifier of the banking connection or aggregation service backing this bank relationship.
-          examples:
-          - bbva
-        bankFullName:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Bankfullname
-          description: Full legal name of the bank.
-          examples:
-          - Banco Bilbao Vizcaya Argentaria
-        lastAggregationOK:
-          anyOf:
-          - type: string
-            format: date-time
-          - type: 'null'
-          title: Lastaggregationok
-          description: Timestamp of the oldest successful data aggregation among this bank's active products (see `bankProducts`). `null` if none of its active products has ever aggregated successfully.
-          examples:
-          - '2024-01-15T08:30:00Z'
-        updatedAt:
-          anyOf:
-          - type: string
-            format: date-time
-          - type: 'null'
-          title: Updatedat
-          description: Last time this bank relationship was updated in Embat.
-        createdAt:
-          anyOf:
-          - type: string
-            format: date-time
-          - type: 'null'
-          title: Createdat
-          description: Date this bank relationship was created in Embat.
-        companyId:
-          type: string
-          title: Companyid
-          description: Embat company ID. You can get them from "companies" endpoints.
-        bankProducts:
-          items:
-            $ref: '#/components/schemas/app__schemas__banks__ProductSchema'
-          type: array
-          title: Bankproducts
-          description: Active products linked to this bank relationship. Products marked inactive, or that Embat can no longer match to an account, are silently excluded from this list.
-        additionalInfo:
-          additionalProperties: true
-          type: object
-          title: Additionalinfo
-          description: Free-form key/value metadata attached to the bank relationship.
-          default: {}
-      type: object
-      required:
-      - id
-      - bankService
-      - companyId
-      - bankProducts
-      title: GetBanksResponseSchema
-      description: 'A bank relationship connected to the company, with the products (accounts, cards,
-
-        credit lines...) available under it.'
-    ListBanksResponseSchema:
-      properties:
-        data:
-          items:
-            $ref: '#/components/schemas/GetBanksResponseSchema'
-          type: array
-          title: Data
-          description: Bank relationships of the company.
-      type: object
-      required:
-      - data
-      title: ListBanksResponseSchema
     HTTPValidationError:
       properties:
         detail:
@@ -300,19 +217,6 @@ components:
       - msg
       - type
       title: ValidationError
-    ErrorResponse:
-      properties:
-        detail:
-          type: string
-          title: Detail
-          description: Human-readable explanation of the error.
-          examples:
-          - user not authorized
-      type: object
-      required:
-      - detail
-      title: ErrorResponse
-      description: Error payload returned by the API (FastAPI `detail` convention).
     CurrencyEnum:
       type: string
       enum:
@@ -506,6 +410,102 @@ components:
       - ZWG
       - ZWL
       title: CurrencyEnum
+    ListBanksResponseSchema:
+      properties:
+        data:
+          items:
+            $ref: '#/components/schemas/GetBanksResponseSchema'
+          type: array
+          title: Data
+          description: Bank relationships of the company.
+      type: object
+      required:
+      - data
+      title: ListBanksResponseSchema
+    ErrorResponse:
+      properties:
+        detail:
+          type: string
+          title: Detail
+          description: Human-readable explanation of the error.
+          examples:
+          - user not authorized
+      type: object
+      required:
+      - detail
+      title: ErrorResponse
+      description: Error payload returned by the API (FastAPI `detail` convention).
+    GetBanksResponseSchema:
+      properties:
+        id:
+          type: string
+          title: Id
+          description: Embat bank relationship ID.
+          examples:
+          - bank_5f2c1a
+        bankService:
+          type: string
+          title: Bankservice
+          description: Identifier of the banking connection or aggregation service backing this bank relationship.
+          examples:
+          - bbva
+        bankFullName:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Bankfullname
+          description: Full legal name of the bank.
+          examples:
+          - Banco Bilbao Vizcaya Argentaria
+        lastAggregationOK:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Lastaggregationok
+          description: Timestamp of the oldest successful data aggregation among this bank's active products (see `bankProducts`). `null` if none of its active products has ever aggregated successfully.
+          examples:
+          - '2024-01-15T08:30:00Z'
+        updatedAt:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Updatedat
+          description: Last time this bank relationship was updated in Embat.
+        createdAt:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Createdat
+          description: Date this bank relationship was created in Embat.
+        companyId:
+          type: string
+          title: Companyid
+          description: Embat company ID. You can get them from "companies" endpoints.
+        bankProducts:
+          items:
+            $ref: '#/components/schemas/app__schemas__banks__ProductSchema'
+          type: array
+          title: Bankproducts
+          description: Active products linked to this bank relationship. Products marked inactive, or that Embat can no longer match to an account, are silently excluded from this list.
+        additionalInfo:
+          additionalProperties: true
+          type: object
+          title: Additionalinfo
+          description: Free-form key/value metadata attached to the bank relationship.
+          default: {}
+      type: object
+      required:
+      - id
+      - bankService
+      - companyId
+      - bankProducts
+      title: GetBanksResponseSchema
+      description: 'A bank relationship connected to the company, with the products (accounts, cards,
+
+        credit lines...) available under it.'
   securitySchemes:
     HTTPBearer:
       type: http
