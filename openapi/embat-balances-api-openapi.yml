@@ -365,32 +365,37 @@ components:
           title: Detail
       type: object
       title: HTTPValidationError
-    ValidationError:
+    ErrorResponse:
       properties:
-        loc:
-          items:
-            anyOf:
-            - type: string
-            - type: integer
-          type: array
-          title: Location
-        msg:
+        detail:
           type: string
-          title: Message
-        type:
-          type: string
-          title: Error Type
-        input:
-          title: Input
-        ctx:
-          type: object
-          title: Context
+          title: Detail
+          description: Human-readable explanation of the error.
+          examples:
+          - user not authorized
       type: object
       required:
-      - loc
-      - msg
-      - type
-      title: ValidationError
+      - detail
+      title: ErrorResponse
+      description: Error payload returned by the API (FastAPI `detail` convention).
+    ListBalancesResponseSchema:
+      properties:
+        data:
+          items:
+            $ref: '#/components/schemas/GetBalancesResponseSchema'
+          type: array
+          title: Data
+          description: Balances matching the query.
+        nextPageToken:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Nextpagetoken
+          description: Token to fetch the next page of results. `null` when there are no more pages.
+      type: object
+      required:
+      - data
+      title: ListBalancesResponseSchema
     GetBalancesResponseSchema:
       properties:
         id:
@@ -466,37 +471,6 @@ components:
           description: Last updated date of the entity in the database.
       type: object
       title: GetBalancesResponseSchema
-    ErrorResponse:
-      properties:
-        detail:
-          type: string
-          title: Detail
-          description: Human-readable explanation of the error.
-          examples:
-          - user not authorized
-      type: object
-      required:
-      - detail
-      title: ErrorResponse
-      description: Error payload returned by the API (FastAPI `detail` convention).
-    ListBalancesResponseSchema:
-      properties:
-        data:
-          items:
-            $ref: '#/components/schemas/GetBalancesResponseSchema'
-          type: array
-          title: Data
-          description: Balances matching the query.
-        nextPageToken:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Nextpagetoken
-          description: Token to fetch the next page of results. `null` when there are no more pages.
-      type: object
-      required:
-      - data
-      title: ListBalancesResponseSchema
     ProductBaseSchema:
       properties:
         id:
@@ -538,6 +512,32 @@ components:
       - currency
       - product
       title: ProductBaseSchema
+    ValidationError:
+      properties:
+        loc:
+          items:
+            anyOf:
+            - type: string
+            - type: integer
+          type: array
+          title: Location
+        msg:
+          type: string
+          title: Message
+        type:
+          type: string
+          title: Error Type
+        input:
+          title: Input
+        ctx:
+          type: object
+          title: Context
+      type: object
+      required:
+      - loc
+      - msg
+      - type
+      title: ValidationError
   securitySchemes:
     HTTPBearer:
       type: http

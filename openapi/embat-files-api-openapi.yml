@@ -293,95 +293,6 @@ components:
       - updatedAt
       title: GetFilesEmissionResponseSchema
       description: Files response data schema
-    BankFileSchema:
-      properties:
-        id:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Id
-          description: Identifier of the bank associated with the file.
-          examples:
-          - bank-001
-        fullName:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Fullname
-          description: Full name of the bank.
-          examples:
-          - Banco Santander
-        service:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Service
-          description: Banking service or channel used to exchange the file with the bank.
-          examples:
-          - h2h
-        countryCode:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Countrycode
-          description: ISO country code of the bank.
-          examples:
-          - ES
-      type: object
-      title: BankFileSchema
-    HTTPValidationError:
-      properties:
-        detail:
-          items:
-            $ref: '#/components/schemas/ValidationError'
-          type: array
-          title: Detail
-      type: object
-      title: HTTPValidationError
-    ValidationError:
-      properties:
-        loc:
-          items:
-            anyOf:
-            - type: string
-            - type: integer
-          type: array
-          title: Location
-        msg:
-          type: string
-          title: Message
-        type:
-          type: string
-          title: Error Type
-        input:
-          title: Input
-        ctx:
-          type: object
-          title: Context
-      type: object
-      required:
-      - loc
-      - msg
-      - type
-      title: ValidationError
-    ListFilesEmissionsResponseSchema:
-      properties:
-        data:
-          items:
-            $ref: '#/components/schemas/GetFilesEmissionResponseSchema'
-          type: array
-          title: Data
-          description: File emissions matching the query.
-        nextPageToken:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Nextpagetoken
-          description: Token to fetch the next page of results. `null` when there are no more pages.
-      type: object
-      required:
-      - data
-      title: ListFilesEmissionsResponseSchema
     ListFilesReceptionsResponseSchema:
       properties:
         data:
@@ -400,6 +311,84 @@ components:
       required:
       - data
       title: ListFilesReceptionsResponseSchema
+    FileFormatsEnum:
+      type: string
+      enum:
+      - sepa34
+      - sepa19
+      - confir
+      - dev019
+      - n19_financiada
+      - omfpag
+      - rec019
+      - sctdiv
+      - sepint
+      title: FileFormatsEnum
+    UserFileSchema:
+      properties:
+        id:
+          type: string
+          title: Id
+          description: Embat ID of the user who requested the file emission.
+        name:
+          type: string
+          title: Name
+          description: First name of the user.
+          examples:
+          - Maria
+        surname:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Surname
+          description: Last name of the user.
+          examples:
+          - Garcia
+      type: object
+      required:
+      - id
+      - name
+      title: UserFileSchema
+    HTTPValidationError:
+      properties:
+        detail:
+          items:
+            $ref: '#/components/schemas/ValidationError'
+          type: array
+          title: Detail
+      type: object
+      title: HTTPValidationError
+    ErrorResponse:
+      properties:
+        detail:
+          type: string
+          title: Detail
+          description: Human-readable explanation of the error.
+          examples:
+          - user not authorized
+      type: object
+      required:
+      - detail
+      title: ErrorResponse
+      description: Error payload returned by the API (FastAPI `detail` convention).
+    ListFilesEmissionsResponseSchema:
+      properties:
+        data:
+          items:
+            $ref: '#/components/schemas/GetFilesEmissionResponseSchema'
+          type: array
+          title: Data
+          description: File emissions matching the query.
+        nextPageToken:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Nextpagetoken
+          description: Token to fetch the next page of results. `null` when there are no more pages.
+      type: object
+      required:
+      - data
+      title: ListFilesEmissionsResponseSchema
     Body_create_file_emission_files__companyId___bankId__post:
       properties:
         file:
@@ -415,32 +404,16 @@ components:
       - file
       - format
       title: Body_create_file_emission_files__companyId___bankId__post
-    FileFormatsEnum:
-      type: string
-      enum:
-      - sepa34
-      - sepa19
-      - confir
-      - dev019
-      - n19_financiada
-      - omfpag
-      - rec019
-      - sctdiv
-      - sepint
-      title: FileFormatsEnum
-    ErrorResponse:
+    PostFilesEmissionResponseSchema:
       properties:
-        detail:
+        id:
           type: string
-          title: Detail
-          description: Human-readable explanation of the error.
-          examples:
-          - user not authorized
+          title: Id
+          description: Embat ID of the created file emission.
       type: object
       required:
-      - detail
-      title: ErrorResponse
-      description: Error payload returned by the API (FastAPI `detail` convention).
+      - id
+      title: PostFilesEmissionResponseSchema
     GetFilesReceptionResponseSchema:
       properties:
         id:
@@ -505,41 +478,68 @@ components:
       - updatedAt
       title: GetFilesReceptionResponseSchema
       description: Files response data schema
-    PostFilesEmissionResponseSchema:
+    BankFileSchema:
       properties:
         id:
-          type: string
-          title: Id
-          description: Embat ID of the created file emission.
-      type: object
-      required:
-      - id
-      title: PostFilesEmissionResponseSchema
-    UserFileSchema:
-      properties:
-        id:
-          type: string
-          title: Id
-          description: Embat ID of the user who requested the file emission.
-        name:
-          type: string
-          title: Name
-          description: First name of the user.
-          examples:
-          - Maria
-        surname:
           anyOf:
           - type: string
           - type: 'null'
-          title: Surname
-          description: Last name of the user.
+          title: Id
+          description: Identifier of the bank associated with the file.
           examples:
-          - Garcia
+          - bank-001
+        fullName:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Fullname
+          description: Full name of the bank.
+          examples:
+          - Banco Santander
+        service:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Service
+          description: Banking service or channel used to exchange the file with the bank.
+          examples:
+          - h2h
+        countryCode:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Countrycode
+          description: ISO country code of the bank.
+          examples:
+          - ES
+      type: object
+      title: BankFileSchema
+    ValidationError:
+      properties:
+        loc:
+          items:
+            anyOf:
+            - type: string
+            - type: integer
+          type: array
+          title: Location
+        msg:
+          type: string
+          title: Message
+        type:
+          type: string
+          title: Error Type
+        input:
+          title: Input
+        ctx:
+          type: object
+          title: Context
       type: object
       required:
-      - id
-      - name
-      title: UserFileSchema
+      - loc
+      - msg
+      - type
+      title: ValidationError
   securitySchemes:
     HTTPBearer:
       type: http

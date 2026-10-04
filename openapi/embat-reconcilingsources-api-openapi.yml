@@ -267,15 +267,18 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
 components:
   schemas:
-    HTTPValidationError:
+    ListReconcilingSourcesResponseSchema:
       properties:
-        detail:
+        data:
           items:
-            $ref: '#/components/schemas/ValidationError'
+            $ref: '#/components/schemas/GetReconcilingSourceResponseSchema'
           type: array
-          title: Detail
+          title: Data
+          description: Reconciling sources configured for the company.
       type: object
-      title: HTTPValidationError
+      required:
+      - data
+      title: ListReconcilingSourcesResponseSchema
     ValidationError:
       properties:
         loc:
@@ -302,6 +305,15 @@ components:
       - msg
       - type
       title: ValidationError
+    HTTPValidationError:
+      properties:
+        detail:
+          items:
+            $ref: '#/components/schemas/ValidationError'
+          type: array
+          title: Detail
+      type: object
+      title: HTTPValidationError
     PatchReconcilingSourceSchema:
       properties:
         name:
@@ -329,18 +341,6 @@ components:
           - orderId
       type: object
       title: PatchReconcilingSourceSchema
-    ListReconcilingSourcesResponseSchema:
-      properties:
-        data:
-          items:
-            $ref: '#/components/schemas/GetReconcilingSourceResponseSchema'
-          type: array
-          title: Data
-          description: Reconciling sources configured for the company.
-      type: object
-      required:
-      - data
-      title: ListReconcilingSourcesResponseSchema
     ErrorResponse:
       properties:
         detail:
@@ -354,6 +354,40 @@ components:
       - detail
       title: ErrorResponse
       description: Error payload returned by the API (FastAPI `detail` convention).
+    PostReconcilingSourceSchema:
+      properties:
+        name:
+          type: string
+          title: Name
+          description: Name of the reconciling source.
+          examples:
+          - Stripe orders feed
+        additionalInfo:
+          anyOf:
+          - additionalProperties: true
+            type: object
+          - type: 'null'
+          title: Additionalinfo
+          description: Free-form key/value metadata to attach to the reconciling source. Replaces the previously stored value entirely (not merged). Omitted or `null` values leave the current metadata unchanged.
+        matchingMetadataKey:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Matchingmetadatakey
+          description: Key within a reconciling item's `metadata` used to associate it with a product transaction. Omitted or `null` values leave the current key unchanged.
+          examples:
+          - orderId
+        customId:
+          type: string
+          title: Customid
+          description: Your own unique ID for the reconciling source. You can use it as your internal reconciling source ID.
+          examples:
+          - stripe-orders
+      type: object
+      required:
+      - name
+      - customId
+      title: PostReconcilingSourceSchema
     GetReconcilingSourceResponseSchema:
       properties:
         name:
@@ -420,40 +454,6 @@ components:
       required:
       - id
       title: ModifyReconcilingSourceResponseSchema
-    PostReconcilingSourceSchema:
-      properties:
-        name:
-          type: string
-          title: Name
-          description: Name of the reconciling source.
-          examples:
-          - Stripe orders feed
-        additionalInfo:
-          anyOf:
-          - additionalProperties: true
-            type: object
-          - type: 'null'
-          title: Additionalinfo
-          description: Free-form key/value metadata to attach to the reconciling source. Replaces the previously stored value entirely (not merged). Omitted or `null` values leave the current metadata unchanged.
-        matchingMetadataKey:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Matchingmetadatakey
-          description: Key within a reconciling item's `metadata` used to associate it with a product transaction. Omitted or `null` values leave the current key unchanged.
-          examples:
-          - orderId
-        customId:
-          type: string
-          title: Customid
-          description: Your own unique ID for the reconciling source. You can use it as your internal reconciling source ID.
-          examples:
-          - stripe-orders
-      type: object
-      required:
-      - name
-      - customId
-      title: PostReconcilingSourceSchema
   securitySchemes:
     HTTPBearer:
       type: http

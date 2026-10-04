@@ -484,110 +484,6 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
 components:
   schemas:
-    HTTPValidationError:
-      properties:
-        detail:
-          items:
-            $ref: '#/components/schemas/ValidationError'
-          type: array
-          title: Detail
-      type: object
-      title: HTTPValidationError
-    BulkModifyAccountingsAccountsResponseSchema:
-      properties:
-        data:
-          items:
-            $ref: '#/components/schemas/ModifyAccountingsAccountsResponseSchema'
-          type: array
-          title: Data
-          description: Result of the bulk deletion, one entry per requested `accountingCode`.
-      type: object
-      required:
-      - data
-      title: BulkModifyAccountingsAccountsResponseSchema
-    BulkUpsertAccountingsAccountsResponseSchema:
-      properties:
-        data:
-          items:
-            $ref: '#/components/schemas/UpsertAccountingsAccountsResponseSchema'
-          type: array
-          title: Data
-          description: Result of the bulk operation, one entry per account.
-      type: object
-      required:
-      - data
-      title: BulkUpsertAccountingsAccountsResponseSchema
-    ValidationError:
-      properties:
-        loc:
-          items:
-            anyOf:
-            - type: string
-            - type: integer
-          type: array
-          title: Location
-        msg:
-          type: string
-          title: Message
-        type:
-          type: string
-          title: Error Type
-        input:
-          title: Input
-        ctx:
-          type: object
-          title: Context
-      type: object
-      required:
-      - loc
-      - msg
-      - type
-      title: ValidationError
-    UpsertAccountingsAccountsResponseSchema:
-      properties:
-        id:
-          type: string
-          title: Id
-          description: Embat resource ID
-        accountingCode:
-          type: string
-          title: Accountingcode
-          description: Client-provided accounting code.
-          examples:
-          - '430001'
-      type: object
-      required:
-      - id
-      - accountingCode
-      title: UpsertAccountingsAccountsResponseSchema
-    ModifyAccountingsAccountsResponseSchema:
-      properties:
-        id:
-          type: string
-          title: Id
-          description: Embat resource ID
-      type: object
-      required:
-      - id
-      title: ModifyAccountingsAccountsResponseSchema
-    ListAccountingsAccountsResponseSchema:
-      properties:
-        data:
-          items:
-            $ref: '#/components/schemas/GetAccountingsAccountsResponseSchema'
-          type: array
-          title: Data
-          description: Accounting accounts matching the query.
-        nextPageToken:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Nextpagetoken
-          description: Token to fetch the next page of results. `null` when there are no more pages.
-      type: object
-      required:
-      - data
-      title: ListAccountingsAccountsResponseSchema
     GetAccountingsAccountsResponseSchema:
       properties:
         active:
@@ -674,6 +570,216 @@ components:
       - updatedAt
       - createdAt
       title: GetAccountingsAccountsResponseSchema
+    ModifyAccountingsAccountsResponseSchema:
+      properties:
+        id:
+          type: string
+          title: Id
+          description: Embat resource ID
+      type: object
+      required:
+      - id
+      title: ModifyAccountingsAccountsResponseSchema
+    UpsertAccountingsAccountsResponseSchema:
+      properties:
+        id:
+          type: string
+          title: Id
+          description: Embat resource ID
+        accountingCode:
+          type: string
+          title: Accountingcode
+          description: Client-provided accounting code.
+          examples:
+          - '430001'
+      type: object
+      required:
+      - id
+      - accountingCode
+      title: UpsertAccountingsAccountsResponseSchema
+    ListAccountingsAccountsResponseSchema:
+      properties:
+        data:
+          items:
+            $ref: '#/components/schemas/GetAccountingsAccountsResponseSchema'
+          type: array
+          title: Data
+          description: Accounting accounts matching the query.
+        nextPageToken:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Nextpagetoken
+          description: Token to fetch the next page of results. `null` when there are no more pages.
+      type: object
+      required:
+      - data
+      title: ListAccountingsAccountsResponseSchema
+    PatchAccountingsAccountsRequestSchema:
+      properties:
+        active:
+          anyOf:
+          - type: boolean
+          - type: 'null'
+          title: Active
+          description: Whether the accounting account is active.
+        type:
+          anyOf:
+          - $ref: '#/components/schemas/AccountingTypeEnum'
+          - type: 'null'
+          description: 'Accounting account classification: `banks`, `analytics` or `accountings`. If omitted, it is inferred from `accountingCode`: codes starting with `572` are classified as `banks`, codes starting with `6` or `7` as `analytics`, and any other code as `accountings`. When creating an account, an `accountingCode` starting with `572` is always classified as `banks`, even if a different `type` is sent. Once an account exists, any `type` sent through the create endpoints is silently ignored — the value (inferred, overridden or explicit) only applies when the account is first created. Use the update endpoints to change the `type` of an existing account.'
+          examples:
+          - banks
+        accountingName:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Accountingname
+          description: Display name of the accounting account.
+          examples:
+          - Bank account - Santander EUR
+        collective:
+          anyOf:
+          - type: boolean
+          - type: 'null'
+          title: Collective
+          description: Whether this is a collective (grouping) accounting account rather than an individual one.
+        additionalInfo:
+          anyOf:
+          - additionalProperties: true
+            type: object
+          - type: 'null'
+          title: Additionalinfo
+          description: Free-form key/value metadata to attach to the account. Sending an empty object leaves any previously stored metadata unchanged instead of clearing it.
+        attributes:
+          anyOf:
+          - items:
+              $ref: '#/components/schemas/AttributeValueRequestACCOUNTSchema'
+            type: array
+          - type: 'null'
+          title: Attributes
+          description: Custom attribute values to attach to the account. Entries with an empty or missing `customId` or `value` are silently discarded.
+      type: object
+      title: PatchAccountingsAccountsRequestSchema
+    BulkModifyAccountingsAccountsResponseSchema:
+      properties:
+        data:
+          items:
+            $ref: '#/components/schemas/ModifyAccountingsAccountsResponseSchema'
+          type: array
+          title: Data
+          description: Result of the bulk deletion, one entry per requested `accountingCode`.
+      type: object
+      required:
+      - data
+      title: BulkModifyAccountingsAccountsResponseSchema
+    BulkDeleteAccountingsAccountsRequestSchema:
+      properties:
+        data:
+          items:
+            $ref: '#/components/schemas/DeleteAccountingsAccountsRequestSchema'
+          type: array
+          title: Data
+          description: Accounting accounts to delete, identified by `accountingCode`.
+      type: object
+      required:
+      - data
+      title: BulkDeleteAccountingsAccountsRequestSchema
+    DeleteAccountingsAccountsRequestSchema:
+      properties:
+        accountingCode:
+          type: string
+          title: Accountingcode
+          description: Accounting code of the account to delete.
+          examples:
+          - '430001'
+      type: object
+      required:
+      - accountingCode
+      title: DeleteAccountingsAccountsRequestSchema
+    ValidationError:
+      properties:
+        loc:
+          items:
+            anyOf:
+            - type: string
+            - type: integer
+          type: array
+          title: Location
+        msg:
+          type: string
+          title: Message
+        type:
+          type: string
+          title: Error Type
+        input:
+          title: Input
+        ctx:
+          type: object
+          title: Context
+      type: object
+      required:
+      - loc
+      - msg
+      - type
+      title: ValidationError
+    AccountingTypeEnum:
+      type: string
+      enum:
+      - banks
+      - analytics
+      - accountings
+      title: AccountingTypeEnum
+    HTTPValidationError:
+      properties:
+        detail:
+          items:
+            $ref: '#/components/schemas/ValidationError'
+          type: array
+          title: Detail
+      type: object
+      title: HTTPValidationError
+    ErrorResponse:
+      properties:
+        detail:
+          type: string
+          title: Detail
+          description: Human-readable explanation of the error.
+          examples:
+          - user not authorized
+      type: object
+      required:
+      - detail
+      title: ErrorResponse
+      description: Error payload returned by the API (FastAPI `detail` convention).
+    AttributeValueRequestACCOUNTSchema:
+      properties:
+        customId:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Customid
+          description: Custom ID of the attribute definition this value belongs to. Entries missing `customId` or `value` are silently discarded.
+          examples:
+          - cost-center
+        value:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Value
+          description: Value assigned to the attribute.
+          examples:
+          - Marketing
+        valueCustomId:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Valuecustomid
+          description: Custom ID of the selected option, for list-type attributes.
+          examples:
+          - cc-marketing
+      type: object
+      title: AttributeValueRequestACCOUNTSchema
     PostAccountingsAccountsRequestSchema:
       properties:
         active:
@@ -728,46 +834,6 @@ components:
       required:
       - accountingCode
       title: PostAccountingsAccountsRequestSchema
-    AttributeValueRequestACCOUNTSchema:
-      properties:
-        customId:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Customid
-          description: Custom ID of the attribute definition this value belongs to. Entries missing `customId` or `value` are silently discarded.
-          examples:
-          - cost-center
-        value:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Value
-          description: Value assigned to the attribute.
-          examples:
-          - Marketing
-        valueCustomId:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Valuecustomid
-          description: Custom ID of the selected option, for list-type attributes.
-          examples:
-          - cc-marketing
-      type: object
-      title: AttributeValueRequestACCOUNTSchema
-    BulkPostAccountingsAccountsRequestSchema:
-      properties:
-        data:
-          items:
-            $ref: '#/components/schemas/PostAccountingsAccountsRequestSchema'
-          type: array
-          title: Data
-          description: Accounting accounts to create. Entries sharing the same `accountingCode` within the request are deduplicated and only the first occurrence is processed.
-      type: object
-      required:
-      - data
-      title: BulkPostAccountingsAccountsRequestSchema
     BulkPatchAccountingsAccountsRequestSchema:
       properties:
         data:
@@ -780,84 +846,18 @@ components:
       required:
       - data
       title: BulkPatchAccountingsAccountsRequestSchema
-    ErrorResponse:
+    BulkPostAccountingsAccountsRequestSchema:
       properties:
-        detail:
-          type: string
-          title: Detail
-          description: Human-readable explanation of the error.
-          examples:
-          - user not authorized
+        data:
+          items:
+            $ref: '#/components/schemas/PostAccountingsAccountsRequestSchema'
+          type: array
+          title: Data
+          description: Accounting accounts to create. Entries sharing the same `accountingCode` within the request are deduplicated and only the first occurrence is processed.
       type: object
       required:
-      - detail
-      title: ErrorResponse
-      description: Error payload returned by the API (FastAPI `detail` convention).
-    PatchAccountingsAccountsRequestSchema:
-      properties:
-        active:
-          anyOf:
-          - type: boolean
-          - type: 'null'
-          title: Active
-          description: Whether the accounting account is active.
-        type:
-          anyOf:
-          - $ref: '#/components/schemas/AccountingTypeEnum'
-          - type: 'null'
-          description: 'Accounting account classification: `banks`, `analytics` or `accountings`. If omitted, it is inferred from `accountingCode`: codes starting with `572` are classified as `banks`, codes starting with `6` or `7` as `analytics`, and any other code as `accountings`. When creating an account, an `accountingCode` starting with `572` is always classified as `banks`, even if a different `type` is sent. Once an account exists, any `type` sent through the create endpoints is silently ignored — the value (inferred, overridden or explicit) only applies when the account is first created. Use the update endpoints to change the `type` of an existing account.'
-          examples:
-          - banks
-        accountingName:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Accountingname
-          description: Display name of the accounting account.
-          examples:
-          - Bank account - Santander EUR
-        collective:
-          anyOf:
-          - type: boolean
-          - type: 'null'
-          title: Collective
-          description: Whether this is a collective (grouping) accounting account rather than an individual one.
-        additionalInfo:
-          anyOf:
-          - additionalProperties: true
-            type: object
-          - type: 'null'
-          title: Additionalinfo
-          description: Free-form key/value metadata to attach to the account. Sending an empty object leaves any previously stored metadata unchanged instead of clearing it.
-        attributes:
-          anyOf:
-          - items:
-              $ref: '#/components/schemas/AttributeValueRequestACCOUNTSchema'
-            type: array
-          - type: 'null'
-          title: Attributes
-          description: Custom attribute values to attach to the account. Entries with an empty or missing `customId` or `value` are silently discarded.
-      type: object
-      title: PatchAccountingsAccountsRequestSchema
-    AccountingTypeEnum:
-      type: string
-      enum:
-      - banks
-      - analytics
-      - accountings
-      title: AccountingTypeEnum
-    DeleteAccountingsAccountsRequestSchema:
-      properties:
-        accountingCode:
-          type: string
-          title: Accountingcode
-          description: Accounting code of the account to delete.
-          examples:
-          - '430001'
-      type: object
-      required:
-      - accountingCode
-      title: DeleteAccountingsAccountsRequestSchema
+      - data
+      title: BulkPostAccountingsAccountsRequestSchema
     AuxBulkPatchAccountingsAccountsRequestSchema:
       properties:
         active:
@@ -912,18 +912,18 @@ components:
       required:
       - accountingCode
       title: AuxBulkPatchAccountingsAccountsRequestSchema
-    BulkDeleteAccountingsAccountsRequestSchema:
+    BulkUpsertAccountingsAccountsResponseSchema:
       properties:
         data:
           items:
-            $ref: '#/components/schemas/DeleteAccountingsAccountsRequestSchema'
+            $ref: '#/components/schemas/UpsertAccountingsAccountsResponseSchema'
           type: array
           title: Data
-          description: Accounting accounts to delete, identified by `accountingCode`.
+          description: Result of the bulk operation, one entry per account.
       type: object
       required:
       - data
-      title: BulkDeleteAccountingsAccountsRequestSchema
+      title: BulkUpsertAccountingsAccountsResponseSchema
   securitySchemes:
     HTTPBearer:
       type: http

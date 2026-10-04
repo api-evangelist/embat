@@ -111,112 +111,6 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
 components:
   schemas:
-    app__schemas__banks__ProductSchema:
-      properties:
-        id:
-          type: string
-          title: Id
-          description: Embat product ID.
-          examples:
-          - prod_8f3a1c
-        currency:
-          $ref: '#/components/schemas/CurrencyEnum'
-          description: ISO currency code of the product.
-          examples:
-          - EUR
-        product:
-          type: string
-          title: Product
-          description: Product name as reported by the bank.
-          examples:
-          - Cuenta Corriente
-        alias:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Alias
-          description: Custom alias given to the product in Embat, if any.
-          examples:
-          - Main checking account
-        type:
-          type: string
-          title: Type
-          description: Product type reported by the bank, e.g. `checking`, `savings`, `card`, `loan`, `lineofcredit` or `wallet`.
-          examples:
-          - checking
-        balance:
-          anyOf:
-          - type: number
-          - type: 'null'
-          title: Balance
-          description: Current balance of the product. Defaults to `0` when no balance has been recorded.
-          examples:
-          - 15234.67
-        hasTransactions:
-          anyOf:
-          - type: boolean
-          - type: 'null'
-          title: Hastransactions
-          description: 'Whether the product supports bank transactions. Always recomputed by Embat: `true` for `checking`, `lineofcredit`, `card` and `wallet` products, `false` otherwise.'
-        lastAggregationOK:
-          anyOf:
-          - type: string
-            format: date-time
-          - type: 'null'
-          title: Lastaggregationok
-          description: Timestamp of the last successful data aggregation for this product. Falls back to the bank relationship's own last successful aggregation when the product has none.
-          examples:
-          - '2024-01-15T08:30:00Z'
-        accountNumber:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Accountnumber
-          description: IBAN or account number identifying the product.
-          examples:
-          - ES9121000418450200051332
-      type: object
-      required:
-      - id
-      - currency
-      - product
-      - type
-      title: ProductSchema
-    HTTPValidationError:
-      properties:
-        detail:
-          items:
-            $ref: '#/components/schemas/ValidationError'
-          type: array
-          title: Detail
-      type: object
-      title: HTTPValidationError
-    ValidationError:
-      properties:
-        loc:
-          items:
-            anyOf:
-            - type: string
-            - type: integer
-          type: array
-          title: Location
-        msg:
-          type: string
-          title: Message
-        type:
-          type: string
-          title: Error Type
-        input:
-          title: Input
-        ctx:
-          type: object
-          title: Context
-      type: object
-      required:
-      - loc
-      - msg
-      - type
-      title: ValidationError
     CurrencyEnum:
       type: string
       enum:
@@ -410,6 +304,77 @@ components:
       - ZWG
       - ZWL
       title: CurrencyEnum
+    app__schemas__banks__ProductSchema:
+      properties:
+        id:
+          type: string
+          title: Id
+          description: Embat product ID.
+          examples:
+          - prod_8f3a1c
+        currency:
+          $ref: '#/components/schemas/CurrencyEnum'
+          description: ISO currency code of the product.
+          examples:
+          - EUR
+        product:
+          type: string
+          title: Product
+          description: Product name as reported by the bank.
+          examples:
+          - Cuenta Corriente
+        alias:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Alias
+          description: Custom alias given to the product in Embat, if any.
+          examples:
+          - Main checking account
+        type:
+          type: string
+          title: Type
+          description: Product type reported by the bank, e.g. `checking`, `savings`, `card`, `loan`, `lineofcredit` or `wallet`.
+          examples:
+          - checking
+        balance:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Balance
+          description: Current balance of the product. Defaults to `0` when no balance has been recorded.
+          examples:
+          - 15234.67
+        hasTransactions:
+          anyOf:
+          - type: boolean
+          - type: 'null'
+          title: Hastransactions
+          description: 'Whether the product supports bank transactions. Always recomputed by Embat: `true` for `checking`, `lineofcredit`, `card` and `wallet` products, `false` otherwise.'
+        lastAggregationOK:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Lastaggregationok
+          description: Timestamp of the last successful data aggregation for this product. Falls back to the bank relationship's own last successful aggregation when the product has none.
+          examples:
+          - '2024-01-15T08:30:00Z'
+        accountNumber:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Accountnumber
+          description: IBAN or account number identifying the product.
+          examples:
+          - ES9121000418450200051332
+      type: object
+      required:
+      - id
+      - currency
+      - product
+      - type
+      title: ProductSchema
     ListBanksResponseSchema:
       properties:
         data:
@@ -422,19 +387,6 @@ components:
       required:
       - data
       title: ListBanksResponseSchema
-    ErrorResponse:
-      properties:
-        detail:
-          type: string
-          title: Detail
-          description: Human-readable explanation of the error.
-          examples:
-          - user not authorized
-      type: object
-      required:
-      - detail
-      title: ErrorResponse
-      description: Error payload returned by the API (FastAPI `detail` convention).
     GetBanksResponseSchema:
       properties:
         id:
@@ -506,6 +458,54 @@ components:
       description: 'A bank relationship connected to the company, with the products (accounts, cards,
 
         credit lines...) available under it.'
+    HTTPValidationError:
+      properties:
+        detail:
+          items:
+            $ref: '#/components/schemas/ValidationError'
+          type: array
+          title: Detail
+      type: object
+      title: HTTPValidationError
+    ErrorResponse:
+      properties:
+        detail:
+          type: string
+          title: Detail
+          description: Human-readable explanation of the error.
+          examples:
+          - user not authorized
+      type: object
+      required:
+      - detail
+      title: ErrorResponse
+      description: Error payload returned by the API (FastAPI `detail` convention).
+    ValidationError:
+      properties:
+        loc:
+          items:
+            anyOf:
+            - type: string
+            - type: integer
+          type: array
+          title: Location
+        msg:
+          type: string
+          title: Message
+        type:
+          type: string
+          title: Error Type
+        input:
+          title: Input
+        ctx:
+          type: object
+          title: Context
+      type: object
+      required:
+      - loc
+      - msg
+      - type
+      title: ValidationError
   securitySchemes:
     HTTPBearer:
       type: http

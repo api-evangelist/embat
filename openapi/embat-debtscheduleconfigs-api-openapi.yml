@@ -147,41 +147,6 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
 components:
   schemas:
-    HTTPValidationError:
-      properties:
-        detail:
-          items:
-            $ref: '#/components/schemas/ValidationError'
-          type: array
-          title: Detail
-      type: object
-      title: HTTPValidationError
-    ValidationError:
-      properties:
-        loc:
-          items:
-            anyOf:
-            - type: string
-            - type: integer
-          type: array
-          title: Location
-        msg:
-          type: string
-          title: Message
-        type:
-          type: string
-          title: Error Type
-        input:
-          title: Input
-        ctx:
-          type: object
-          title: Context
-      type: object
-      required:
-      - loc
-      - msg
-      - type
-      title: ValidationError
     CurrencyEnum:
       type: string
       enum:
@@ -375,6 +340,53 @@ components:
       - ZWG
       - ZWL
       title: CurrencyEnum
+    GetDebtScheduleConfigResponseSchema:
+      properties:
+        id:
+          type: string
+          title: Id
+          description: Embat debt schedule configuration ID.
+        companyId:
+          type: string
+          title: Companyid
+          description: Embat company ID. You can get them from "companies" endpoints.
+        currency:
+          $ref: '#/components/schemas/CurrencyEnum'
+          description: ISO currency code of the amounts in this debt schedule.
+          examples:
+          - EUR
+        bankId:
+          type: string
+          title: Bankid
+          description: Embat ID of the bank relationship this debt is held with. You can get them from "banks" endpoints.
+        debtProductId:
+          type: string
+          title: Debtproductid
+          description: Embat ID of the debt product this schedule is configured over. You can get them from "products" endpoints.
+        settlementProductId:
+          type: string
+          title: Settlementproductid
+          description: Embat ID of the product used to pay this debt schedule (returned as `settlementProductId`). You can get them from "products" endpoints.
+        config:
+          $ref: '#/components/schemas/DebtScheduleConfigSchema'
+          description: 'Configuration of the debt schedule: frequency, balances, rates and period count.'
+        debtSchedulePaymentsCalendar:
+          items:
+            $ref: '#/components/schemas/DebtSchedulePaymentSchema'
+          type: array
+          title: Debtschedulepaymentscalendar
+          description: Full calendar of scheduled payments for this debt, one entry per period, with the principal, interest and tax breakdown.
+      type: object
+      required:
+      - id
+      - companyId
+      - currency
+      - bankId
+      - debtProductId
+      - settlementProductId
+      - config
+      - debtSchedulePaymentsCalendar
+      title: GetDebtScheduleConfigResponseSchema
     DebtScheduleConfigSchema:
       properties:
         amortisingFrequency:
@@ -436,61 +448,54 @@ components:
       - annualInterestRateOrSpread
       - interestType
       title: DebtScheduleConfigSchema
-    GetDebtScheduleConfigResponseSchema:
+    ValidationError:
       properties:
-        id:
-          type: string
-          title: Id
-          description: Embat debt schedule configuration ID.
-        companyId:
-          type: string
-          title: Companyid
-          description: Embat company ID. You can get them from "companies" endpoints.
-        currency:
-          $ref: '#/components/schemas/CurrencyEnum'
-          description: ISO currency code of the amounts in this debt schedule.
-          examples:
-          - EUR
-        bankId:
-          type: string
-          title: Bankid
-          description: Embat ID of the bank relationship this debt is held with. You can get them from "banks" endpoints.
-        debtProductId:
-          type: string
-          title: Debtproductid
-          description: Embat ID of the debt product this schedule is configured over. You can get them from "products" endpoints.
-        settlementProductId:
-          type: string
-          title: Settlementproductid
-          description: Embat ID of the product used to pay this debt schedule (returned as `settlementProductId`). You can get them from "products" endpoints.
-        config:
-          $ref: '#/components/schemas/DebtScheduleConfigSchema'
-          description: 'Configuration of the debt schedule: frequency, balances, rates and period count.'
-        debtSchedulePaymentsCalendar:
+        loc:
           items:
-            $ref: '#/components/schemas/DebtSchedulePaymentSchema'
+            anyOf:
+            - type: string
+            - type: integer
           type: array
-          title: Debtschedulepaymentscalendar
-          description: Full calendar of scheduled payments for this debt, one entry per period, with the principal, interest and tax breakdown.
+          title: Location
+        msg:
+          type: string
+          title: Message
+        type:
+          type: string
+          title: Error Type
+        input:
+          title: Input
+        ctx:
+          type: object
+          title: Context
       type: object
       required:
-      - id
-      - companyId
-      - currency
-      - bankId
-      - debtProductId
-      - settlementProductId
-      - config
-      - debtSchedulePaymentsCalendar
-      title: GetDebtScheduleConfigResponseSchema
-    AmortisingFrequencyEnum:
-      type: string
-      enum:
-      - monthly
-      - quarterly
-      - semiannually
-      - yearly
-      title: AmortisingFrequencyEnum
+      - loc
+      - msg
+      - type
+      title: ValidationError
+    HTTPValidationError:
+      properties:
+        detail:
+          items:
+            $ref: '#/components/schemas/ValidationError'
+          type: array
+          title: Detail
+      type: object
+      title: HTTPValidationError
+    ErrorResponse:
+      properties:
+        detail:
+          type: string
+          title: Detail
+          description: Human-readable explanation of the error.
+          examples:
+          - user not authorized
+      type: object
+      required:
+      - detail
+      title: ErrorResponse
+      description: Error payload returned by the API (FastAPI `detail` convention).
     DebtSchedulePaymentSchema:
       properties:
         period:
@@ -537,19 +542,6 @@ components:
       - taxPayment
       - totalPayment
       title: DebtSchedulePaymentSchema
-    ErrorResponse:
-      properties:
-        detail:
-          type: string
-          title: Detail
-          description: Human-readable explanation of the error.
-          examples:
-          - user not authorized
-      type: object
-      required:
-      - detail
-      title: ErrorResponse
-      description: Error payload returned by the API (FastAPI `detail` convention).
     ListDebtScheduleConfigsResponseSchema:
       properties:
         data:
@@ -574,6 +566,14 @@ components:
       - fixed
       - variable
       title: InterestTypeEnum
+    AmortisingFrequencyEnum:
+      type: string
+      enum:
+      - monthly
+      - quarterly
+      - semiannually
+      - yearly
+      title: AmortisingFrequencyEnum
   securitySchemes:
     HTTPBearer:
       type: http

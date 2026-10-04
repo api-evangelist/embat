@@ -399,163 +399,6 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
 components:
   schemas:
-    BulkPatchTransactionsRequestSchema:
-      properties:
-        data:
-          items:
-            $ref: '#/components/schemas/AuxBulkPatchTransactionsRequestSchema'
-          type: array
-          title: Data
-          description: Transactions to update, identified by `id`.
-      type: object
-      required:
-      - data
-      title: BulkPatchTransactionsRequestSchema
-    BulkPostTransactionsRequestSchema:
-      properties:
-        data:
-          items:
-            $ref: '#/components/schemas/PostTransactionsRequestSchema'
-          type: array
-          title: Data
-          description: Transactions to create for a Manual product. For each day covered by this list, any transactions previously recorded for that same day on the product are permanently replaced — this cannot be undone.
-      type: object
-      required:
-      - data
-      title: BulkPostTransactionsRequestSchema
-    BulkModifyTransactionsResponseSchema:
-      properties:
-        data:
-          items:
-            $ref: '#/components/schemas/ModifyTransactionsResponseSchema'
-          type: array
-          title: Data
-          description: Result of the bulk operation, one entry per transaction.
-      type: object
-      required:
-      - data
-      title: BulkModifyTransactionsResponseSchema
-    StatusEnum:
-      type: string
-      enum:
-      - PENDING
-      - BOOKED
-      title: StatusEnum
-    AuxBulkPatchTransactionsRequestSchema:
-      properties:
-        additionalInfo:
-          additionalProperties: true
-          type: object
-          title: Additionalinfo
-          description: Free-form key/value metadata to attach to the transaction.
-          default: {}
-        attributes:
-          anyOf:
-          - items:
-              $ref: '#/components/schemas/AttributeValueRequestSchema'
-            type: array
-          - type: 'null'
-          title: Attributes
-          description: Custom attribute values to attach to the transaction.
-        sync:
-          anyOf:
-          - type: boolean
-          - type: 'null'
-          title: Sync
-          description: Marks the transaction as synchronized with your ERP.
-        id:
-          type: string
-          title: Id
-          description: Embat transaction ID
-      type: object
-      required:
-      - id
-      title: AuxBulkPatchTransactionsRequestSchema
-    PostTransactionsRequestSchema:
-      properties:
-        operationDate:
-          type: string
-          format: date
-          title: Operationdate
-          description: Date the transaction was recorded (booked).
-        valueDate:
-          type: string
-          format: date
-          title: Valuedate
-          description: Value date of the transaction, used for the product's balance.
-        concept:
-          type: string
-          title: Concept
-          description: Free-text description of the transaction.
-          examples:
-          - Office supplies
-        amount:
-          type: number
-          title: Amount
-          description: Amount of the transaction, in the product's currency.
-          examples:
-          - -350.0
-      type: object
-      required:
-      - operationDate
-      - valueDate
-      - concept
-      - amount
-      title: PostTransactionsRequestSchema
-      description: Transactions request data schema
-    TransactionCurrencyExchangeDataSchema:
-      properties:
-        originalAmount:
-          anyOf:
-          - type: number
-          - type: 'null'
-          title: Originalamount
-          description: Transaction amount before currency conversion.
-          examples:
-          - 500.0
-        originalCurrency:
-          anyOf:
-          - $ref: '#/components/schemas/CurrencyEnum'
-          - type: 'null'
-          description: Currency of `originalAmount`, before conversion.
-          examples:
-          - USD
-        grossAmount:
-          anyOf:
-          - type: number
-          - type: 'null'
-          title: Grossamount
-          description: Transaction amount after currency conversion, before conversion fees.
-          examples:
-          - 460.25
-        fees:
-          anyOf:
-          - type: number
-          - type: 'null'
-          title: Fees
-          description: Fees applied during the currency conversion.
-          examples:
-          - 3.5
-      type: object
-      title: TransactionCurrencyExchangeDataSchema
-    ListTransactionsResponseSchema:
-      properties:
-        data:
-          items:
-            $ref: '#/components/schemas/GetTransactionsResponseSchema'
-          type: array
-          title: Data
-          description: Transactions matching the query.
-        nextPageToken:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Nextpagetoken
-          description: Token to fetch the next page of results. `null` when there are no more pages.
-      type: object
-      required:
-      - data
-      title: ListTransactionsResponseSchema
     CurrencyEnum:
       type: string
       enum:
@@ -749,6 +592,37 @@ components:
       - ZWG
       - ZWL
       title: CurrencyEnum
+    ModifyTransactionsResponseSchema:
+      properties:
+        id:
+          type: string
+          title: Id
+          description: Embat transaction ID
+      type: object
+      required:
+      - id
+      title: ModifyTransactionsResponseSchema
+    HTTPValidationError:
+      properties:
+        detail:
+          items:
+            $ref: '#/components/schemas/ValidationError'
+          type: array
+          title: Detail
+      type: object
+      title: HTTPValidationError
+    BulkPatchTransactionsRequestSchema:
+      properties:
+        data:
+          items:
+            $ref: '#/components/schemas/AuxBulkPatchTransactionsRequestSchema'
+          type: array
+          title: Data
+          description: Transactions to update, identified by `id`.
+      type: object
+      required:
+      - data
+      title: BulkPatchTransactionsRequestSchema
     ValidationError:
       properties:
         loc:
@@ -775,21 +649,78 @@ components:
       - msg
       - type
       title: ValidationError
-    ErrorResponse:
+    PostTransactionsRequestSchema:
       properties:
-        detail:
+        operationDate:
           type: string
-          title: Detail
-          description: Human-readable explanation of the error.
+          format: date
+          title: Operationdate
+          description: Date the transaction was recorded (booked).
+        valueDate:
+          type: string
+          format: date
+          title: Valuedate
+          description: Value date of the transaction, used for the product's balance.
+        concept:
+          type: string
+          title: Concept
+          description: Free-text description of the transaction.
           examples:
-          - user not authorized
+          - Office supplies
+        amount:
+          type: number
+          title: Amount
+          description: Amount of the transaction, in the product's currency.
+          examples:
+          - -350.0
       type: object
       required:
-      - detail
-      title: ErrorResponse
-      description: Error payload returned by the API (FastAPI `detail` convention).
-    ModifyTransactionsResponseSchema:
+      - operationDate
+      - valueDate
+      - concept
+      - amount
+      title: PostTransactionsRequestSchema
+      description: Transactions request data schema
+    ListTransactionsResponseSchema:
       properties:
+        data:
+          items:
+            $ref: '#/components/schemas/GetTransactionsResponseSchema'
+          type: array
+          title: Data
+          description: Transactions matching the query.
+        nextPageToken:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Nextpagetoken
+          description: Token to fetch the next page of results. `null` when there are no more pages.
+      type: object
+      required:
+      - data
+      title: ListTransactionsResponseSchema
+    AuxBulkPatchTransactionsRequestSchema:
+      properties:
+        additionalInfo:
+          additionalProperties: true
+          type: object
+          title: Additionalinfo
+          description: Free-form key/value metadata to attach to the transaction.
+          default: {}
+        attributes:
+          anyOf:
+          - items:
+              $ref: '#/components/schemas/AttributeValueRequestSchema'
+            type: array
+          - type: 'null'
+          title: Attributes
+          description: Custom attribute values to attach to the transaction.
+        sync:
+          anyOf:
+          - type: boolean
+          - type: 'null'
+          title: Sync
+          description: Marks the transaction as synchronized with your ERP.
         id:
           type: string
           title: Id
@@ -797,16 +728,66 @@ components:
       type: object
       required:
       - id
-      title: ModifyTransactionsResponseSchema
-    HTTPValidationError:
+      title: AuxBulkPatchTransactionsRequestSchema
+    TransactionCurrencyExchangeDataSchema:
       properties:
-        detail:
-          items:
-            $ref: '#/components/schemas/ValidationError'
-          type: array
-          title: Detail
+        originalAmount:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Originalamount
+          description: Transaction amount before currency conversion.
+          examples:
+          - 500.0
+        originalCurrency:
+          anyOf:
+          - $ref: '#/components/schemas/CurrencyEnum'
+          - type: 'null'
+          description: Currency of `originalAmount`, before conversion.
+          examples:
+          - USD
+        grossAmount:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Grossamount
+          description: Transaction amount after currency conversion, before conversion fees.
+          examples:
+          - 460.25
+        fees:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Fees
+          description: Fees applied during the currency conversion.
+          examples:
+          - 3.5
       type: object
-      title: HTTPValidationError
+      title: TransactionCurrencyExchangeDataSchema
+    TransactionTypeEnum:
+      type: string
+      enum:
+      - payment
+      - debt_repayment
+      - fee
+      - tax
+      - utility
+      - social_security
+      - bulk_payment
+      - cash_withdrawal
+      - pos_withdrawal
+      - collection
+      - pos_settlement
+      - cash_settlement
+      - collection_refund
+      - bulk_collection
+      title: TransactionTypeEnum
+    StatusEnum:
+      type: string
+      enum:
+      - PENDING
+      - BOOKED
+      title: StatusEnum
     GetTransactionsResponseSchema:
       properties:
         id:
@@ -1002,6 +983,107 @@ components:
       type: object
       title: GetTransactionsResponseSchema
       description: Transactions response data schema
+    ProductBaseSchema:
+      properties:
+        id:
+          type: string
+          title: Id
+          description: Embat product ID.
+          examples:
+          - prod_8f3a1c
+        currency:
+          $ref: '#/components/schemas/CurrencyEnum'
+          description: ISO currency code of the product.
+          examples:
+          - EUR
+        product:
+          type: string
+          title: Product
+          description: Product name as reported by the bank.
+          examples:
+          - Cuenta Corriente
+        bankFullName:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Bankfullname
+          description: Full legal name of the bank this product belongs to, if known.
+          examples:
+          - Banco Bilbao Vizcaya Argentaria
+        alias:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Alias
+          description: Custom alias given to the product in Embat, if any.
+          examples:
+          - Main checking account
+      type: object
+      required:
+      - id
+      - currency
+      - product
+      title: ProductBaseSchema
+    BulkModifyTransactionsResponseSchema:
+      properties:
+        data:
+          items:
+            $ref: '#/components/schemas/ModifyTransactionsResponseSchema'
+          type: array
+          title: Data
+          description: Result of the bulk operation, one entry per transaction.
+      type: object
+      required:
+      - data
+      title: BulkModifyTransactionsResponseSchema
+    AttributeValueRequestSchema:
+      properties:
+        customId:
+          type: string
+          title: Customid
+          description: Custom ID of the attribute (see the Attributes endpoints) being set.
+          examples:
+          - cost-center
+        value:
+          type: string
+          title: Value
+          description: Display text of the value being set on this entity.
+          examples:
+          - Marketing
+        valueCustomId:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Valuecustomid
+          description: Custom ID of one of the attribute's predefined `values`, when the attribute is of type `list`. Leave unset for free-form `string`/`number` attributes.
+          examples:
+          - marketing
+        parentCustomId:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Parentcustomid
+          description: Not used when attaching an attribute value to an entity.
+      type: object
+      required:
+      - customId
+      - value
+      title: AttributeValueRequestSchema
+      description: 'Attaches an attribute value to another entity (payment, contact, operation,
+
+        transaction, accounting entry...).'
+    BulkPostTransactionsRequestSchema:
+      properties:
+        data:
+          items:
+            $ref: '#/components/schemas/PostTransactionsRequestSchema'
+          type: array
+          title: Data
+          description: Transactions to create for a Manual product. For each day covered by this list, any transactions previously recorded for that same day on the product are permanently replaced — this cannot be undone.
+      type: object
+      required:
+      - data
+      title: BulkPostTransactionsRequestSchema
     TransactionsAnalyticsSchema:
       properties:
         categoryId:
@@ -1044,101 +1126,19 @@ components:
           description: Marks the transaction as synchronized with your ERP.
       type: object
       title: PatchTransactionsRequestSchema
-    AttributeValueRequestSchema:
+    ErrorResponse:
       properties:
-        customId:
+        detail:
           type: string
-          title: Customid
-          description: Custom ID of the attribute (see the Attributes endpoints) being set.
+          title: Detail
+          description: Human-readable explanation of the error.
           examples:
-          - cost-center
-        value:
-          type: string
-          title: Value
-          description: Display text of the value being set on this entity.
-          examples:
-          - Marketing
-        valueCustomId:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Valuecustomid
-          description: Custom ID of one of the attribute's predefined `values`, when the attribute is of type `list`. Leave unset for free-form `string`/`number` attributes.
-          examples:
-          - marketing
-        parentCustomId:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Parentcustomid
-          description: Not used when attaching an attribute value to an entity.
+          - user not authorized
       type: object
       required:
-      - customId
-      - value
-      title: AttributeValueRequestSchema
-      description: 'Attaches an attribute value to another entity (payment, contact, operation,
-
-        transaction, accounting entry...).'
-    TransactionTypeEnum:
-      type: string
-      enum:
-      - payment
-      - debt_repayment
-      - fee
-      - tax
-      - utility
-      - social_security
-      - bulk_payment
-      - cash_withdrawal
-      - pos_withdrawal
-      - collection
-      - pos_settlement
-      - cash_settlement
-      - collection_refund
-      - bulk_collection
-      title: TransactionTypeEnum
-    ProductBaseSchema:
-      properties:
-        id:
-          type: string
-          title: Id
-          description: Embat product ID.
-          examples:
-          - prod_8f3a1c
-        currency:
-          $ref: '#/components/schemas/CurrencyEnum'
-          description: ISO currency code of the product.
-          examples:
-          - EUR
-        product:
-          type: string
-          title: Product
-          description: Product name as reported by the bank.
-          examples:
-          - Cuenta Corriente
-        bankFullName:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Bankfullname
-          description: Full legal name of the bank this product belongs to, if known.
-          examples:
-          - Banco Bilbao Vizcaya Argentaria
-        alias:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Alias
-          description: Custom alias given to the product in Embat, if any.
-          examples:
-          - Main checking account
-      type: object
-      required:
-      - id
-      - currency
-      - product
-      title: ProductBaseSchema
+      - detail
+      title: ErrorResponse
+      description: Error payload returned by the API (FastAPI `detail` convention).
   securitySchemes:
     HTTPBearer:
       type: http

@@ -111,41 +111,6 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
 components:
   schemas:
-    HTTPValidationError:
-      properties:
-        detail:
-          items:
-            $ref: '#/components/schemas/ValidationError'
-          type: array
-          title: Detail
-      type: object
-      title: HTTPValidationError
-    ValidationError:
-      properties:
-        loc:
-          items:
-            anyOf:
-            - type: string
-            - type: integer
-          type: array
-          title: Location
-        msg:
-          type: string
-          title: Message
-        type:
-          type: string
-          title: Error Type
-        input:
-          title: Input
-        ctx:
-          type: object
-          title: Context
-      type: object
-      required:
-      - loc
-      - msg
-      - type
-      title: ValidationError
     CurrencyEnum:
       type: string
       enum:
@@ -339,14 +304,40 @@ components:
       - ZWG
       - ZWL
       title: CurrencyEnum
-    PeriodicityEnum:
-      type: string
-      enum:
-      - monthly
-      - yearly
-      - weekly
-      - daily
-      title: PeriodicityEnum
+    ListScenariosResponseSchema:
+      properties:
+        data:
+          items:
+            $ref: '#/components/schemas/GetScenarioResponseSchema'
+          type: array
+          title: Data
+          description: Published scenarios of the company.
+      type: object
+      required:
+      - data
+      title: ListScenariosResponseSchema
+    HTTPValidationError:
+      properties:
+        detail:
+          items:
+            $ref: '#/components/schemas/ValidationError'
+          type: array
+          title: Detail
+      type: object
+      title: HTTPValidationError
+    ErrorResponse:
+      properties:
+        detail:
+          type: string
+          title: Detail
+          description: Human-readable explanation of the error.
+          examples:
+          - user not authorized
+      type: object
+      required:
+      - detail
+      title: ErrorResponse
+      description: Error payload returned by the API (FastAPI `detail` convention).
     GetScenarioResponseSchema:
       properties:
         id:
@@ -417,31 +408,40 @@ components:
           description: Numeric identifier of the last period covered by the scenario's forecast.
       type: object
       title: GetScenarioResponseSchema
-    ErrorResponse:
+    PeriodicityEnum:
+      type: string
+      enum:
+      - monthly
+      - yearly
+      - weekly
+      - daily
+      title: PeriodicityEnum
+    ValidationError:
       properties:
-        detail:
-          type: string
-          title: Detail
-          description: Human-readable explanation of the error.
-          examples:
-          - user not authorized
-      type: object
-      required:
-      - detail
-      title: ErrorResponse
-      description: Error payload returned by the API (FastAPI `detail` convention).
-    ListScenariosResponseSchema:
-      properties:
-        data:
+        loc:
           items:
-            $ref: '#/components/schemas/GetScenarioResponseSchema'
+            anyOf:
+            - type: string
+            - type: integer
           type: array
-          title: Data
-          description: Published scenarios of the company.
+          title: Location
+        msg:
+          type: string
+          title: Message
+        type:
+          type: string
+          title: Error Type
+        input:
+          title: Input
+        ctx:
+          type: object
+          title: Context
       type: object
       required:
-      - data
-      title: ListScenariosResponseSchema
+      - loc
+      - msg
+      - type
+      title: ValidationError
   securitySchemes:
     HTTPBearer:
       type: http
