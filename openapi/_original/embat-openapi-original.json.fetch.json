@@ -1,0 +1,12 @@
+{
+ "url": "https://api.embat.io/openapi.json",
+ "requested_url": "https://api.embat.io/openapi.json",
+ "status": 200,
+ "content_type": "application/json",
+ "bytes": 483054,
+ "sha256": "dc1f6c54372c55437a1e62d715b9fcbd4228aeaca1250bcf7c4c881217fa25b2",
+ "fetched_at": "2026-10-04",
+ "fetched_by": "APIEvangelist-Harvest/1.0 (+https://apievangelist.com)",
+ "match": "equivalent",
+ "note": "Re-fetched from the provider by verify-openapi-sources.py; the provider's current document describes the same operations (Jaccard 0.99), but the bytes differ, so the archive is an earlier or reformatted copy."
+}
