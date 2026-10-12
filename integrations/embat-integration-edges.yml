@@ -1,0 +1,16 @@
+generated: '2026-10-12'
+method: none
+source:
+- https://zapier.com/apps/embat/integrations
+- https://n8n.io/integrations/embat/
+- https://composio.dev/toolkits/embat
+- https://monid.ai/tools/embat
+checked:
+- https://composio.dev/toolkits/embat
+- https://monid.ai/tools/embat
+- https://n8n.io/integrations/embat/
+- https://zapier.com/apps/embat/integrations
+summary: null
+marketplace_apps: []
+edges: []
+templates: []
