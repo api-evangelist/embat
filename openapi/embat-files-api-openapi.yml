@@ -221,143 +221,6 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
 components:
   schemas:
-    GetFilesEmissionResponseSchema:
-      properties:
-        id:
-          type: string
-          title: Id
-          description: Embat ID of the file emission.
-        groupId:
-          type: string
-          title: Groupid
-          description: Embat group ID the file belongs to.
-        companyId:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Companyid
-          description: Embat company ID the file was submitted for, if identified.
-        fileName:
-          type: string
-          title: Filename
-          description: Name of the emitted file.
-          examples:
-          - payment-order.xml
-        bank:
-          anyOf:
-          - $ref: '#/components/schemas/BankFileSchema'
-          - type: 'null'
-          description: Bank the file was submitted to, if identified.
-        user:
-          anyOf:
-          - $ref: '#/components/schemas/UserFileSchema'
-          - type: 'null'
-          description: User who requested the file emission, if it was created by a user rather than automatically.
-        provider:
-          type: string
-          title: Provider
-          description: Channel or provider through which the file was submitted.
-          examples:
-          - bank
-        format:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Format
-          description: Format of the emitted file.
-          examples:
-          - sepa34
-        emissionDate:
-          type: string
-          format: date-time
-          title: Emissiondate
-          description: Date the file was submitted to the bank.
-        createdAt:
-          type: string
-          format: date-time
-          title: Createdat
-          description: Created date of the entity in the database
-        updatedAt:
-          type: string
-          format: date-time
-          title: Updatedat
-          description: Last updated date of the entity in the database
-      type: object
-      required:
-      - id
-      - groupId
-      - fileName
-      - provider
-      - emissionDate
-      - createdAt
-      - updatedAt
-      title: GetFilesEmissionResponseSchema
-      description: Files response data schema
-    ListFilesReceptionsResponseSchema:
-      properties:
-        data:
-          items:
-            $ref: '#/components/schemas/GetFilesReceptionResponseSchema'
-          type: array
-          title: Data
-          description: File receptions matching the query.
-        nextPageToken:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Nextpagetoken
-          description: Token to fetch the next page of results. `null` when there are no more pages.
-      type: object
-      required:
-      - data
-      title: ListFilesReceptionsResponseSchema
-    FileFormatsEnum:
-      type: string
-      enum:
-      - sepa34
-      - sepa19
-      - confir
-      - dev019
-      - n19_financiada
-      - omfpag
-      - rec019
-      - sctdiv
-      - sepint
-      title: FileFormatsEnum
-    UserFileSchema:
-      properties:
-        id:
-          type: string
-          title: Id
-          description: Embat ID of the user who requested the file emission.
-        name:
-          type: string
-          title: Name
-          description: First name of the user.
-          examples:
-          - Maria
-        surname:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Surname
-          description: Last name of the user.
-          examples:
-          - Garcia
-      type: object
-      required:
-      - id
-      - name
-      title: UserFileSchema
-    HTTPValidationError:
-      properties:
-        detail:
-          items:
-            $ref: '#/components/schemas/ValidationError'
-          type: array
-          title: Detail
-      type: object
-      title: HTTPValidationError
     ErrorResponse:
       properties:
         detail:
@@ -371,39 +234,32 @@ components:
       - detail
       title: ErrorResponse
       description: Error payload returned by the API (FastAPI `detail` convention).
-    ListFilesEmissionsResponseSchema:
+    ValidationError:
       properties:
-        data:
+        loc:
           items:
-            $ref: '#/components/schemas/GetFilesEmissionResponseSchema'
+            anyOf:
+            - type: string
+            - type: integer
           type: array
-          title: Data
-          description: File emissions matching the query.
-        nextPageToken:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Nextpagetoken
-          description: Token to fetch the next page of results. `null` when there are no more pages.
-      type: object
-      required:
-      - data
-      title: ListFilesEmissionsResponseSchema
-    Body_create_file_emission_files__companyId___bankId__post:
-      properties:
-        file:
+          title: Location
+        msg:
           type: string
-          contentMediaType: application/octet-stream
-          title: File
-          description: Binary content of the file to submit to the bank.
-        format:
-          $ref: '#/components/schemas/FileFormatsEnum'
-          description: Format of the submitted file.
+          title: Message
+        type:
+          type: string
+          title: Error Type
+        input:
+          title: Input
+        ctx:
+          type: object
+          title: Context
       type: object
       required:
-      - file
-      - format
-      title: Body_create_file_emission_files__companyId___bankId__post
+      - loc
+      - msg
+      - type
+      title: ValidationError
     PostFilesEmissionResponseSchema:
       properties:
         id:
@@ -478,6 +334,161 @@ components:
       - updatedAt
       title: GetFilesReceptionResponseSchema
       description: Files response data schema
+    UserFileSchema:
+      properties:
+        id:
+          type: string
+          title: Id
+          description: Embat ID of the user who requested the file emission.
+        name:
+          type: string
+          title: Name
+          description: First name of the user.
+          examples:
+          - Maria
+        surname:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Surname
+          description: Last name of the user.
+          examples:
+          - Garcia
+      type: object
+      required:
+      - id
+      - name
+      title: UserFileSchema
+    ListFilesReceptionsResponseSchema:
+      properties:
+        data:
+          items:
+            $ref: '#/components/schemas/GetFilesReceptionResponseSchema'
+          type: array
+          title: Data
+          description: File receptions matching the query.
+        nextPageToken:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Nextpagetoken
+          description: Token to fetch the next page of results. `null` when there are no more pages.
+      type: object
+      required:
+      - data
+      title: ListFilesReceptionsResponseSchema
+    GetFilesEmissionResponseSchema:
+      properties:
+        id:
+          type: string
+          title: Id
+          description: Embat ID of the file emission.
+        groupId:
+          type: string
+          title: Groupid
+          description: Embat group ID the file belongs to.
+        companyId:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Companyid
+          description: Embat company ID the file was submitted for, if identified.
+        fileName:
+          type: string
+          title: Filename
+          description: Name of the emitted file.
+          examples:
+          - payment-order.xml
+        bank:
+          anyOf:
+          - $ref: '#/components/schemas/BankFileSchema'
+          - type: 'null'
+          description: Bank the file was submitted to, if identified.
+        user:
+          anyOf:
+          - $ref: '#/components/schemas/UserFileSchema'
+          - type: 'null'
+          description: User who requested the file emission, if it was created by a user rather than automatically.
+        provider:
+          type: string
+          title: Provider
+          description: Channel or provider through which the file was submitted.
+          examples:
+          - bank
+        format:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Format
+          description: Format of the emitted file.
+          examples:
+          - sepa34
+        emissionDate:
+          type: string
+          format: date-time
+          title: Emissiondate
+          description: Date the file was submitted to the bank.
+        createdAt:
+          type: string
+          format: date-time
+          title: Createdat
+          description: Created date of the entity in the database
+        updatedAt:
+          type: string
+          format: date-time
+          title: Updatedat
+          description: Last updated date of the entity in the database
+      type: object
+      required:
+      - id
+      - groupId
+      - fileName
+      - provider
+      - emissionDate
+      - createdAt
+      - updatedAt
+      title: GetFilesEmissionResponseSchema
+      description: Files response data schema
+    FileFormatsEnum:
+      type: string
+      enum:
+      - sepa34
+      - sepa19
+      - confir
+      - dev019
+      - n19_financiada
+      - omfpag
+      - rec019
+      - sctdiv
+      - sepint
+      title: FileFormatsEnum
+    HTTPValidationError:
+      properties:
+        detail:
+          items:
+            $ref: '#/components/schemas/ValidationError'
+          type: array
+          title: Detail
+      type: object
+      title: HTTPValidationError
+    ListFilesEmissionsResponseSchema:
+      properties:
+        data:
+          items:
+            $ref: '#/components/schemas/GetFilesEmissionResponseSchema'
+          type: array
+          title: Data
+          description: File emissions matching the query.
+        nextPageToken:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Nextpagetoken
+          description: Token to fetch the next page of results. `null` when there are no more pages.
+      type: object
+      required:
+      - data
+      title: ListFilesEmissionsResponseSchema
     BankFileSchema:
       properties:
         id:
@@ -514,32 +525,21 @@ components:
           - ES
       type: object
       title: BankFileSchema
-    ValidationError:
+    Body_create_file_emission_files__companyId___bankId__post:
       properties:
-        loc:
-          items:
-            anyOf:
-            - type: string
-            - type: integer
-          type: array
-          title: Location
-        msg:
+        file:
           type: string
-          title: Message
-        type:
-          type: string
-          title: Error Type
-        input:
-          title: Input
-        ctx:
-          type: object
-          title: Context
+          contentMediaType: application/octet-stream
+          title: File
+          description: Binary content of the file to submit to the bank.
+        format:
+          $ref: '#/components/schemas/FileFormatsEnum'
+          description: Format of the submitted file.
       type: object
       required:
-      - loc
-      - msg
-      - type
-      title: ValidationError
+      - file
+      - format
+      title: Body_create_file_emission_files__companyId___bankId__post
   securitySchemes:
     HTTPBearer:
       type: http

@@ -109,6 +109,18 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
 components:
   schemas:
+    BulkPostLogsRequestSchema:
+      properties:
+        data:
+          items:
+            $ref: '#/components/schemas/PostLogRequestSchema'
+          type: array
+          title: Data
+          description: Logs to create.
+      type: object
+      required:
+      - data
+      title: BulkPostLogsRequestSchema
     PostLogRequestSchema:
       properties:
         erp:
@@ -153,40 +165,32 @@ components:
       - code
       - message
       title: PostLogRequestSchema
-    BulkPostLogsRequestSchema:
+    ValidationError:
       properties:
-        data:
+        loc:
           items:
-            $ref: '#/components/schemas/PostLogRequestSchema'
+            anyOf:
+            - type: string
+            - type: integer
           type: array
-          title: Data
-          description: Logs to create.
-      type: object
-      required:
-      - data
-      title: BulkPostLogsRequestSchema
-    HTTPValidationError:
-      properties:
-        detail:
-          items:
-            $ref: '#/components/schemas/ValidationError'
-          type: array
-          title: Detail
-      type: object
-      title: HTTPValidationError
-    ErrorResponse:
-      properties:
-        detail:
+          title: Location
+        msg:
           type: string
-          title: Detail
-          description: Human-readable explanation of the error.
-          examples:
-          - user not authorized
+          title: Message
+        type:
+          type: string
+          title: Error Type
+        input:
+          title: Input
+        ctx:
+          type: object
+          title: Context
       type: object
       required:
-      - detail
-      title: ErrorResponse
-      description: Error payload returned by the API (FastAPI `detail` convention).
+      - loc
+      - msg
+      - type
+      title: ValidationError
     ErspEnum:
       type: string
       enum:
@@ -219,6 +223,28 @@ components:
       - ERROR
       - WARNING
       title: LogsLevelsEnum
+    HTTPValidationError:
+      properties:
+        detail:
+          items:
+            $ref: '#/components/schemas/ValidationError'
+          type: array
+          title: Detail
+      type: object
+      title: HTTPValidationError
+    ErrorResponse:
+      properties:
+        detail:
+          type: string
+          title: Detail
+          description: Human-readable explanation of the error.
+          examples:
+          - user not authorized
+      type: object
+      required:
+      - detail
+      title: ErrorResponse
+      description: Error payload returned by the API (FastAPI `detail` convention).
     LogsCodesEnum:
       type: string
       enum:
@@ -247,32 +273,6 @@ components:
       - PAYMENTS_WARNING
       - PAYMENTS_ERROR
       title: LogsCodesEnum
-    ValidationError:
-      properties:
-        loc:
-          items:
-            anyOf:
-            - type: string
-            - type: integer
-          type: array
-          title: Location
-        msg:
-          type: string
-          title: Message
-        type:
-          type: string
-          title: Error Type
-        input:
-          title: Input
-        ctx:
-          type: object
-          title: Context
-      type: object
-      required:
-      - loc
-      - msg
-      - type
-      title: ValidationError
   securitySchemes:
     HTTPBearer:
       type: http

@@ -596,45 +596,6 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
 components:
   schemas:
-    AttributesResponseValuesSchema:
-      properties:
-        customId:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Customid
-          description: Your own unique ID for the value. If omitted, Embat auto-generates one.
-          examples:
-          - madrid
-        id:
-          type: string
-          title: Id
-          description: Embat ID of the value.
-        name:
-          type: string
-          title: Name
-          description: Display name of the value.
-          examples:
-          - Madrid
-        parentCustomId:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Parentcustomid
-          description: Custom ID of the value, within the parent attribute (see the attribute's `parentCustomId`), that this value is nested under.
-          examples:
-          - spain
-        parentId:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Parentid
-          description: Embat ID of the parent value. Only present when `parentCustomId` matched an existing value of the parent attribute at the time this value was saved.
-      type: object
-      required:
-      - id
-      - name
-      title: AttributesResponseValuesSchema
     AttributesRequestValuesSchema:
       properties:
         customId:
@@ -662,113 +623,73 @@ components:
       - customId
       - name
       title: AttributesRequestValuesSchema
-    HTTPValidationError:
-      properties:
-        detail:
-          items:
-            $ref: '#/components/schemas/ValidationError'
-          type: array
-          title: Detail
-      type: object
-      title: HTTPValidationError
-    BulkPatchAttributesRequestSchema:
-      properties:
-        data:
-          items:
-            $ref: '#/components/schemas/AuxBulkPatchAttributesRequestSchema'
-          type: array
-          title: Data
-          description: Attributes to update, identified by `customId`.
-      type: object
-      required:
-      - data
-      title: BulkPatchAttributesRequestSchema
-    SourceEnum:
-      type: string
-      enum:
-      - erp
-      - api
-      - embat
-      title: SourceEnum
-    ValidationError:
-      properties:
-        loc:
-          items:
-            anyOf:
-            - type: string
-            - type: integer
-          type: array
-          title: Location
-        msg:
-          type: string
-          title: Message
-        type:
-          type: string
-          title: Error Type
-        input:
-          title: Input
-        ctx:
-          type: object
-          title: Context
-      type: object
-      required:
-      - loc
-      - msg
-      - type
-      title: ValidationError
-    BulkDeleteAttributesRequestSchema:
-      properties:
-        data:
-          items:
-            $ref: '#/components/schemas/DeleteAttributesRequestSchema'
-          type: array
-          title: Data
-          description: Attributes or values to remove, identified by `customId`.
-      type: object
-      required:
-      - data
-      title: BulkDeleteAttributesRequestSchema
-    BulkPostAttributesRequestSchema:
-      properties:
-        data:
-          items:
-            $ref: '#/components/schemas/PostAttributesRequestSchema'
-          type: array
-          title: Data
-          description: Attributes to create.
-      type: object
-      required:
-      - data
-      title: BulkPostAttributesRequestSchema
-    DeleteAttributesRequestSchema:
+    PostAttributesRequestSchema:
       properties:
         customId:
-          type: string
+          anyOf:
+          - type: string
+          - type: 'null'
           title: Customid
-          description: 'Custom ID to remove: the attribute''s `customId` when deleting attributes, or a value''s `customId` when removing values from an attribute.'
+          description: Your own unique ID for the attribute. If omitted, Embat auto-generates one.
+          examples:
+          - cost-center
+        source:
+          $ref: '#/components/schemas/SourceEnum'
+          description: Origin of the attribute record.
+        active:
+          type: boolean
+          title: Active
+          description: Whether the attribute is active.
+          default: true
+        name:
+          type: string
+          title: Name
+          description: Display name of the attribute.
+          examples:
+          - Cost Center
+        type:
+          $ref: '#/components/schemas/AttributesStatusEnum'
+          description: 'Data type of the attribute''s values: `list` (a fixed set of `values` to choose from), `string` or `number` (free-form value, no `values` needed).'
+        required:
+          type: boolean
+          title: Required
+          description: 'Whether a value for this attribute should be mandatory wherever it is used. Informational only: this API does not enforce it.'
+          default: false
+        values:
+          anyOf:
+          - items:
+              $ref: '#/components/schemas/AttributesRequestValuesSchema'
+            type: array
+          - type: 'null'
+          title: Values
+          description: Values available for this attribute (relevant when `type` is `list`). If an attribute with this `customId` already exists, sending `values` **replaces** its current list — any previously stored value not included here is removed. Omitting `values` when creating a new attribute with an existing `customId` also removes all of its current values. An attribute holds at most 5000 values; if the combined total would exceed the limit, the excess new values are silently discarded.
+        parentCustomId:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Parentcustomid
+          description: Custom ID of the parent attribute, to nest this attribute under another one (e.g. a "City" attribute nested under "Country"). Must reference an existing attribute.
+          examples:
+          - country
       type: object
       required:
-      - customId
-      title: DeleteAttributesRequestSchema
-    AttributesStatusEnum:
-      type: string
-      enum:
-      - list
-      - string
-      - number
-      title: AttributesStatusEnum
-    BulkPostAttributesValuesRequestSchema:
+      - source
+      - name
+      - type
+      title: PostAttributesRequestSchema
+    ErrorResponse:
       properties:
-        data:
-          items:
-            $ref: '#/components/schemas/AttributesRequestValuesSchema'
-          type: array
-          title: Data
-          description: Values to add to the attribute.
+        detail:
+          type: string
+          title: Detail
+          description: Human-readable explanation of the error.
+          examples:
+          - user not authorized
       type: object
       required:
-      - data
-      title: BulkPostAttributesValuesRequestSchema
+      - detail
+      title: ErrorResponse
+      description: Error payload returned by the API (FastAPI `detail` convention).
     GetAttributesResponseSchema:
       properties:
         customId:
@@ -863,128 +784,13 @@ components:
       required:
       - data
       title: BulkModifyAttributesResponseSchema
-    PostAttributesRequestSchema:
-      properties:
-        customId:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Customid
-          description: Your own unique ID for the attribute. If omitted, Embat auto-generates one.
-          examples:
-          - cost-center
-        source:
-          $ref: '#/components/schemas/SourceEnum'
-          description: Origin of the attribute record.
-        active:
-          type: boolean
-          title: Active
-          description: Whether the attribute is active.
-          default: true
-        name:
-          type: string
-          title: Name
-          description: Display name of the attribute.
-          examples:
-          - Cost Center
-        type:
-          $ref: '#/components/schemas/AttributesStatusEnum'
-          description: 'Data type of the attribute''s values: `list` (a fixed set of `values` to choose from), `string` or `number` (free-form value, no `values` needed).'
-        required:
-          type: boolean
-          title: Required
-          description: 'Whether a value for this attribute should be mandatory wherever it is used. Informational only: this API does not enforce it.'
-          default: false
-        values:
-          anyOf:
-          - items:
-              $ref: '#/components/schemas/AttributesRequestValuesSchema'
-            type: array
-          - type: 'null'
-          title: Values
-          description: Values available for this attribute (relevant when `type` is `list`). If an attribute with this `customId` already exists, sending `values` **replaces** its current list — any previously stored value not included here is removed. Omitting `values` when creating a new attribute with an existing `customId` also removes all of its current values. An attribute holds at most 5000 values; if the combined total would exceed the limit, the excess new values are silently discarded.
-        parentCustomId:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Parentcustomid
-          description: Custom ID of the parent attribute, to nest this attribute under another one (e.g. a "City" attribute nested under "Country"). Must reference an existing attribute.
-          examples:
-          - country
-      type: object
-      required:
-      - source
-      - name
-      - type
-      title: PostAttributesRequestSchema
-    ListAttributesResponseSchema:
-      properties:
-        data:
-          items:
-            $ref: '#/components/schemas/GetAttributesResponseSchema'
-          type: array
-          title: Data
-          description: All attributes of the company.
-      type: object
-      required:
-      - data
-      title: ListAttributesResponseSchema
-    PatchAttributesRequestSchema:
-      properties:
-        name:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Name
-          description: Display name of the attribute.
-        active:
-          type: boolean
-          title: Active
-          description: Whether the attribute is active. Omit to leave the current value unchanged.
-          default: true
-        values:
-          anyOf:
-          - items:
-              $ref: '#/components/schemas/AttributesRequestValuesSchema'
-            type: array
-          - type: 'null'
-          title: Values
-          description: 'Full list of values the attribute should have after this update. Sending `values` **replaces** the current list: any previously stored value whose `customId` is not included here is removed. Omit `values` entirely to leave the current values untouched. An attribute holds at most 5000 values; if the combined total would exceed the limit, the excess new values are silently discarded and existing ones already in the list are kept.'
-        parentCustomId:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Parentcustomid
-          description: Custom ID of the parent attribute, to nest this attribute under another one (e.g. a "City" attribute nested under "Country"). Must reference an existing attribute.
-          examples:
-          - country
-      type: object
-      title: PatchAttributesRequestSchema
-    ModifyAttributesResponseSchema:
-      properties:
-        id:
-          type: string
-          title: Id
-          description: Embat resource ID
-      type: object
-      required:
-      - id
-      title: ModifyAttributesResponseSchema
-    UpsertAttributesResponseSchema:
-      properties:
-        id:
-          type: string
-          title: Id
-          description: Embat resource ID
-        customId:
-          type: string
-          title: Customid
-          description: Client-provided custom ID
-      type: object
-      required:
-      - id
-      - customId
-      title: UpsertAttributesResponseSchema
+    AttributesStatusEnum:
+      type: string
+      enum:
+      - list
+      - string
+      - number
+      title: AttributesStatusEnum
     AuxBulkPatchAttributesRequestSchema:
       properties:
         name:
@@ -1024,19 +830,203 @@ components:
       required:
       - customId
       title: AuxBulkPatchAttributesRequestSchema
-    ErrorResponse:
+    BulkPostAttributesRequestSchema:
       properties:
-        detail:
-          type: string
-          title: Detail
-          description: Human-readable explanation of the error.
-          examples:
-          - user not authorized
+        data:
+          items:
+            $ref: '#/components/schemas/PostAttributesRequestSchema'
+          type: array
+          title: Data
+          description: Attributes to create.
       type: object
       required:
-      - detail
-      title: ErrorResponse
-      description: Error payload returned by the API (FastAPI `detail` convention).
+      - data
+      title: BulkPostAttributesRequestSchema
+    SourceEnum:
+      type: string
+      enum:
+      - erp
+      - api
+      - embat
+      title: SourceEnum
+    ListAttributesResponseSchema:
+      properties:
+        data:
+          items:
+            $ref: '#/components/schemas/GetAttributesResponseSchema'
+          type: array
+          title: Data
+          description: All attributes of the company.
+      type: object
+      required:
+      - data
+      title: ListAttributesResponseSchema
+    ModifyAttributesResponseSchema:
+      properties:
+        id:
+          type: string
+          title: Id
+          description: Embat resource ID
+      type: object
+      required:
+      - id
+      title: ModifyAttributesResponseSchema
+    BulkDeleteAttributesRequestSchema:
+      properties:
+        data:
+          items:
+            $ref: '#/components/schemas/DeleteAttributesRequestSchema'
+          type: array
+          title: Data
+          description: Attributes or values to remove, identified by `customId`.
+      type: object
+      required:
+      - data
+      title: BulkDeleteAttributesRequestSchema
+    HTTPValidationError:
+      properties:
+        detail:
+          items:
+            $ref: '#/components/schemas/ValidationError'
+          type: array
+          title: Detail
+      type: object
+      title: HTTPValidationError
+    AttributesResponseValuesSchema:
+      properties:
+        customId:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Customid
+          description: Your own unique ID for the value. If omitted, Embat auto-generates one.
+          examples:
+          - madrid
+        id:
+          type: string
+          title: Id
+          description: Embat ID of the value.
+        name:
+          type: string
+          title: Name
+          description: Display name of the value.
+          examples:
+          - Madrid
+        parentCustomId:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Parentcustomid
+          description: Custom ID of the value, within the parent attribute (see the attribute's `parentCustomId`), that this value is nested under.
+          examples:
+          - spain
+        parentId:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Parentid
+          description: Embat ID of the parent value. Only present when `parentCustomId` matched an existing value of the parent attribute at the time this value was saved.
+      type: object
+      required:
+      - id
+      - name
+      title: AttributesResponseValuesSchema
+    ValidationError:
+      properties:
+        loc:
+          items:
+            anyOf:
+            - type: string
+            - type: integer
+          type: array
+          title: Location
+        msg:
+          type: string
+          title: Message
+        type:
+          type: string
+          title: Error Type
+        input:
+          title: Input
+        ctx:
+          type: object
+          title: Context
+      type: object
+      required:
+      - loc
+      - msg
+      - type
+      title: ValidationError
+    PatchAttributesRequestSchema:
+      properties:
+        name:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Name
+          description: Display name of the attribute.
+        active:
+          type: boolean
+          title: Active
+          description: Whether the attribute is active. Omit to leave the current value unchanged.
+          default: true
+        values:
+          anyOf:
+          - items:
+              $ref: '#/components/schemas/AttributesRequestValuesSchema'
+            type: array
+          - type: 'null'
+          title: Values
+          description: 'Full list of values the attribute should have after this update. Sending `values` **replaces** the current list: any previously stored value whose `customId` is not included here is removed. Omit `values` entirely to leave the current values untouched. An attribute holds at most 5000 values; if the combined total would exceed the limit, the excess new values are silently discarded and existing ones already in the list are kept.'
+        parentCustomId:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Parentcustomid
+          description: Custom ID of the parent attribute, to nest this attribute under another one (e.g. a "City" attribute nested under "Country"). Must reference an existing attribute.
+          examples:
+          - country
+      type: object
+      title: PatchAttributesRequestSchema
+    BulkPostAttributesValuesRequestSchema:
+      properties:
+        data:
+          items:
+            $ref: '#/components/schemas/AttributesRequestValuesSchema'
+          type: array
+          title: Data
+          description: Values to add to the attribute.
+      type: object
+      required:
+      - data
+      title: BulkPostAttributesValuesRequestSchema
+    BulkPatchAttributesRequestSchema:
+      properties:
+        data:
+          items:
+            $ref: '#/components/schemas/AuxBulkPatchAttributesRequestSchema'
+          type: array
+          title: Data
+          description: Attributes to update, identified by `customId`.
+      type: object
+      required:
+      - data
+      title: BulkPatchAttributesRequestSchema
+    UpsertAttributesResponseSchema:
+      properties:
+        id:
+          type: string
+          title: Id
+          description: Embat resource ID
+        customId:
+          type: string
+          title: Customid
+          description: Client-provided custom ID
+      type: object
+      required:
+      - id
+      - customId
+      title: UpsertAttributesResponseSchema
     BulkUpsertAttributesResponseSchema:
       properties:
         data:
@@ -1049,6 +1039,16 @@ components:
       required:
       - data
       title: BulkUpsertAttributesResponseSchema
+    DeleteAttributesRequestSchema:
+      properties:
+        customId:
+          type: string
+          title: Customid
+          description: 'Custom ID to remove: the attribute''s `customId` when deleting attributes, or a value''s `customId` when removing values from an attribute.'
+      type: object
+      required:
+      - customId
+      title: DeleteAttributesRequestSchema
   securitySchemes:
     HTTPBearer:
       type: http

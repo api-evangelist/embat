@@ -173,6 +173,70 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
 components:
   schemas:
+    ValidationError:
+      properties:
+        loc:
+          items:
+            anyOf:
+            - type: string
+            - type: integer
+          type: array
+          title: Location
+        msg:
+          type: string
+          title: Message
+        type:
+          type: string
+          title: Error Type
+        input:
+          title: Input
+        ctx:
+          type: object
+          title: Context
+      type: object
+      required:
+      - loc
+      - msg
+      - type
+      title: ValidationError
+    ListPaymentOrdersResponseSchema:
+      properties:
+        data:
+          items:
+            $ref: '#/components/schemas/PaymentOrderSchema'
+          type: array
+          title: Data
+          description: Payment orders matching the query.
+        nextPageToken:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Nextpagetoken
+          description: Token to fetch the next page of results. `null` when there are no more pages.
+      type: object
+      required:
+      - data
+      title: ListPaymentOrdersResponseSchema
+    PaymentOrderStatusEnum:
+      type: string
+      enum:
+      - COMPLETED
+      - REJECTED
+      - IN_PROGRESS
+      - ON_HOLD
+      title: PaymentOrderStatusEnum
+    BeneficiarySchema:
+      properties:
+        legalName:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Legalname
+          description: Legal name of the payment order beneficiary.
+          examples:
+          - Acme Supplies S.L.
+      type: object
+      title: BeneficiarySchema
     CurrencyEnum:
       type: string
       enum:
@@ -378,32 +442,15 @@ components:
       required:
       - detail
       title: ErrorDetailSchema
-    BankSchema:
+    HTTPValidationError:
       properties:
-        id:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Id
-          description: Embat bank ID the payment order was executed through.
-        fullName:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Fullname
-          description: Full name of the bank.
-          examples:
-          - Banco Santander
+        detail:
+          items:
+            $ref: '#/components/schemas/ValidationError'
+          type: array
+          title: Detail
       type: object
-      title: BankSchema
-    PaymentOrderStatusEnum:
-      type: string
-      enum:
-      - COMPLETED
-      - REJECTED
-      - IN_PROGRESS
-      - ON_HOLD
-      title: PaymentOrderStatusEnum
+      title: HTTPValidationError
     PaymentOrderSchema:
       properties:
         id:
@@ -494,15 +541,6 @@ components:
       required:
       - id
       title: PaymentOrderSchema
-    HTTPValidationError:
-      properties:
-        detail:
-          items:
-            $ref: '#/components/schemas/ValidationError'
-          type: array
-          title: Detail
-      type: object
-      title: HTTPValidationError
     ErrorResponse:
       properties:
         detail:
@@ -516,6 +554,24 @@ components:
       - detail
       title: ErrorResponse
       description: Error payload returned by the API (FastAPI `detail` convention).
+    BankSchema:
+      properties:
+        id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Id
+          description: Embat bank ID the payment order was executed through.
+        fullName:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Fullname
+          description: Full name of the bank.
+          examples:
+          - Banco Santander
+      type: object
+      title: BankSchema
     app__schemas__paymentOrders__ProductSchema:
       properties:
         id:
@@ -534,62 +590,6 @@ components:
           - Main disbursement account
       type: object
       title: ProductSchema
-    BeneficiarySchema:
-      properties:
-        legalName:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Legalname
-          description: Legal name of the payment order beneficiary.
-          examples:
-          - Acme Supplies S.L.
-      type: object
-      title: BeneficiarySchema
-    ListPaymentOrdersResponseSchema:
-      properties:
-        data:
-          items:
-            $ref: '#/components/schemas/PaymentOrderSchema'
-          type: array
-          title: Data
-          description: Payment orders matching the query.
-        nextPageToken:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Nextpagetoken
-          description: Token to fetch the next page of results. `null` when there are no more pages.
-      type: object
-      required:
-      - data
-      title: ListPaymentOrdersResponseSchema
-    ValidationError:
-      properties:
-        loc:
-          items:
-            anyOf:
-            - type: string
-            - type: integer
-          type: array
-          title: Location
-        msg:
-          type: string
-          title: Message
-        type:
-          type: string
-          title: Error Type
-        input:
-          title: Input
-        ctx:
-          type: object
-          title: Context
-      type: object
-      required:
-      - loc
-      - msg
-      - type
-      title: ValidationError
   securitySchemes:
     HTTPBearer:
       type: http

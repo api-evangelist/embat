@@ -225,6 +225,102 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
 components:
   schemas:
+    ErrorResponse:
+      properties:
+        detail:
+          type: string
+          title: Detail
+          description: Human-readable explanation of the error.
+          examples:
+          - user not authorized
+      type: object
+      required:
+      - detail
+      title: ErrorResponse
+      description: Error payload returned by the API (FastAPI `detail` convention).
+    ValidationError:
+      properties:
+        loc:
+          items:
+            anyOf:
+            - type: string
+            - type: integer
+          type: array
+          title: Location
+        msg:
+          type: string
+          title: Message
+        type:
+          type: string
+          title: Error Type
+        input:
+          title: Input
+        ctx:
+          type: object
+          title: Context
+      type: object
+      required:
+      - loc
+      - msg
+      - type
+      title: ValidationError
+    ListProductsResponseSchema:
+      properties:
+        data:
+          items:
+            $ref: '#/components/schemas/GetProductsResponseSchema'
+          type: array
+          title: Data
+          description: Products of the company.
+      type: object
+      required:
+      - data
+      title: ListProductsResponseSchema
+    AuxBulkPatchProductsRequestSchema:
+      properties:
+        additionalInfo:
+          additionalProperties: true
+          type: object
+          title: Additionalinfo
+          description: Free-form key/value metadata to attach to the product. Replaces the existing value entirely.
+          default: {}
+        accountingCode:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Accountingcode
+          description: Accounting account code to link the product to.
+          examples:
+          - '5720001'
+        id:
+          type: string
+          title: Id
+          description: Embat product ID
+      type: object
+      required:
+      - id
+      title: AuxBulkPatchProductsRequestSchema
+    ReconciliationSchema:
+      properties:
+        accountingCode:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Accountingcode
+          description: Accounting account code this reconciliation status refers to.
+          examples:
+          - '5720001'
+        originalBalanceDate:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Originalbalancedate
+          description: Date up to which the linked accounting account's opening balance has been established in Embat. `null` if the account has not been initialized with an opening balance.
+          examples:
+          - '2024-01-01T00:00:00Z'
+      type: object
+      title: ReconciliationSchema
     CurrencyEnum:
       type: string
       enum:
@@ -418,34 +514,8 @@ components:
       - ZWG
       - ZWL
       title: CurrencyEnum
-    BulkPatchProductsRequestSchema:
+    ModifyProductsResponseSchema:
       properties:
-        data:
-          items:
-            $ref: '#/components/schemas/AuxBulkPatchProductsRequestSchema'
-          type: array
-          title: Data
-          description: Products to update, identified by `id`.
-      type: object
-      required:
-      - data
-      title: BulkPatchProductsRequestSchema
-    AuxBulkPatchProductsRequestSchema:
-      properties:
-        additionalInfo:
-          additionalProperties: true
-          type: object
-          title: Additionalinfo
-          description: Free-form key/value metadata to attach to the product. Replaces the existing value entirely.
-          default: {}
-        accountingCode:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Accountingcode
-          description: Accounting account code to link the product to.
-          examples:
-          - '5720001'
         id:
           type: string
           title: Id
@@ -453,40 +523,7 @@ components:
       type: object
       required:
       - id
-      title: AuxBulkPatchProductsRequestSchema
-    BulkModifyProductsResponseSchema:
-      properties:
-        data:
-          items:
-            $ref: '#/components/schemas/ModifyProductsResponseSchema'
-          type: array
-          title: Data
-          description: Result of the bulk operation, one entry per product.
-      type: object
-      required:
-      - data
-      title: BulkModifyProductsResponseSchema
-    ReconciliationSchema:
-      properties:
-        accountingCode:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Accountingcode
-          description: Accounting account code this reconciliation status refers to.
-          examples:
-          - '5720001'
-        originalBalanceDate:
-          anyOf:
-          - type: string
-            format: date-time
-          - type: 'null'
-          title: Originalbalancedate
-          description: Date up to which the linked accounting account's opening balance has been established in Embat. `null` if the account has not been initialized with an opening balance.
-          examples:
-          - '2024-01-01T00:00:00Z'
-      type: object
-      title: ReconciliationSchema
+      title: ModifyProductsResponseSchema
     PatchProductsRequestSchema:
       properties:
         additionalInfo:
@@ -505,64 +542,6 @@ components:
           - '5720001'
       type: object
       title: PatchProductsRequestSchema
-    ValidationError:
-      properties:
-        loc:
-          items:
-            anyOf:
-            - type: string
-            - type: integer
-          type: array
-          title: Location
-        msg:
-          type: string
-          title: Message
-        type:
-          type: string
-          title: Error Type
-        input:
-          title: Input
-        ctx:
-          type: object
-          title: Context
-      type: object
-      required:
-      - loc
-      - msg
-      - type
-      title: ValidationError
-    HTTPValidationError:
-      properties:
-        detail:
-          items:
-            $ref: '#/components/schemas/ValidationError'
-          type: array
-          title: Detail
-      type: object
-      title: HTTPValidationError
-    ErrorResponse:
-      properties:
-        detail:
-          type: string
-          title: Detail
-          description: Human-readable explanation of the error.
-          examples:
-          - user not authorized
-      type: object
-      required:
-      - detail
-      title: ErrorResponse
-      description: Error payload returned by the API (FastAPI `detail` convention).
-    ModifyProductsResponseSchema:
-      properties:
-        id:
-          type: string
-          title: Id
-          description: Embat product ID
-      type: object
-      required:
-      - id
-      title: ModifyProductsResponseSchema
     GetProductsResponseSchema:
       properties:
         id:
@@ -740,18 +719,39 @@ components:
       - type
       - bank
       title: GetProductsResponseSchema
-    ListProductsResponseSchema:
+    HTTPValidationError:
+      properties:
+        detail:
+          items:
+            $ref: '#/components/schemas/ValidationError'
+          type: array
+          title: Detail
+      type: object
+      title: HTTPValidationError
+    BulkModifyProductsResponseSchema:
       properties:
         data:
           items:
-            $ref: '#/components/schemas/GetProductsResponseSchema'
+            $ref: '#/components/schemas/ModifyProductsResponseSchema'
           type: array
           title: Data
-          description: Products of the company.
+          description: Result of the bulk operation, one entry per product.
       type: object
       required:
       - data
-      title: ListProductsResponseSchema
+      title: BulkModifyProductsResponseSchema
+    BulkPatchProductsRequestSchema:
+      properties:
+        data:
+          items:
+            $ref: '#/components/schemas/AuxBulkPatchProductsRequestSchema'
+          type: array
+          title: Data
+          description: Products to update, identified by `id`.
+      type: object
+      required:
+      - data
+      title: BulkPatchProductsRequestSchema
   securitySchemes:
     HTTPBearer:
       type: http
